@@ -1,0 +1,9 @@
+# Circuit Frames V3 favicon
+
+Generated on 22 September 2026 with the built-in image model in edit mode, using [the selected refined V3 mascot](archivist-circuit-frames-v3.png) as the sole visual reference. This is a simplified small-display derivative; the selected full artwork is unchanged.
+
+Output: [archivist-circuit-favicon-v3.png](archivist-circuit-favicon-v3.png). The PNG is copied unchanged into both independently served preview asset directories. Browser-tab and preview display sizes downscale this image; it is not a hand-hinted 16-pixel master.
+
+## Exact prompt
+
+Edit the attached approved Crowbo mascot into a dedicated small browser favicon. Keep its identity faithfully: mature violet-black corvid, mint eyes with a calm curious expression, mint rim only along the viewer-left feather silhouette, and especially lemon yellow REAL WEARABLE circuit glasses. The near lens has the D-shaped AND-gate outline, the farther lens an OR-gate outline, with visibly round terminal dots on short traces and a real temple arm. Make a single square icon, opaque solid midnight #10101B background, no caption, no text, no border, no badge, no glow. Head only (head and upper neck), facing right like the reference, tightly centered with 6% safety margin all around. Strong clean pixel-art silhouette, chunky deliberately simplified contours and minimal large shaded planes, suitable for downscaling to 16 and 32 physical pixels; no tiny feather noise. Prioritize the lemon glasses silhouette, mint eyes, distinct crow beak and left mint edge. Terminal dots may be bold simple pixel nodes and the two lens shapes should remain legible at 32 pixels. Do not redesign into a baby, owl, robot or generic glasses icon. Palette targets: ink #28243E, midnight #10101B, mint #A4EDC3, lemon #EEF34B. Produce ONLY the final favicon icon, not a sheet or mockup.

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Crowbo — Three homepage directions</title>
+  <link rel="icon" href="assets/crowbo-circuit-favicon-v3.png" type="image/png">
+  <link rel="stylesheet" href="mockups.css?v=circuit-frames-v3">
+  <script src="mockups.js" defer></script>
+</head>
+<body>
+  <header class="review-bar">
+    <span class="review-title">CROWBO <span>/</span> IDENTITY STUDIES</span>
+    <nav class="concept-switcher" aria-label="Homepage direction">
+      <button type="button" data-concept="field-notes" aria-pressed="true" aria-controls="field-notes"><span>01</span> Field Notes</button>
+      <button type="button" data-concept="command-room" aria-pressed="false" aria-controls="command-room"><span>02</span> Command Room</button>
+      <button type="button" data-concept="flight-path" aria-pressed="false" aria-controls="flight-path"><span>03</span> Flight Path</button>
+    </nav>
+    <span class="review-note">MOCKUPS · FICTIONAL EXAMPLES</span>
+  </header>
+  <p id="font-warning" class="font-warning" hidden>Some fonts could not load. This preview may show substitute lettering.</p>
+  <p id="concept-announcement" class="sr-only" role="status">Field Notes selected.</p>
+
+  <main>
+    <article id="field-notes" class="concept field" aria-label="Field Notes homepage mockup">
+      <div class="wrap">
+        <nav class="site-nav" aria-label="Field Notes navigation">
+          <a href="#field-top" class="wordmark" aria-label="Crowbo home">crowbo</a>
+          <div class="nav-links"><a href="#field-approach">Our approach</a><a href="#field-example" class="nav-action">Explore a decision <span aria-hidden="true">↗</span></a></div>
+        </nav>
+        <section id="field-top" class="field-hero">
+          <div class="field-hero-copy">
+            <p class="eyebrow"><span class="small-square"></span> SECURITY DECISIONS, CONSIDERED.</p>
+            <h1>A clear head.<br> For the<br> <em>hard calls.</em></h1>
+            <p class="lead">Put evidence, budget and trade-offs on the same page. Make a security decision you can explain.</p>
+            <a class="button dark-button" href="#field-example">Work through an example <span aria-hidden="true">↗</span></a>
+            <p class="quiet-note">For the people accountable for what happens next.</p>
+          </div>
+          <figure class="scholar-plate">
+            <div class="plate-index"><span>FIELD COMPANION / 001</span><span>+ + +</span></div>
+            <div class="plate-art"><div class="crow" role="img" aria-label="The Archivist, a pixel crow with mint eyes and lemon circuit glasses"><img src="assets/crowbo-circuit-frames-v3.png" width="1254" height="1254" alt=""></div></div>
+            <figcaption><span class="plate-title">Curiosity is<br> a useful instinct.</span><span class="plate-caption">LOOK CLOSER.<br> ASK BETTER.</span></figcaption>
+            <div class="plate-ruler" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </figure>
+        </section>
+        <div class="field-index"><span>THE QUESTION IS WHERE WE START.</span><span>THE REASONING IS WHAT YOU KEEP.</span><span aria-hidden="true">↓</span></div>
+
+        <section id="field-example" class="field-example" data-case="field">
+          <div class="section-intro"><p class="eyebrow">OPEN NOTE / 001</p><h2>Another tool.<br> Or more time<br> to fix?</h2><p>There is $120,000 to invest. The team is finding issues faster than it can resolve them. What should happen next?</p><span class="example-label">ILLUSTRATIVE SCENARIO</span></div>
+          <div class="paper-case">
+            <div class="case-topline"><span>VULNERABILITY PROGRAMME</span><span>NOTE / 001</span></div>
+            <div class="case-facts"><div><span data-field="arrivals">12</span><small>Arriving / week</small></div><div><span data-field="resolved">8</span><small data-field="resolvedLabel">Resolved / week</small></div><div><span>32</span><small>In the backlog</small></div></div>
+            <label class="scenario-label">Change one fact<select data-scenario-picker aria-label="Field Notes scenario"><option value="bottleneck">The bottleneck is unclear</option><option value="blindspot">An urgent coverage gap emerges</option><option value="capacity">A credible capacity plan emerges</option></select></label>
+            <p class="case-evidence" data-field="evidence">Twelve findings arrive and eight get resolved each week. The queue is growing, but the cause is still unclear.</p>
+            <div class="paper-recommendation"><span class="eyebrow">SUGGESTED NEXT STEP</span><h3 data-field="step">Investigate the bottleneck.</h3><p data-field="why">More detections may add work to a queue the team cannot clear. First find out what is holding remediation back.</p></div>
+            <details class="reason-detail"><summary>What could change this recommendation? <span aria-hidden="true">+</span></summary><p data-field="unknown">Is the constraint engineering time, ownership or the release process? A critical blind spot would also change the options.</p></details>
+            <p class="case-footnote">Fictional inputs. An illustrative recommendation. The owner makes the final call.</p>
+          </div>
+        </section>
+
+        <section id="field-approach" class="field-approach">
+          <div class="approach-heading"><p class="eyebrow">A PRACTICE OF GOOD JUDGMENT</p><h2>From a difficult question<br> to a considered next step.</h2></div>
+          <div class="field-principles"><div><span class="principle-number">01</span><h3>Start with the situation.</h3><p>Bring the evidence, objectives and constraints into view. Be clear about what is still unknown.</p></div><div><span class="principle-number">02</span><h3>Give the options a fair hearing.</h3><p>Compare a purchase, a process change, more capacity or a better question. Follow what the evidence supports.</p></div><div><span class="principle-number">03</span><h3>Leave a reason to return to.</h3><p>Keep the assumptions and the decision together. Reconsider the call when something material changes.</p></div></div>
+        </section>
+      </div>
+      <section class="field-closing"><div class="wrap"><span class="eyebrow">CURIOUS BY NATURE. CONSIDERED BY DESIGN.</span><div><h2>What is your next<br> security decision?</h2><a class="button dark-button" href="#field-example">Start with a question <span aria-hidden="true">↗</span></a></div></div></section>
+      <footer class="big-footer"><div class="wrap"><div class="footer-line"><span>SECURITY DECISION SOFTWARE</span><span>Evidence. Options. Your judgment.</span><a href="#field-top">Back to top ↑</a></div><div class="footer-wordmark" aria-label="crowbo">crowbo</div></div></footer>
+    </article>
+
+    <article id="command-room" class="concept command" aria-label="Command Room homepage mockup" hidden>
+      <div class="wrap">
+        <nav class="site-nav" aria-label="Command Room navigation"><a href="#command-top" class="wordmark" aria-label="Crowbo home">crowbo</a><div class="nav-links"><a href="#command-approach">How it thinks</a><a href="#command-example" class="nav-action">Open a decision <span aria-hidden="true">↗</span></a></div></nav>
+        <section id="command-top" class="command-hero">
+          <div class="command-hero-copy"><p class="eyebrow"><span class="small-square"></span> SECURITY DECISION SOFTWARE</p><h1>The next move<br> needs a<br> <span>reason.</span></h1><p class="lead">Make the evidence legible. Weigh the options. Keep a clear account of why you chose.</p><a class="button lemon-button" href="#command-example">Inspect the example <span aria-hidden="true">↗</span></a><div class="command-companion"><div class="crow" role="img" aria-label="The Archivist crow"><img src="assets/crowbo-circuit-frames-v3.png" width="1254" height="1254" alt=""></div><p><span>YOUR THINKING COMPANION</span>One more question.<br> A better-informed call.</p></div></div>
+          <section id="command-example" class="decision-console" data-case="command" aria-label="Interactive fictional decision example">
+            <div class="console-chrome"><span class="console-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>DECISION / 001</span><span class="console-status">ILLUSTRATIVE</span></div>
+            <div class="console-body"><p class="console-path">programme / vulnerabilities / investment</p><h2>More detection.<br> Or more remediation?</h2><div class="console-facts"><div><strong>$120k</strong><span>BUDGET</span></div><div><strong data-field="resolved">8</strong><span data-field="resolvedLabel">Resolved / week</span></div><div><strong>32</strong><span>BACKLOG</span></div></div><label class="scenario-label">Scenario<select data-scenario-picker aria-label="Command Room scenario"><option value="bottleneck">The bottleneck is unclear</option><option value="blindspot">An urgent coverage gap emerges</option><option value="capacity">A credible capacity plan emerges</option></select></label><div class="console-evidence"><span class="line-number">01</span><p data-field="evidence">Twelve findings arrive and eight get resolved each week. The queue is growing, but the cause is still unclear.</p></div><div class="console-output"><span class="eyebrow">SUGGESTED NEXT STEP</span><h3 data-field="step">Investigate the bottleneck.</h3><p data-field="why">More detections may add work to a queue the team cannot clear. First find out what is holding remediation back.</p></div><details class="reason-detail"><summary>Inspect the open question <span aria-hidden="true">+</span></summary><p data-field="unknown">Is the constraint engineering time, ownership or the release process? A critical blind spot would also change the options.</p></details><div class="console-owner"><span>FINAL DECISION</span><strong>With the accountable owner.</strong></div></div>
+          </section>
+        </section>
+        <div class="command-divider"><span>QUESTION → EVIDENCE → OPTIONS → JUDGMENT</span><span>KEEP THE TRAIL.</span></div>
+        <section id="command-approach" class="command-approach"><div><p class="eyebrow">THE REASONING SHOULD BE VISIBLE.</p><h2>Take the<br> decision<br> apart.</h2><p>See what the recommendation rests on, where it is uncertain and which changes could turn it around.</p></div><div class="reasoning-table"><div><span>01</span><h3>Evidence</h3><p>What do we know?<br> Where did it come from?</p></div><div><span>02</span><h3>Options</h3><p>What is feasible?<br> What would each choice cost?</p></div><div><span>03</span><h3>Judgment</h3><p>Why this next step?<br> What could change it?</p></div><div><span>04</span><h3>Authority</h3><p>Who is accountable?<br> What still needs approval?</p></div></div></section>
+        <section class="command-closing"><span class="eyebrow">A CLEARER WAY THROUGH.</span><h2>Bring the hard question.</h2><a href="#command-example">Follow the reasoning <span aria-hidden="true">↗</span></a></section>
+        <footer class="command-footer"><span class="wordmark">crowbo</span><span>CURIOUS BY NATURE.</span><a href="#command-top">Back to top ↑</a></footer>
+      </div>
+    </article>
+
+    <article id="flight-path" class="concept flight" aria-label="Flight Path homepage mockup" hidden>
+      <div class="wrap">
+        <nav class="site-nav" aria-label="Flight Path navigation"><a href="#flight-top" class="wordmark" aria-label="Crowbo home">crowbo</a><div class="nav-links"><a href="#flight-approach">The approach</a><a href="#flight-example" class="nav-action">Find a next step <span aria-hidden="true">↗</span></a></div></nav>
+        <section id="flight-top" class="flight-hero"><div class="flight-hero-copy"><p class="eyebrow">SECURITY DECISIONS, WITH DIRECTION.</p><h1>Choose<br> your next<br> <span>move.</span></h1><p class="lead">Turn a difficult security question into options you can weigh and a next step you can explain.</p><a class="button dark-button" href="#flight-example">See a decision take shape <span aria-hidden="true">↗</span></a></div><figure class="route-map" aria-label="The Archivist follows a stepped route from question to evidence to options to your call"><svg viewBox="0 0 480 520" role="img" aria-label="Question, evidence, options, your call"><path class="route-line" d="M32 460H126V358H254V254H392V144H454"/><path class="route-arrow" d="M443 133l11 11-11 11"/><rect x="20" y="448" width="24" height="24"/><rect x="114" y="346" width="24" height="24"/><rect x="242" y="242" width="24" height="24"/><rect x="380" y="132" width="24" height="24"/><text x="20" y="499">01 / QUESTION</text><text x="145" y="388">02 / EVIDENCE</text><text x="271" y="284">03 / OPTIONS</text><text x="310" y="106">04 / YOUR CALL</text></svg><div class="route-crow"><div class="crow" role="img" aria-label="The Archivist crow with lemon circuit glasses"><img src="assets/crowbo-circuit-frames-v3.png" width="1254" height="1254" alt=""></div></div><figcaption>THERE IS A WAY THROUGH.</figcaption></figure></section>
+      </div>
+      <div class="flight-ribbon" aria-hidden="true"><span>LOOK CLOSER</span><b>↗</b><span>WEIGH THE OPTIONS</span><b>↗</b><span>MAKE THE CALL</span></div>
+      <section id="flight-example" class="flight-example" data-case="flight"><div class="wrap"><div class="flight-section-heading"><p class="eyebrow">ONE QUESTION. DIFFERENT POSSIBLE ANSWERS.</p><span>ILLUSTRATIVE SCENARIO / 001</span></div><div class="flight-case"><div class="flight-question"><span class="eyebrow">THE QUESTION</span><h2>Buy more<br> detection.<br> Or make more<br> time to fix?</h2><p>A security team has $120,000 to invest and a growing remediation queue.</p><label class="scenario-label">Change the situation<select data-scenario-picker aria-label="Flight Path scenario"><option value="bottleneck">The bottleneck is unclear</option><option value="blindspot">An urgent coverage gap emerges</option><option value="capacity">A credible capacity plan emerges</option></select></label><span class="question-arrow" aria-hidden="true">↗</span></div><div class="flight-answer"><p class="eyebrow">A CONSIDERED NEXT STEP</p><h3 data-field="step">Investigate the bottleneck.</h3><p class="answer-why" data-field="why">More detections may add work to a queue the team cannot clear. First find out what is holding remediation back.</p><div class="flight-metric"><strong data-field="metricValue">+4</strong><span data-field="metricLabel">Findings added to the queue / week</span></div><details class="reason-detail"><summary>What are we still missing? <span aria-hidden="true">+</span></summary><p data-field="unknown">Is the constraint engineering time, ownership or the release process? A critical blind spot would also change the options.</p></details><p class="case-footnote">Fictional inputs. An illustrative recommendation. The owner makes the final call.</p></div></div></div></section>
+      <section id="flight-approach" class="flight-approach"><div class="wrap"><div class="flight-approach-title"><p class="eyebrow">A COMPANION FOR THE COMPLICATED BITS.</p><h2>Less guesswork.<br> More grounds to act.</h2></div><div class="flight-steps"><div><span>01</span><h3>Get your bearings.</h3><p>Understand the evidence, the objective and what is getting in the way.</p></div><div><span>02</span><h3>Consider the routes.</h3><p>Compare the possible moves, their constraints and their consequences.</p></div><div><span>03</span><h3>Keep your judgment.</h3><p>Make the call. Keep the reasoning. Revisit it when the facts change.</p></div></div></div></section>
+      <footer class="flight-footer"><div class="wrap"><div class="footer-line"><span>GOOD QUESTIONS LEAD SOMEWHERE.</span><a href="#flight-example">Explore the example ↗</a></div><div class="footer-wordmark" aria-label="crowbo">crowbo</div><div class="footer-line"><span>SECURITY DECISION SOFTWARE</span><a href="#flight-top">Back to top ↑</a></div></div></footer>
+    </article>
+  </main>
+  <noscript><p class="no-script">This is the Field Notes mockup. Enable JavaScript to switch directions and explore the fictional scenarios.</p></noscript>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="color-scheme" content="dark light">
+  <title>Crowbo — Wordmark study 01</title>
+  <link rel="icon" href="assets/crowbo-circuit-favicon-v3.png" type="image/png">
+  <link rel="stylesheet" href="study.css?v=circuit-frames-v3">
+  <script src="study.js" defer></script>
+</head>
+<body>
+  <div class="sheet">
+    <header class="masthead">
+      <span class="workshop"><span class="pixel-cross" aria-hidden="true">✳</span> CROWBO / DESIGN WORKSHOP</span>
+      <span class="edition">TYPE STUDY 01 <span aria-hidden="true">↗</span></span>
+    </header>
+
+    <main>
+      <div class="intro">
+        <div><p class="eyebrow">FINDING THE WORDMARK</p><h1>Eight ways to say crowbo.</h1></div>
+        <p class="intro-copy">Same crow. Same colours.<br> Choose a font to see how the name feels.</p>
+      </div>
+
+      <section class="stage" aria-label="Selected wordmark preview">
+        <div class="stage-top"><span id="selected-label">01 / GEIST PIXEL SQUARE</span><span>CIRCUIT FRAMES / V3</span></div>
+        <div class="lockup">
+          <div class="crow-art" role="img" aria-label="The Archivist, a pixel crow with mint eyes and lemon circuit glasses"><img src="assets/crowbo-circuit-frames-v3.png" alt="" width="1254" height="1254"></div>
+          <div class="wordmark-area"><div id="hero-wordmark" class="wordmark" aria-label="crowbo">crowbo</div><span class="hero-undertext">CURIOUS BY NATURE.</span></div>
+        </div>
+        <div class="stage-bottom"><span id="selected-character">Precise pixels. A restrained arcade feel.</span><span class="swatch-label"><i class="swatch ink"></i><i class="swatch mint"></i><i class="swatch lemon"></i> INK / MINT / LEMON</span></div>
+      </section>
+
+      <div class="controls" aria-label="Wordmark adjustments">
+        <label class="select-control">Letter case<select id="letter-case"><option value="lower">lowercase</option><option value="upper">UPPERCASE</option></select></label>
+        <label class="range-control" for="size">Preview size <output id="size-value" for="size">110 px</output><input id="size" type="range" min="66" max="132" step="11" value="110"></label>
+        <label class="range-control" for="tracking">Letter spacing <output id="tracking-value" for="tracking">-0.04 em</output><input id="tracking" type="range" min="-4" max="10" step="1" value="-4"></label>
+        <label class="select-control">Background<select id="theme"><option value="dark">Midnight</option><option value="light">Paper</option></select></label>
+        <button class="reset" id="reset" type="button">Reset ↺</button>
+      </div>
+
+      <section class="comparison" aria-labelledby="comparison-title">
+        <div class="section-heading"><h2 id="comparison-title">Pick a direction</h2><span>01—04 PIXEL · 05—06 MONO · 07—08 SANS</span></div>
+        <div id="font-grid" class="font-grid"></div>
+        <p id="font-status" class="font-status" role="status">Loading the eight font specimens…</p>
+        <noscript><p>Enable JavaScript to compare the font specimens and adjust the wordmark.</p></noscript>
+      </section>
+
+      <section class="shortlist" aria-labelledby="shortlist-title">
+        <div><p class="eyebrow">MY STARTING SHORTLIST</p><h2 id="shortlist-title">Three worth taking further.</h2></div>
+        <p><strong>01 / Geist Pixel Square</strong><span>The closest match to the crow’s geometry. My first pick for the retro direction.</span></p>
+        <p><strong>02 / Departure Mono</strong><span>More terminal, less arcade. A good fit if the developer personality leads.</span></p>
+        <p><strong>08 / Bricolage Grotesque</strong><span>Rounder and more expressive. Gives the name personality beside a detailed mascot.</span></p>
+      </section>
+    </main>
+
+    <footer><span>CROWBO / 21.09.2026</span><span>Exploration, not a final identity.</span><a href="README.md">Fonts & sources ↗</a></footer>
+  </div>
+</body>
+</html>
