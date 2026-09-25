@@ -1,16 +1,16 @@
 # crowbo
 
-Security decision infrastructure. Crowbo aims to turn evidence, business context and policy into reasoned, traceable recommendations for people and agents.
+The decision engine for security. Crowbo brings evidence and business context together to guide what to fix, fund, build or drop, for both people and agents.
 
 The name combines the English crow with a nod to the French corbeau. It is pronounced CROW-bo; the proposed wordmark is lowercase.
 
 ## Start here
 
-- [Foundation](docs/FOUNDATION.md) owns the product direction, decisions, first proof and immediate work.
+- [Vision and foundation](docs/FOUNDATION.md#narrative-and-potential-ai-ciso-end-goal) owns the narrative, potential AI-CISO end goal, product decisions and first experiments. GRC is the entry point into programme-wide security decision-making.
 - [Evaluation contract](docs/EVALUATION.md) owns how that proof will be assessed and where human judgment is still required.
 - [Contributor instructions](AGENTS.md) govern work in this repository.
 
-The first selected proof is **buy another vulnerability tool or improve remediation capacity**. It will follow one decision through evidence review, alternatives, explicit checks, recommendation, a simulated decision and reassessment after a material fact changes.
+The preferred first customer application is **test one control in context, decide what to do next, and reassess when the evidence changes**. The exact control remains open. The earlier tool-purchase-versus-remediation-capacity example remains development material for the same shared method; [the foundation](docs/FOUNDATION.md#first-proof) records the current direction.
 
 ## Current state
 

@@ -1,6 +1,6 @@
 # First-proof evaluation contract
 
-Status: proposed evaluation method, 21 September 2026. The founder selected tool purchase versus remediation capacity as the first workflow. The examples and candidate judgments below are assistant-authored development material. No expected judgment, scoring threshold or product-quality result has been validated by the founder or an independent reviewer yet.
+Status: proposed evaluation method, established 21 September and updated 23 September 2026. Contextual control testing is now the founder's preferred first customer application; the specific control and case remain open. The earlier tool-purchase-versus-remediation-capacity example below remains assistant-authored development material. No expected judgment, scoring threshold or product-quality result has been validated by the founder or an independent reviewer yet.
 
 ## What the evaluation must answer
 
@@ -22,7 +22,15 @@ Each case needs:
 
 The output needs assessed alternatives, evidence and assumption references, checks and calculations, a reasoned recommendation or specific information request, uncertainties, conditions, the responsible owner and the next step. Keep a proposed action distinct from a recorded simulated decision and from execution.
 
-## Open development case
+## Control assessment extension to define
+
+The first control case should state the claim being tested, applicable requirements, relevant population and period, and what the supplied observations can establish. Assess the control conclusion separately from the recommended response. A credible engineer, busy team or commercial deadline cannot substitute for operating evidence. Additional context should affect the conclusion only when it changes the relevant facts, applicability or coverage; it may independently change the priority or feasibility of a response.
+
+Include a supported conclusion, a material failure, missing or conflicting evidence, an irrelevant contextual change and a material change requiring reassessment. These are case-design requirements, not a completed case set or approved answer key. Measure false passes, missed material gaps, unsupported findings, review and correction time, customer evidence-preparation effort, latency and cost. Faster testing only counts as an improvement alongside the reported quality results.
+
+For a sequence spanning weeks or months, expose only evidence available at each simulated decision date. Keep later outcomes unavailable to the earlier assessment and preserve earlier judgments. Evaluate whether the system detects when it should revisit a decision and whether the revised response is supported. A plausible retrospective story does not establish that it could have made the decision at the time.
+
+## Retained investment development case
 
 Everything in this example is fictional and supplied solely for development. Figures are scenario assumptions, not market prices or measured product outcomes. Dollar amounts are USD.
 
@@ -56,7 +64,9 @@ Include supported positive outcomes and legitimate disagreement. Do not reward r
 
 ## Comparison and measurement
 
-Compare Crowbo with a capable raw Claude or Codex run and, where available, a well-written skill. Give each the same decision question, evidence, context, policies, permissions and available tools. Record model/provider versions, prompts and revisions, limits, retrieval configuration if any, and the evaluation date. Disclose any difference in information or assistance. Do not weaken the baseline to create an advantage.
+Use the founder's proposed four comparisons: a capable raw LLM, an LLM with a well-written skill, an LLM with basic retrieval and workflow support, and Crowbo. Give each the same decision question, underlying evidence, context, policies and permissions. Hold the model and resource allowance comparable when isolating the contribution of the decision method, and record any intentional differences. Record model/provider versions, prompts and revisions, tool access, limits, retrieval configuration and the evaluation date. Do not weaken the baseline to create an advantage.
+
+Keep a comparison using the same evidence packet separate from an end-to-end comparison starting with the same authorised source access. The former tests assessment and reasoning; the latter also tests evidence preparation, retrieval and onboarding effort. Disclose extra data, expert intervention, compute and customer work. Where useful, remove individual Crowbo components to test whether classification, evidence assessment or retained decision context changes the result. Model routing and open-weight deployment are candidates to compare on quality and full operating cost, not presumed savings.
 
 Assess decision usefulness, material omissions, false approvals, unsupported claims, correction effort, latency and cost. A false approval includes recommending that a gated commitment proceed despite an unmet explicit prerequisite or an identified authority boundary. A supported conditional recommendation is different. Record rubric-specific definitions and denominators before a scored comparison.
 
