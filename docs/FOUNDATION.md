@@ -18,6 +18,8 @@ The first purchase should address a concrete question: which security improvemen
 
 Codifying judgement means making expert criteria, evidence assessment and decision reasoning reusable in software, while adapting their application to the organisation and the decision. Security leaders contribute and challenge that expertise. Crowbo makes it available throughout their programmes and workflows, including to agents. A later startup offering could guide the customer's own people using the same engine.
 
+The long-term company ambition is the decision infrastructure that powers the security programme. The same engine could eventually direct agents and headless security tools, enabling autonomous security work within the customer's explicit policies and authority. That requires observable execution and outcome checks as well as sound recommendations. This extends the vision beyond guidance while leaving the initial read-only application and simulated proof unchanged. Orchestration and autonomous programmes are future capabilities to build and evaluate.
+
 On 25 September 2026, the founder replaced the brief "AI CISO" framing with this ambition. The role label risks implying executive replacement or commoditisation and obscuring Crowbo's relationship with its buyers. Keep the security decision engine as the company definition. "In real time" describes the ambition to apply current context when a decision is needed and revisit guidance as relevant facts change. Latency, source freshness and decision quality remain to be measured.
 
 The narrative should follow this order:
@@ -29,6 +31,8 @@ The narrative should follow this order:
 5. The same engine extends to investment, capacity and other decisions across security, serving both people and agents.
 
 The commercial story must connect the existing work and budget to customer acquisition, software delivery, recurring value and expansion. An annual subscription describes the revenue model; the business also depends on solving a recurring decision problem through a shared product. Founder expertise shapes the criteria and early onboarding. Customer teams should receive useful recommendations without requiring bespoke founder analysis on every cycle. Exact pricing, personal relationships and fundraising discussions remain in the private deck materials.
+
+The proposed acquisition strategy is to land with GRC leaders through the founder's practitioner network, prove useful control priorities from fresh source evidence, and expand through the value those leaders bring to their CISOs. Start with the systems customers already use and narrowly scoped, authorised read-only access. Familiar source systems do not transfer another product's credentials or permissions to Crowbo. The decision method, evidence weights and business context should provide the additional depth. Existing GRC platforms can remain systems of record while Crowbo earns a recurring role in programme decisions. Stronger GRC insights should create demand from CISOs and other security teams for their own use. This is a proposed adoption path, not an observed sales funnel or demonstrated customer result.
 
 State the thesis, chosen direction and ambition with conviction. Keep the status of product capabilities and measured outcomes clear in the appropriate place. The [evaluation contract](EVALUATION.md) governs whether codified expertise produces useful, supported decisions and how that result compares with capable alternatives.
 
