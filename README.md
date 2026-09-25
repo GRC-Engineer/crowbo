@@ -6,7 +6,7 @@ The name combines the English crow with a nod to the French corbeau. It is prono
 
 ## Start here
 
-- [Vision and foundation](docs/FOUNDATION.md#narrative-and-potential-ai-ciso-end-goal) owns the narrative, potential AI-CISO end goal, product decisions and first experiments. GRC is the entry point into programme-wide security decision-making.
+- [Vision and foundation](docs/FOUNDATION.md#narrative-and-long-term-ambition) owns the narrative, product decisions and first experiments. The ambition is to codify good security judgement so people and agents can apply it across security, at scale and in real time. GRC is the entry point.
 - [Evaluation contract](docs/EVALUATION.md) owns how that proof will be assessed and where human judgment is still required.
 - [Contributor instructions](AGENTS.md) govern work in this repository.
 

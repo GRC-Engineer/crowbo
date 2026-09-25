@@ -1,6 +1,6 @@
 # Crowbo foundation
 
-Status: foundation established 21 September 2026; narrative, initial application and potential AI-CISO end goal clarified through 25 September 2026. This document owns the enduring product direction and the status of its first experiments. Architecture proposals and evaluation expectations remain provisional where marked.
+Status: foundation established 21 September 2026; narrative, initial application and ambition to codify security judgement clarified through 25 September 2026. This document owns the enduring product direction and the status of its first experiments. Architecture proposals and evaluation expectations remain provisional where marked.
 
 ## Product direction
 
@@ -8,15 +8,17 @@ Crowbo is infrastructure for security decision-making. Its purpose is to turn fr
 
 The founder confirmed that Crowbo should serve both security leaders accountable for the whole programme and leaders of individual security domains. Domain leaders need guidance for their area; programme leaders need to compare priorities, dependencies and resource choices across areas. Both should use the same assessed evidence and organisational context. The initial buyer is a Head of GRC or Security Assurance at a SaaS or AI company with an established programme, initially focusing on US companies after their first audit cycle. Customer commitment and willingness to pay remain to be established.
 
-### Narrative and potential AI-CISO end goal
+### Narrative and long-term ambition
 
-Crowbo is the decision engine for security. It brings evidence from the company's tools together with business context to guide what to fix, fund, build or drop. The ambition is to make the analytical work behind security leadership continuously available to people and agents across the programme.
+Crowbo is the decision engine for security. It brings evidence from the company's tools together with business context to guide what to fix, fund, build or drop. The long-term ambition is to codify good security judgement so people and agents can apply it across security, at scale and in real time.
 
 The founder's thesis is that GRC should connect risk, controls and business priorities to security decisions. Much of its tooling has concentrated on streamlining audit- and compliance-adjacent workflows. Crowbo starts with GRC to deliver that broader decision-making role. GRC provides a buyer, an existing budget and a view across security domains. The security-wide purpose defines Crowbo from the outset.
 
 The first purchase should address a concrete question: which security improvements deserve the team's time next, and why? Contextual control assessment supplies the initial evidence and decision loop. Crowbo should explain what the evidence establishes, compare feasible responses, identify displaced work and revisit the recommendation as evidence, commitments or capacity change. Describing this only as recurring control reviews understates the job the product performs.
 
-"AI CISO" is useful shorthand for the potential end goal: software that understands a security programme and guides its priorities over time. The company category remains the security decision engine. This framing does not change the first buyer to a company without security leadership or make the first release responsible for every CISO duty. A later startup offering could guide the customer's own people. Crowbo has not selected an outsourced human leadership service as its delivery model.
+Codifying judgement means making expert criteria, evidence assessment and decision reasoning reusable in software, while adapting their application to the organisation and the decision. Security leaders contribute and challenge that expertise. Crowbo makes it available throughout their programmes and workflows, including to agents. A later startup offering could guide the customer's own people using the same engine.
+
+On 25 September 2026, the founder replaced the brief "AI CISO" framing with this ambition. The role label risks implying executive replacement or commoditisation and obscuring Crowbo's relationship with its buyers. Keep the security decision engine as the company definition. "In real time" describes the ambition to apply current context when a decision is needed and revisit guidance as relevant facts change. Latency, source freshness and decision quality remain to be measured.
 
 The narrative should follow this order:
 
@@ -28,7 +30,7 @@ The narrative should follow this order:
 
 The commercial story must connect the existing work and budget to customer acquisition, software delivery, recurring value and expansion. An annual subscription describes the revenue model; the business also depends on solving a recurring decision problem through a shared product. Founder expertise shapes the criteria and early onboarding. Customer teams should receive useful recommendations without requiring bespoke founder analysis on every cycle. Exact pricing, personal relationships and fundraising discussions remain in the private deck materials.
 
-State the thesis, chosen direction and ambition with conviction. Keep the status of product capabilities and measured outcomes clear in the appropriate place. The AI-CISO ambition is a product direction, not a demonstrated replacement for an executive or evidence of decision quality. The [evaluation contract](EVALUATION.md) continues to govern proof.
+State the thesis, chosen direction and ambition with conviction. Keep the status of product capabilities and measured outcomes clear in the appropriate place. The [evaluation contract](EVALUATION.md) governs whether codified expertise produces useful, supported decisions and how that result compares with capable alternatives.
 
 Two public founder analyses support the GRC entry strategy: [GRC Market Evolution, April 2025](https://ventureinsecurity.net/p/grc-market-evolution-how-the-automation) distinguishes buyers by operating needs and integration constraints; [The AI-Era GRC Market, September 2026](https://www.returnonsecurity.com/p/ai-era-grc-market) explains the gap between administrative automation and consequential security decisions. Use their market reasoning alongside customer evidence rather than treating the essays as proof of Crowbo demand.
 
@@ -134,7 +136,7 @@ Keep the pitch and current grilling at the company-vision level. Lead with the c
 | --- | --- | --- |
 | Crowbo is the name and new working home | Founder direction, 21 September 2026 | Work in the existing Crowbo checkout and its GitHub repository. |
 | Security decision infrastructure is the working descriptor | Founder direction | Build reusable software and domain concepts for decisions. |
-| AI CISO describes the potential end goal; the security decision engine remains the company definition | Founder-approved framing, 25 September 2026 | Start with GRC and Security Assurance teams and contextual control decisions, while preserving programme-wide ambition and the software delivery model. |
+| Codify good security judgement for application across security, at scale and in real time | Founder refinement, 25 September 2026, superseding the brief AI-CISO framing | Keep the security decision engine as the company definition. Extend practitioners' expertise to people and agents, starting with GRC and Security Assurance teams and contextual control decisions. |
 | Shared core: indexed security-team knowledge, expert-defined evidence assessment, and LLM reasoning | Founder clarification, 22 September 2026 | Keep the underlying vision above independent of the first application; providers and weighting methods remain candidates. |
 | Intended buyers include both programme-wide security leaders and individual security domain leaders | Explicit founder clarification, 22 September 2026 | Support decisions within a domain and across the programme using the shared method and organisational context. |
 | Vendor commissions and paid recommendation placement are ruled out for now | Explicit founder confirmation, 22 September 2026 | Exclude referral commissions and paid placement involving vendors Crowbo evaluates. Keep the revenue plan customer-funded. |
