@@ -3,4 +3,19 @@
 .env.*
 !.env.example
 .wrangler/
-node_modules/
+node_modules
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+.codex/config.toml
+
+# Private founder strategy stays outside the public history.
+/docs/STRATEGIC-OPTIONALITY.md
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+proof/runs/

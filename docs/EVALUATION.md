@@ -1,10 +1,10 @@
-# First-proof evaluation contract
+# Decision evaluation contract
 
-Status: proposed evaluation method, 21 September 2026. The founder selected tool purchase versus remediation capacity as the first workflow. The examples and candidate judgments below are assistant-authored development material. No expected judgment, scoring threshold or product-quality result has been validated by the founder or an independent reviewer yet.
+Status: evaluation contract reconciled 29 September 2026 with the [three initial workflows](FOUNDATION.md#initial-workflows): remediation tracking, access reviews, and issues and exceptions management. Access is the existing implementation starting point; the other workflow evaluations are proposed. Criteria remain candidates until reviewed by the founder and a qualified independent reviewer. Engineering tests do not establish judgment quality.
 
 ## What the evaluation must answer
 
-Does Crowbo help an accountable person make this decision more usefully than a capable raw model or a skill using comparable facts and permissions? Can a reviewer trace why a recommendation follows, identify what could change it, and correct it without losing the original basis?
+Does Crowbo help an accountable person reach a better-supported, useful decision at acceptable total effort, cost and latency? Compare judgment on equivalent facts and permissions separately from the end-to-end practitioner workflow. Can a reviewer trace why a recommendation follows, identify what could change it, and correct it without losing the original basis?
 
 The asset being tested is judgment: selecting deciding facts, weighing evidence for the question, challenging assumptions, comparing feasible responses and recognising uncertainty and authority limits. A valid schema, matching model outputs or passing a deterministic test suite does not answer this question.
 
@@ -20,49 +20,58 @@ Each case needs:
 - A separate expected result for deterministic checks and calculations, with inputs, units and versions.
 - Authorship, review status, disagreement, revision history and development or held-out allocation. An assistant's proposal is not a founder-approved answer key.
 
-The output needs assessed alternatives, evidence and assumption references, checks and calculations, a reasoned recommendation or specific information request, uncertainties, conditions, the responsible owner and the next step. Keep a proposed action distinct from a recorded simulated decision and from execution.
+The output needs assessed alternatives, evidence and assumption references, checks and calculations, a reasoned recommendation or specific information request, uncertainties, conditions, the responsible owner and the next step. Keep a proposed action distinct from a recorded simulated decision and from execution. The [connected data contract](DECISION-DATA-MODEL.md) defines the request and packet; the [measurement plan](MEASUREMENT-PLAN.md) defines source-shaped test cases and fair baselines.
 
-## Open development case
+## Development cases
 
-Everything in this example is fictional and supplied solely for development. Figures are scenario assumptions, not market prices or measured product outcomes. Dollar amounts are USD.
+Retain the existing access cases and select non-access remediation and exception cases with obtainable, permitted evidence and an identifiable decision owner. The [measurement plan](MEASUREMENT-PLAN.md#first-test-session) owns the proposed sequence. Selecting cases does not authorise new collection or external processing.
 
-An organisation can spend at most $120,000 in additional annual cost. Its objective is to address material vulnerability exposure within its applicable policy deadlines. A proposed detection tool costs $60,000 annually including the scenario's implementation allowance. A remediation-capacity option costs $90,000 annually on the same basis. Buying both exceeds this budget.
+| Family | Candidate judgments to qualify | Unacceptable shortcut |
+| --- | --- | --- |
+| Remediation tracking | Distinguish progress, blocker, changed treatment and verified closure; identify the next useful action from implementation, deployment and scoped verification evidence. | Close because a PR merged or a ticket says done; lower current risk merely because treatment is proposed. |
+| Access reviews | Preserve required work while comparing supported arrangements, including infrequent needs, dependencies, permissions and authority. | Infer no need from low usage; recommend a narrower arrangement that cannot support required work. |
+| Issues and exceptions management | Identify a candidate gap and any existing issue; compare handling options and, where permitted, a bounded exception with owner, conditions, expiry and review triggers. | Treat a discrepancy or request as approval; invent authority, ignore expiry or assume an asserted safeguard is effective. |
 
-For a defined service population, eight weeks of synthetic operational records show 12 actionable findings arriving and 8 completed each week. There is an overdue backlog of 32. A capacity proposal estimates 16 completions per week, with a planning range of 14 to 18. A tool pilot estimates another 5 actionable findings per week. These counts are comparable only within the stipulated population and time window; they do not measure severity, exploitability or loss.
+These are proposed criteria, not expected answer keys. Include supported action, justified deferral and an unresolved deciding fact; allow several defensible options. One access case moving through all three workflows tests continuity, not transfer across independent domains. An exception case must not require third-party reassessment, which is outside the initial scope.
 
-Relevant unknowns include which findings affect material attack paths, whether the pilot's discoveries represent an important coverage gap, whether ownership or release constraints limit completion, and whether the capacity estimate is achievable. Existing process improvements or a smaller pilot must remain possible alternatives. The security lead may recommend; the designated budget owner must authorise any commitment. The proof records only a simulated decision.
+Before observing model answers, record deciding facts, legitimate alternatives, constraints, applicable risk method and unacceptable omissions. Source text can establish that an assertion was made without proving deployment, effective protection, authority, customer acceptance or available time. Keep a current risk assessment separate from a proposed post-treatment estimate.
 
-Candidate judgment to calibrate: investigate the remediation bottleneck before assuming that another detection tool improves the programme's outcome. A material urgent blind spot may justify the tool; an unsupported throughput estimate may invalidate the capacity option. Neither a fixed winner nor an automatic "more information" answer is an adequate rubric.
+The earlier two-week prioritisation experiment remains development material: honour genuinely non-negotiable commitments, then reduce consequential exposures with remaining capacity. Its deadline and capacity criteria may contribute to relevant cases; they are not the universal portfolio schema.
 
-An illustrative calculation can report that the backlog grows by 4 per week at the current rates. At an assumed 16 completions and unchanged arrivals of 12, a 32-item backlog would take 8 weeks to clear; at 14 to 18 completions, the range is about 5.3 to 16 weeks. These are steady-rate planning calculations. They assume comparable work, achievable capacity and allocation to the backlog. They do not establish that policy deadlines will be met or that risk falls by any percentage.
+Missing deciding facts can support a targeted information request. Do not reward asking for information on every case. An answer can support some work while explicitly leaving another choice unresolved.
 
 ## Required variation
 
-Build case families around materially different deciding facts. A public development suite should cover:
-
-| Variation | Behaviour to examine |
+| Change | Behaviour to examine |
 | --- | --- |
-| Supported remediation bottleneck and feasible capacity improvement | Recognise when capacity or process improvement is the useful response. |
-| Supported urgent blind spot and sufficient handling capacity | Recognise when the tool or a bounded pilot is justified. |
-| Existing tools and workflow can meet the objective | Permit a supported decision to use existing resources. |
-| Tool purchase and capacity change together exceed constraints | Explain feasibility and compare staged or smaller options. |
-| Missing, stale, partial or contradictory evidence | Identify exactly what is unresolved and seek information that could change the decision. |
-| Infeasible staffing, authority or release assumptions | Challenge the proposed mechanism rather than treating cost as the only constraint. |
-| Material change in evidence, policy, budget or capacity | Reassess and explain the changed reasoning while retaining the earlier basis. |
-| Irrelevant wording or ordering changes | Preserve the substantive judgment unless meaning changed. |
-| Evidence includes instructions to ignore policy or act | Treat it as untrusted source content and preserve the authority boundary. |
+| Required access task or feasible role changes | Reconsider the option while preserving necessary work; distinguish failed fit from missing evidence. |
+| Treatment is merged but not deployed, or verification fails | Keep closure unresolved and identify the necessary check or treatment change. |
+| Exception expires, scope changes or a safeguard ceases to hold | Reconsider applicability and handling; do not infer renewed approval or silently amend policy. |
+| A prior choice is rejected or revised | Retain the original recommendation, attributed reason and revised basis without claiming execution. |
+| Commitment deadline or non-deferral confirmation changes | Reassess the affected obligation and displaced work. |
+| Capacity changes or exists only after the deadline | Challenge infeasible timing instead of summing all hours. |
+| A merged change lacks deployment verification | Distinguish implementation from effective protection. |
+| A serious exposure has a feasible urgent treatment | Permit a supported action recommendation. |
+| A source is missing, stale, contradicted or withdrawn | Identify what conclusion becomes unresolved. |
+| Wording or record order changes without new meaning | Preserve the substantive judgment. |
+| Source text instructs the model to ignore rules | Treat it as evidence content, not authority. |
+| A contributing source is no longer accessible | Deny derived disclosure under current access checks. |
 
-Include supported positive outcomes and legitimate disagreement. Do not reward refusal or escalation on every case. Label each variant's relationship to the base case; do not count paraphrases as independent decision evidence.
+Label hypothetical variations as counterfactual overlays. Preserve the real source. Variants are related cases, not independent evidence of general accuracy.
 
 ## Comparison and measurement
 
-Compare Crowbo with a capable raw Claude or Codex run and, where available, a well-written skill. Give each the same decision question, evidence, context, policies, permissions and available tools. Record model/provider versions, prompts and revisions, limits, retrieval configuration if any, and the evaluation date. Disclose any difference in information or assistance. Do not weaken the baseline to create an advantage.
+Use two distinct comparisons. For judgment, give Crowbo, a capable model/skill and applicable explicit rules the same prepared facts, question, context, policies and permissions. For end-to-end usefulness, compare the actual practitioner workflow, relevant rules/code automation, a capable configured agent and Crowbo with equivalent permitted source access and tools. Existing agents such as Notion, where available, are substantive baselines rather than prompt-only substitutes. Mark unavailable comparators as untested. [The measurement plan](MEASUREMENT-PLAN.md#fair-comparison) owns execution and effort accounting.
 
-Assess decision usefulness, material omissions, false approvals, unsupported claims, correction effort, latency and cost. A false approval includes recommending that a gated commitment proceed despite an unmet explicit prerequisite or an identified authority boundary. A supported conditional recommendation is different. Record rubric-specific definitions and denominators before a scored comparison.
+Record model/provider versions, prompts and revisions, limits, retrieval configuration, human assistance and evaluation date. Disclose unequal information, tools or permissions. Hold model configuration constant when isolating a method's contribution; qualify cheaper or replacement models separately on the same task requirements. Do not weaken the baseline to create an advantage.
+
+Compare task-local evidence with relevant wider operational/business context, then add irrelevant material that should not change the answer. Attribute value to finding and using a deciding fact, not simply to ingesting more sources. The historical decision and founder preference are not infallible labels.
+
+Assess decision usefulness, material omissions, feasible alternatives, unsupported claims, unnecessary deferral, correction effort, latency and cost. An unsafe recommendation includes premature remediation closure, an unsupported access change or proceeding with an exception despite an unmet prerequisite or authority boundary. A supported conditional recommendation is different. Record workflow-specific definitions and denominators before a scored comparison.
 
 Keep separate views of deterministic correctness and expert judgment. For judgment, assess whether the response identifies deciding facts, uses evidence within its limits, explains viable alternatives, handles uncertainty and identifies an actionable next step. Allow different recommendations when their reasoning is defensible within the case constraints. Preserve reviewer disagreement instead of hiding it in one score.
 
-Report sample sizes, case families, failures and uncertainty. Log correction effort in a consistent unit, such as reviewer minutes plus material corrections. Measure latency from the same start and end points and disclose retries. Record actual provider costs when available and label estimates otherwise. Numeric release thresholds remain unset until the rubric and case set have been calibrated.
+Report sample sizes, independent case families, failures and uncertainty. Log investigation, correction, review and interruption effort, with active human time separate from elapsed delay. Measure valid reuse, bounded fresh reasoning and deeper investigation separately, including permission checks, retries and source-change-to-usable-reassessment time. Record full costs where available and label estimates otherwise. Database query time is not decision latency. Numeric release thresholds remain unset until the rubric and case set have been calibrated.
 
 ## Review and leakage boundaries
 
@@ -74,6 +83,14 @@ A competent independent reviewer should assess held-out cases. Record their scop
 
 ## Completion evidence
 
-An engineering demonstration must show the full loop for the selected decision: traceable inputs, alternatives, checks, recommendation, separate simulated decision and reassessment. Verify that a material change is handled and the prior record remains available. Tests can establish those behaviours; they cannot validate the recommendation's professional quality.
+An engineering demonstration must show the full loop for the selected decision: traceable inputs, alternatives, checks, recommendation, separate simulated decision and reassessment. Verify that a material change is handled and the prior record remains available. Label a finite synthetic walkthrough as such. An assisted pilot must retain original outputs, founder interventions and reviewer effort. A dependable product additionally needs verified operational behaviour under its actual authentication, isolation, recovery and operating conditions. These are distinct levels of evidence, not a requirement to complete the whole product before fundraising.
 
-A judgment comparison additionally needs reviewed criteria, genuinely unseen cases, a fair baseline, independent review and reported errors and corrections. Customer usefulness, willingness to pay, repeatability and commercial viability require their own evidence. No such results exist at this foundation stage.
+Administration speed, judgment quality, implemented action, verified security benefit, customer use and commercial evidence are separate results. A recorded choice is not execution; acceptance is not quality; a reported outcome is not verification. Small case sets support learning, not statistical qualification or a portfolio-wide advantage claim.
+
+The feedback increment's synthetic checks exercise independent capture, duplicate replay, retained corrections after failed inference, changed revisions, explicit predecessor binding, and denial when any inherited contributor loses access. The next judgment experiment must separately test whether GLM correctly uses a reviewed correction and reported outcome, preserves conflicting evidence, and revises the choice for the right deciding facts. Recording feedback is not evidence that it improved the next answer.
+
+The first private fact-card comparison now demonstrates capture and reassessment with the real reasoning model. It also preserves a semantic failure: an exact source quotation about one dated event was assigned as the deadline of another deliverable. The next qualification case must test what the date governs, the consequence of missing it, and agreement between structured facts and prose. Use the observed failure as development material. Assistant-authored corrections, post-hoc matched comparison inputs and related counterfactual branches are not independently qualified or held out; [the pilot record](PILOT.md#28-september-source-bound-fact-experiment) owns the actual results.
+
+The access-decision increment uses a separate account and option contract rather than applying commitment fields to permissions. Its [three-method comparison](MEASUREMENT-PLAN.md#access-comparison) keeps schema, source facts and model limits equal and isolates supplied contextual Jev between the guided methods. Candidate cases must distinguish a useful supported reduction from an unsafe downgrade, a necessary information request from repeated questions about supplied facts, and missing authority from missing technical feasibility. Exact spans, null missing owners/dates and schema rejection are engineering checks. They do not establish that a stated workflow fit, account join or follow-up question is justified.
+
+A judgment comparison additionally needs reviewed criteria, genuinely unseen cases, a fair baseline, independent review and reported errors and corrections. Customer usefulness, willingness to pay, repeatability and commercial viability require their own evidence. No qualified judgment or commercial results have been established.

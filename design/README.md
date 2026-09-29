@@ -1,15 +1,18 @@
 # Crowbo design
 
-Start with [the brand guide](BRAND.md). It owns the current mascot, wordmark, palette and asset usage. The selected mascot is **the refined Circuit Frames V3 Archivist**; filenames containing `draft` and earlier numbered concepts are exploration history.
+Start with [the brand guide](BRAND.md). It owns the current mascot, wordmark, palette, selection status and asset usage. The [six-tier character study](crow-concepts/2026-09-24/pixel-tiers/README.md) and [oxide accent specimen](crow-concepts/2026-09-24/modular-crow/README.md) contain the latest visual work. Preview implementations may still use earlier assets; the guide distinguishes the selected direction from rollout.
 
 ## Current previews
 
-- [Terminal Command Room](homepage-mockups/2026-09-21/terminal-prototype/README.md): current website direction, sprite by default and bytes on hover, with an interactive fictional decision lab.
-- [Homepage comparison](homepage-mockups/2026-09-21/README.md): Field Notes, Command Room and Flight Path layouts using the current mascot.
+- [Decision Studio](decision-studio/README.md): React product study in the main checkout, with the original twelve topology feathers, source logos, contextual inspection, keyboard search and retained decision history. The [29 September review](decision-studio/DESIGN-PASS.md) records the three latest design loops.
+- [Company homepage](homepage-mockups/2026-09-21/homepage-prototype/README.md): approved company copy with an animated boxed network of twelve pixel feathers. The normal homepage has one contact link and a pause control; explicit preview URLs retain the design comparisons.
+- [Identity in use](homepage-mockups/2026-09-21/brand-board-prototype/README.md): a proposed brand board across the website, product and investor presentation, with interactive focus views. Awaiting review.
+- [Terminal Command Room](homepage-mockups/2026-09-21/terminal-prototype/README.md): earlier website study, sprite by default and bytes on hover, with an interactive fictional decision lab.
+- [Homepage comparison](homepage-mockups/2026-09-21/README.md): earlier Field Notes, Command Room and Flight Path layouts.
 - [Typography study](typography/2026-09-21/README.md): eight licensed font specimens and the selected plain lowercase wordmark.
-- [Favicon sizes](homepage-mockups/2026-09-21/terminal-prototype/favicon-preview.html): the current head derivative at browser display sizes.
+- [Favicon sizes](homepage-mockups/2026-09-21/terminal-prototype/favicon-preview.html): the earlier head derivative at browser display sizes.
 
-Each preview README includes a loopback-only local server command. These are local design prototypes, not deployed product pages. Their authored scenarios are fictional development examples; no model runs or owner decisions are executed.
+Each preview README includes a loopback-only local server command. The design directories remain local previews. The Command Room has a separate public copy in `site/`, deployed at crowbo.ai; the product studies are not hosted there. Their authored scenarios are fictional development examples; no model runs or owner decisions are executed.
 
 ## Provenance
 
