@@ -243,7 +243,16 @@ body {
 .feather-grid {
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 }
+.brand .crow {
+  display: block;
+  object-fit: contain;
+  image-rendering: pixelated;
+  user-select: none;
+}
 .feather-grid .feather-glyph {
+  display: block;
+  image-rendering: pixelated;
+  mix-blend-mode: lighten;
   width: 96px;
   height: 108px;
   margin: 0 auto 12px;

@@ -1,6 +1,4 @@
-import { ChevronDown } from "./pixel-icons";
-import { ProviderTag, type Provider } from "./providers";
-import { useId, useState } from "react";
+import { useId } from "react";
 import topology from "../../homepage-mockups/2026-09-21/assets/crowbo-feathers-topology-modular-v1.png";
 import infrastructure from "../../homepage-mockups/2026-09-21/assets/crowbo-feathers-infrastructure-modular-v1.png";
 
@@ -80,23 +78,6 @@ export const featherDesigns = {
 };
 export type FeatherDesign = keyof typeof featherDesigns;
 
-export function sourceDesign(id: string): FeatherDesign {
-  switch (id) {
-    case "activity":
-      return "series";
-    case "directory":
-      return "cluster";
-    case "roles":
-      return "branch";
-    case "calendar":
-      return "column";
-    case "owner":
-      return "braid";
-    default:
-      return "spine";
-  }
-}
-
 export function FeatherGlyph({
   kind,
   className = "",
@@ -127,100 +108,5 @@ export function FeatherGlyph({
         />
       </g>
     </svg>
-  );
-}
-
-const designOrder: FeatherDesign[] = [
-  "spine",
-  "branch",
-  "mesh",
-  "loop",
-  "braid",
-  "cluster",
-  "object",
-  "column",
-  "vector",
-  "merge",
-  "series",
-  "shard",
-];
-const designProviders: Record<FeatherDesign, Provider> = {
-  spine: "notion",
-  branch: "okta",
-  mesh: "github",
-  loop: "datadog",
-  braid: "slack",
-  cluster: "calendar",
-  object: "aws",
-  column: "linear",
-  vector: "drive",
-  merge: "github",
-  series: "zendesk",
-  shard: "notion",
-};
-
-const sourceExamples: Record<FeatherDesign, string> = {
-  spine: "Example: an access policy and the scope it applies to.",
-  branch: "Example: a role definition and its effective permissions.",
-  mesh: "Example: a dependency manifest and the services that use it.",
-  loop: "Example: a control check, an exception and a later verification.",
-  braid: "Example: a scoped conversation and the owner's clarification.",
-  cluster: "Example: meeting context, participants and responsibilities.",
-  object: "Example: a versioned file with collection metadata.",
-  column: "Example: a delivery queue, available capacity and deadlines.",
-  vector: "Example: related documents, with the original source retained.",
-  merge: "Example: a pull request, review comments and a change record.",
-  series: "Example: activity events from a defined observation window.",
-  shard: "Example: risk records kept separate by service and scope.",
-};
-
-export function FeatherLibrary() {
-  const [selected, setSelected] = useState<FeatherDesign>("spine");
-  const design = featherDesigns[selected];
-  return (
-    <details className="feather-library">
-      <summary>
-        <span>
-          <span className="eyebrow">Feather library</span>
-          <strong>Twelve feather shapes, one per kind of source</strong>
-        </span>
-        <span className="library-count">12</span>
-        <ChevronDown size={18} />
-      </summary>
-      <div className="library-body">
-        <p className="library-intro">
-          Explore the source families. These are illustrative mappings, separate
-          from the six records in this decision.
-        </p>
-        <div className="library-layout">
-          <div className="library-grid" aria-label="Source families">
-            {designOrder.map((kind, index) => (
-              <button
-                key={kind}
-                className={kind === selected ? "selected" : ""}
-                aria-pressed={kind === selected}
-                onClick={() => setSelected(kind)}
-              >
-                <span className="library-index">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <FeatherGlyph kind={kind} />
-                <strong>{featherDesigns[kind].label}</strong>
-                <span>{featherDesigns[kind].use}</span>
-              </button>
-            ))}
-          </div>
-          <div className="library-detail" aria-live="polite">
-            <FeatherGlyph kind={selected} />
-            <span className="eyebrow">
-              {design.label} / {design.use}
-            </span>
-            <h3>{design.meaning}</h3>
-            <ProviderTag provider={designProviders[selected]} />
-            <p>{sourceExamples[selected]}</p>
-          </div>
-        </div>
-      </div>
-    </details>
   );
 }

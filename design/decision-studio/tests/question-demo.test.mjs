@@ -13,7 +13,10 @@ function start(caseId) {
     type: "edit",
     value: demoCases[caseId].question,
   });
-  return demoReducer(typed, { type: "submit" });
+  const read = demoReducer(typed, { type: "submit" });
+  assert.equal(read.kind, "confirm");
+  assert.deepEqual(demoReducer(read, { type: "tick" }), read);
+  return demoReducer(read, { type: "start" });
 }
 
 test("an unsupported question is retained without a fabricated answer", () => {

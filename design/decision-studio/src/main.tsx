@@ -1,21 +1,19 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App";
-import QuestionDemo from "./question-demo";
+import Demo from "./demo";
 import "./tokens.css";
-import "./styles.css";
-import "./identity.css";
-import "./clarity.css";
-import "./case-guidance.css";
+import "./base.css";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("The Crowbo root element is missing.");
 createRoot(root).render(
   <StrictMode>
-    {new URLSearchParams(window.location.search).get("view") === "workspace" ? (
-      <App />
-    ) : (
-      <QuestionDemo />
-    )}
+    <Demo
+      initialArea={
+        new URLSearchParams(window.location.search).get("view") === "workspace"
+          ? "queue"
+          : "flow"
+      }
+    />
   </StrictMode>,
 );

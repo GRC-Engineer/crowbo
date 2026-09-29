@@ -67,13 +67,23 @@ export const researchSteps = [
 export type DemoState =
   | { kind: "welcome" }
   | { kind: "question"; draft: string; error: string | null }
+  | { kind: "confirm"; caseId: CaseId }
   | { kind: "research"; caseId: CaseId; step: number; paused: boolean }
   | { kind: "result"; caseId: CaseId };
 export type DemoAction =
   | {
       type:
-        "home" | "open" | "submit" | "tick" | "pause" | "finish" | "question";
+        | "home"
+        | "open"
+        | "submit"
+        | "start"
+        | "tick"
+        | "pause"
+        | "finish"
+        | "question";
     }
+  | { type: "choose"; caseId: CaseId }
+  | { type: "show"; caseId: CaseId }
   | { type: "edit"; value: string };
 export const demoInitialState: DemoState = { kind: "welcome" };
 export function demoReducer(state: DemoState, action: DemoAction): DemoState {
@@ -95,13 +105,25 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
           entry.question.toLowerCase() === state.draft.trim().toLowerCase(),
       );
       return match
-        ? { kind: "research", caseId: match.id, step: 0, paused: false }
+        ? { kind: "confirm", caseId: match.id }
         : {
             ...state,
             error:
               "This walkthrough has three prepared questions. Choose one below to see the flow.",
           };
     }
+    // A prepared question chosen by key or card, without typing it.
+    case "choose":
+      return state.kind === "question"
+        ? { kind: "confirm", caseId: action.caseId }
+        : state;
+    // Open a decision that has already been read, from the queue.
+    case "show":
+      return { kind: "result", caseId: action.caseId };
+    case "start":
+      return state.kind === "confirm"
+        ? { kind: "research", caseId: state.caseId, step: 0, paused: false }
+        : state;
     case "tick":
       return state.kind !== "research" || state.paused
         ? state

@@ -100,7 +100,7 @@ export function handoffReducer(
 
 export function briefText(brief: HandoffBrief): string {
   return [
-    "Crowbo synthetic task brief. No live system or execution authority.",
+    "Crowbo task brief. No live system or execution authority.",
     `Destination preference: ${brief.destination}. This brief does not connect to or start that application.`,
     `Task: ${brief.task === "plan" ? "Investigate the supplied fictional context and propose a plan" : "Prepare a draft change outline for review"}.`,
     "Allowed: read the provided fictional records and prepare text. No repository, account or system access is granted.",

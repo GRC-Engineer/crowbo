@@ -1,0 +1,85 @@
+import{J as e,X as t,Y as n,Z as r,_ as i,b as a,i as o,m as s,q as ee,x as c}from"./base-C4pUxX2F.js";import"./tokens-CAk-Cgx8.js";var te=new URL(`01-inspecting-v1-C6nBZCNJ.png`,import.meta.url).href,l=new URL(`02-weighing-v1-DQvOiCE9.png`,import.meta.url).href,u=new URL(`03-challenging-v1-Cj-C1GCm.png`,import.meta.url).href,d=new URL(`04-unresolved-v1-BZRl6N7_.png`,import.meta.url).href,ne=new URL(`05-resting-v1-B_ANGr1g.png`,import.meta.url).href,re=new URL(`06-pointing-v1-C-eBihXQ.png`,import.meta.url).href,ie=new URL(`07-expressions-v1-wPkxhFVf.png`,import.meta.url).href,f=new URL(`08-size-ladder-v1-Bf2rKgmn.png`,import.meta.url).href,p=new URL(`09-feather-in-beak-v1-DtVvNYGs.png`,import.meta.url).href,m=new URL(`10-pair-v1-WIF_nQ0d.png`,import.meta.url).href,h=new URL(`11-runner-carrying-v1-D3O3zFGW.png`,import.meta.url).href,g=new URL(`12-compact-head-v1-CkGMjjkn.png`,import.meta.url).href,_=r(n(),1),v=e(),y=`/*
+ * Crowbo brand tokens. design/BRAND.md owns the four selected colours
+ * (chalk, sage, near-black, oxide) and the two supporting values
+ * (charcoal, base). Every other step is an interpolation between them.
+ *
+ * Stylesheets use these names only. tests/brand-tokens.test.mjs fails on a
+ * raw colour, a corner radius, a blur or a soft shadow anywhere else.
+ */
+:root {
+  --black: #000000;
+  --base: #0c1010;
+  --ink-900: #111615;
+  --ink: #171b1a;
+  --ink-700: #1f2523;
+  --line: #29312e;
+  --charcoal: #38413c;
+  --ink-400: #48524c;
+  --slate: #59645e;
+  --ink-200: #748579;
+  --sage: #91aa9d;
+  --muted: #a0aaa3;
+  --fog: #bfc6be;
+  --chalk-300: #d1d2c5;
+  --chalk-200: #e4e6d9;
+  --chalk: #f5f3e8;
+
+  --oxide-950: #241b17;
+  --oxide-900: #35291e;
+  --oxide-700: #785238;
+  --oxide-600: #a77453;
+  --oxide: #d18a66;
+  --oxide-300: #e1a17e;
+  --oxide-200: #f1c5aa;
+
+  --background: var(--base);
+
+  --pixel: GeistPixel, monospace;
+  --mono: Departure, monospace;
+  --display: Bricolage, sans-serif;
+  --body: SpaceGrotesk, sans-serif;
+
+  /* One pixel of the interface grid. Corners, offsets and marks step by it. */
+  --px: 4px;
+  --shadow-hard: var(--px) var(--px) 0
+    color-mix(in srgb, var(--black) 55%, transparent);
+  --scrim: color-mix(in srgb, var(--base) 88%, transparent);
+}
+
+/* Square corners everywhere. The identity is drawn in square pixels. */
+*,
+*::before,
+*::after {
+  border-radius: 0;
+}
+
+/*
+ * Stepped corner for buttons and tags: one grid pixel removed from each
+ * corner. clip-path also clips outlines, so these elements draw their focus
+ * ring inside the box.
+ */
+.pixel-corner,
+.primary-button,
+.ask-primary,
+.badge {
+  clip-path: polygon(
+    0 var(--px),
+    var(--px) var(--px),
+    var(--px) 0,
+    calc(100% - var(--px)) 0,
+    calc(100% - var(--px)) var(--px),
+    100% var(--px),
+    100% calc(100% - var(--px)),
+    calc(100% - var(--px)) calc(100% - var(--px)),
+    calc(100% - var(--px)) 100%,
+    var(--px) 100%,
+    var(--px) calc(100% - var(--px)),
+    0 calc(100% - var(--px))
+  );
+}
+.pixel-corner:focus-visible,
+.primary-button:focus-visible,
+.ask-primary:focus-visible {
+  outline-offset: -5px;
+}
+`,b=t({ArrowDown:()=>D,ArrowLeft:()=>T,ArrowRight:()=>w,ArrowUp:()=>E,ArrowUpRight:()=>O,BookOpen:()=>W,Check:()=>M,ChevronDown:()=>A,ChevronRight:()=>j,CodeXml:()=>K,Command:()=>G,CornerDownRight:()=>k,Feather:()=>le,Fingerprint:()=>se,GitCompareArrows:()=>ce,History:()=>H,Home:()=>U,LockKeyhole:()=>I,Menu:()=>F,MessageCircle:()=>J,MessageSquare:()=>q,Minus:()=>P,Pause:()=>z,Play:()=>ae,Plug:()=>V,RotateCcw:()=>B,Search:()=>L,Settings:()=>R,Sparkles:()=>ue,Users:()=>oe,X:()=>N}),x=ee();function S(e){return e.map(([e,t,n,r])=>`M${e} ${t}h${n}v${r}h${-n}z`).join(``)}function C(e,t=!1){let n=S(e);return function({size:e=16,className:r=``,strokeWidth:i,...a}){return(0,x.jsx)(`svg`,{width:e,height:e,viewBox:`0 0 16 16`,fill:`currentColor`,fillRule:t?`evenodd`:void 0,shapeRendering:`crispEdges`,"aria-hidden":`true`,focusable:`false`,className:`pixel-icon ${r}`.trim(),...a,children:(0,x.jsx)(`path`,{d:n})})}}var w=C([[2,7,10,2],[8,3,2,2],[10,5,2,2],[12,7,2,2],[10,9,2,2],[8,11,2,2]]),T=C([[4,7,10,2],[6,3,2,2],[4,5,2,2],[2,7,2,2],[4,9,2,2],[6,11,2,2]]),E=C([[7,4,2,10],[3,8,2,2],[5,6,2,2],[7,2,2,2],[9,6,2,2],[11,8,2,2]]),D=C([[7,2,2,10],[3,6,2,2],[5,8,2,2],[7,12,2,2],[9,8,2,2],[11,6,2,2]]),O=C([[6,3,7,2],[11,3,2,7],[9,5,2,2],[7,7,2,2],[5,9,2,2],[3,11,2,2]]),k=C([[3,2,2,7],[3,7,9,2],[9,4,2,2],[11,6,2,2],[11,8,2,2],[9,10,2,2]]),A=C([[2,5,2,2],[4,7,2,2],[6,9,2,2],[8,9,2,2],[10,7,2,2],[12,5,2,2]]),j=C([[5,2,2,2],[7,4,2,2],[9,6,2,2],[9,8,2,2],[7,10,2,2],[5,12,2,2]]),M=C([[2,8,2,2],[4,10,2,2],[6,12,2,2],[8,10,2,2],[10,8,2,2],[12,6,2,2],[14,4,1,2]]),N=C([[3,3,2,2],[5,5,2,2],[7,7,2,2],[9,9,2,2],[11,11,2,2],[11,3,2,2],[9,5,2,2],[5,9,2,2],[3,11,2,2]]),P=C([[2,7,12,2]]),F=C([[2,3,12,2],[2,7,12,2],[2,11,12,2]]),I=C([[5,1,6,2],[4,3,2,4],[10,3,2,4],[3,7,10,8],[7,9,2,2],[7,11,2,2]],!0),L=C([[4,2,5,2],[4,9,5,2],[2,4,2,5],[9,4,2,5],[10,10,2,2],[12,12,2,2]]),R=C([[7,1,2,3],[7,12,2,3],[1,7,3,2],[12,7,3,2],[3,3,2,2],[11,3,2,2],[3,11,2,2],[11,11,2,2],[4,4,8,8],[7,7,2,2]],!0),ae=C([[4,2,2,12],[6,3,2,10],[8,4,2,8],[10,5,2,6],[12,7,2,2]]),z=C([[4,2,3,12],[9,2,3,12]]),B=C([[4,2,8,2],[12,4,2,6],[4,12,8,2],[2,4,2,5],[12,10,2,2],[1,8,4,2],[3,10,2,2]]),V=C([[5,1,2,4],[9,1,2,4],[3,5,10,5],[6,10,4,2],[7,12,2,3]]),H=C([[4,2,8,2],[12,4,2,8],[4,12,8,2],[2,4,2,8],[7,5,2,4],[7,8,4,2]]),U=C([[7,1,2,2],[5,3,2,2],[9,3,2,2],[3,5,2,2],[11,5,2,2],[3,7,2,7],[11,7,2,7],[3,12,10,2],[7,9,2,5]]),W=C([[2,3,5,2],[2,3,2,10],[2,11,5,2],[7,2,2,12],[9,3,5,2],[12,3,2,10],[9,11,5,2]]),G=C([[1,1,5,5],[2,2,3,3],[10,1,5,5],[11,2,3,3],[1,10,5,5],[2,11,3,3],[10,10,5,5],[11,11,3,3],[5,5,6,6],[7,7,2,2]],!0),K=C([[5,3,2,2],[3,5,2,2],[1,7,2,2],[3,9,2,2],[5,11,2,2],[9,3,2,2],[11,5,2,2],[13,7,2,2],[11,9,2,2],[9,11,2,2]]),q=C([[2,2,12,10],[4,4,8,6],[2,12,2,3],[4,12,2,1]],!0),J=C([[5,2,6,2],[3,3,2,2],[11,3,2,2],[2,5,2,6],[12,5,2,6],[11,11,2,2],[5,12,6,2],[3,11,2,2],[2,13,3,2]]),oe=C([[3,2,4,4],[1,8,8,6],[10,4,3,3],[10,9,5,5]]),se=C([[5,1,6,2],[3,3,2,2],[11,3,2,2],[2,5,2,5],[12,5,2,5],[6,5,4,2],[5,7,2,5],[9,7,2,5],[7,9,2,2],[7,12,2,3],[3,11,2,2],[11,11,2,2]]),ce=C([[1,1,5,5],[2,2,3,3],[10,10,5,5],[11,11,3,3],[2,6,2,6],[2,12,8,2],[7,2,5,2],[12,2,2,8]],!0),le=C([[11,1,3,2],[12,3,2,2],[9,3,2,2],[10,5,2,2],[7,5,2,2],[8,7,2,2],[5,7,2,2],[6,9,2,2],[3,9,2,2],[4,11,2,2],[2,13,2,2]]),ue=C([[7,1,2,4],[7,11,2,4],[1,7,4,2],[11,7,4,2],[6,6,4,4],[12,1,2,2],[2,13,2,2]]);function Y({pose:e=`modular`}){return(0,x.jsx)(`img`,{className:`crow`,src:i[e],alt:``,"aria-hidden":`true`,draggable:!1})}var de=Object.assign({"../../crow-concepts/2026-09-29/state-poses/web/01-inspecting-v1.png":te,"../../crow-concepts/2026-09-29/state-poses/web/02-weighing-v1.png":l,"../../crow-concepts/2026-09-29/state-poses/web/03-challenging-v1.png":u,"../../crow-concepts/2026-09-29/state-poses/web/04-unresolved-v1.png":d,"../../crow-concepts/2026-09-29/state-poses/web/05-resting-v1.png":ne,"../../crow-concepts/2026-09-29/state-poses/web/06-pointing-v1.png":re,"../../crow-concepts/2026-09-29/state-poses/web/07-expressions-v1.png":ie,"../../crow-concepts/2026-09-29/state-poses/web/08-size-ladder-v1.png":f,"../../crow-concepts/2026-09-29/state-poses/web/09-feather-in-beak-v1.png":p,"../../crow-concepts/2026-09-29/state-poses/web/10-pair-v1.png":m,"../../crow-concepts/2026-09-29/state-poses/web/11-runner-carrying-v1.png":h,"../../crow-concepts/2026-09-29/state-poses/web/12-compact-head-v1.png":g}),fe={"01-inspecting":{name:`Inspecting`,use:`Reading one source record`},"02-weighing":{name:`Weighing`,use:`Comparing two options`},"03-challenging":{name:`Challenging`,use:`A reviewer disputes a fact`},"04-unresolved":{name:`Unresolved`,use:`Missing evidence, empty states, 404`},"05-resting":{name:`Resting`,use:`Motion paused`},"06-pointing":{name:`Pointing`,use:`The next action`},"12-compact-head":{name:`Compact head`,use:`Inline mark beside a label`},"09-feather-in-beak":{name:`Carrying a feather`,use:`A new source was added`},"07-expressions":{name:`Expressions`,use:`Six head studies`,wide:!0},"08-size-ladder":{name:`Size ladder`,use:`16, 24 and 40 pixel grids`,wide:!0},"10-pair":{name:`Pair`,use:`Owner and reviewer`,wide:!0},"11-runner-carrying":{name:`Runner with a record`,use:`Packet Runner delivering`,wide:!0}},X=[...y.matchAll(/(--[a-z0-9-]+):\s*(#[0-9a-f]{6})\s*;/gi)].map(([,e,t])=>({name:e,hex:t.toUpperCase()})),pe=new Set([`--chalk`,`--sage`,`--ink`,`--oxide`]),me=new Set([`--base`,`--charcoal`]),he=X.filter(({name:e})=>!e.startsWith(`--oxide`)),ge=X.filter(({name:e})=>e.startsWith(`--oxide`)),_e=[{family:`var(--pixel)`,name:`Geist Pixel Square`,role:`Wordmark only`,sample:`crowbo`,size:64},{family:`var(--display)`,name:`Bricolage Grotesque`,role:`Headings`,sample:`Test a role that fits the work`,size:34},{family:`var(--body)`,name:`Space Grotesk`,role:`Reading text`,sample:`Keep tickets and own-queue exports. Remove broad administration after the owner reviews the role.`,size:17},{family:`var(--mono)`,name:`Departure Mono`,role:`Labels, versions, source ids`,sample:`DECISION 001 · VERSION 2`,size:12}],ve=[[`Small signals. Connected.`,`Records a decision draws on`],[`Decisions, with context.`,`Removed. The heading already says it.`],[`01 / A little perspective`,`Removed. It labelled nothing.`],[`Start with a question. Put the context around it.`,`Pick a prepared security question and see the records behind the recommendation.`],[`Same work. Different tradeoffs.`,`Options for the same work`],[`Twelve shapes. Different kinds of context.`,`Twelve feather shapes, one per kind of source`],[`The original stays. The context grows.`,`Earlier versions stay available.`]];function Z({id:e,title:t,note:n,children:r}){return(0,x.jsxs)(`section`,{className:`brand-section`,"aria-labelledby":e,children:[(0,x.jsxs)(`header`,{children:[(0,x.jsx)(`h2`,{id:e,children:t}),(0,x.jsx)(`p`,{children:n})]}),r]})}function Q({name:e,hex:t}){let n=pe.has(e)?`Selected`:me.has(e)?`Supporting`:`Step`;return(0,x.jsxs)(`li`,{className:`swatch swatch-${n.toLowerCase()}`,children:[(0,x.jsx)(`span`,{className:`swatch-chip`,style:{background:`var(${e})`}}),(0,x.jsx)(`code`,{children:e}),(0,x.jsx)(`span`,{children:t}),(0,x.jsx)(`span`,{className:`swatch-status`,children:n})]})}function ye(){return(0,x.jsxs)(`div`,{className:`brand`,children:[(0,x.jsxs)(`header`,{className:`brand-masthead`,children:[(0,x.jsxs)(`div`,{children:[(0,x.jsx)(`a`,{className:`brand-wordmark`,href:`../`,children:`crowbo`}),(0,x.jsx)(`h1`,{children:`Brand system`}),(0,x.jsx)(`p`,{children:`The rules that make a Crowbo page look like Crowbo. Everything here is rendered from the same tokens, icons and artwork the website uses. The brand guide in the repository records what was selected and when.`})]}),(0,x.jsx)(Y,{})]}),(0,x.jsx)(Z,{id:`characters`,title:`Characters`,note:`Modular Crow is the primary character. Packet Runner is the flying companion. Both were selected on 24 September 2026.`,children:(0,x.jsxs)(`ul`,{className:`character-grid`,children:[(0,x.jsxs)(`li`,{children:[(0,x.jsx)(Y,{}),(0,x.jsx)(`strong`,{children:`Modular Crow`}),(0,x.jsx)(`span`,{children:`Opening, landing page, source network`})]}),(0,x.jsxs)(`li`,{children:[(0,x.jsx)(Y,{pose:`glide`}),(0,x.jsx)(`strong`,{children:`Packet Runner, glide`}),(0,x.jsx)(`span`,{children:`Page headings`})]}),(0,x.jsxs)(`li`,{children:[(0,x.jsx)(Y,{pose:`up`}),(0,x.jsx)(`strong`,{children:`Packet Runner, up`}),(0,x.jsx)(`span`,{children:`Progress`})]}),(0,x.jsxs)(`li`,{children:[(0,x.jsx)(Y,{pose:`down`}),(0,x.jsx)(`strong`,{children:`Packet Runner, down`}),(0,x.jsx)(`span`,{children:`End of a list`})]})]})}),(0,x.jsx)(Z,{id:`poses`,title:`Crow state poses`,note:`Generated on 29 September 2026 from the approved crow. The grid is approximate, so a pose is redrawn on the native grid before use.`,children:(0,x.jsx)(`ul`,{className:`pose-grid`,children:Object.entries(fe).map(([e,t])=>{let n=Object.entries(de).find(([t])=>t.includes(e))?.[1];return(0,x.jsxs)(`li`,{className:t.wide?`pose-wide`:void 0,children:[(0,x.jsx)(`img`,{src:n,alt:`Crow pose: ${t.name}`,loading:`lazy`}),(0,x.jsx)(`strong`,{children:t.name}),(0,x.jsx)(`span`,{children:t.use})]},e)})})}),(0,x.jsxs)(Z,{id:`colour`,title:`Colour`,note:`Four selected colours and two supporting values. Every other step sits between them. Near-black carries most of the area, chalk carries reading contrast, sage carries sources and structure, and oxide marks the one thing to act on.`,children:[(0,x.jsxs)(`div`,{className:`proportion`,"aria-label":`Approximate share of area: near-black 70 percent, chalk 15, sage 10, oxide 5`,children:[(0,x.jsx)(`span`,{style:{background:`var(--ink)`,flexGrow:70}}),(0,x.jsx)(`span`,{style:{background:`var(--chalk)`,flexGrow:15}}),(0,x.jsx)(`span`,{style:{background:`var(--sage)`,flexGrow:10}}),(0,x.jsx)(`span`,{style:{background:`var(--oxide)`,flexGrow:5}})]}),(0,x.jsx)(`ul`,{className:`swatches`,children:he.map(e=>(0,x.jsx)(Q,{...e},e.name))}),(0,x.jsx)(`ul`,{className:`swatches`,children:ge.map(e=>(0,x.jsx)(Q,{...e},e.name))})]}),(0,x.jsx)(Z,{id:`type`,title:`Type`,note:`Four local typefaces, one job each. One uppercase mono label per block. No text is set below 11 pixels.`,children:(0,x.jsx)(`ul`,{className:`type-list`,children:_e.map(e=>(0,x.jsxs)(`li`,{children:[(0,x.jsxs)(`div`,{children:[(0,x.jsx)(`strong`,{children:e.name}),(0,x.jsx)(`span`,{children:e.role})]}),(0,x.jsx)(`p`,{style:{fontFamily:e.family,fontSize:e.size},children:e.sample})]},e.name))})}),(0,x.jsxs)(Z,{id:`shape`,title:`Shape`,note:`The crow is drawn in square pixels, so the interface is too. One grid pixel is 4 CSS pixels.`,children:[(0,x.jsxs)(`ul`,{className:`shape-grid`,children:[(0,x.jsxs)(`li`,{children:[(0,x.jsx)(`div`,{className:`shape-demo shape-square`}),(0,x.jsx)(`strong`,{children:`Square corners`}),(0,x.jsx)(`span`,{children:`Panels, inputs, dialogs`})]}),(0,x.jsxs)(`li`,{children:[(0,x.jsx)(`div`,{className:`shape-demo shape-stepped pixel-corner`}),(0,x.jsx)(`strong`,{children:`Stepped corner`}),(0,x.jsx)(`span`,{children:`Primary buttons and tags`})]}),(0,x.jsxs)(`li`,{children:[(0,x.jsx)(`div`,{className:`shape-demo shape-shadow`}),(0,x.jsx)(`strong`,{children:`Hard shadow`}),(0,x.jsx)(`span`,{children:`Floating layers only`})]}),(0,x.jsxs)(`li`,{children:[(0,x.jsxs)(`div`,{className:`shape-demo shape-mark`,children:[(0,x.jsx)(`i`,{}),(0,x.jsx)(`i`,{}),(0,x.jsx)(`i`,{})]}),(0,x.jsx)(`strong`,{children:`Square marks`}),(0,x.jsx)(`span`,{children:`Status, packets, bullets`})]}),(0,x.jsxs)(`li`,{children:[(0,x.jsx)(`div`,{className:`shape-demo shape-wire`}),(0,x.jsx)(`strong`,{children:`Right-angle wires`}),(0,x.jsx)(`span`,{children:`Connections between sources`})]})]}),(0,x.jsx)(`p`,{className:`shape-never`,children:`Not used: rounded corners, circles, blurred shadows, frosted overlays, glow rings, faded grids and gradient fills. A test fails the build if a stylesheet adds one.`})]}),(0,x.jsx)(Z,{id:`icons`,title:`Icons`,note:`Thirty-one icons drawn on a 16-unit grid from filled rectangles, so they share the stepped edges of the crow and the feathers.`,children:(0,x.jsx)(`ul`,{className:`icon-grid`,children:Object.entries(b).map(([e,t])=>(0,x.jsxs)(`li`,{children:[(0,x.jsxs)(`span`,{children:[(0,x.jsx)(t,{size:32}),(0,x.jsx)(t,{size:24}),(0,x.jsx)(t,{size:16})]}),(0,x.jsx)(`code`,{children:e})]},e))})}),(0,x.jsx)(Z,{id:`feathers`,title:`Feathers`,note:`Twelve feather shapes, one per kind of source. The circuits inside them are drawn, not measured.`,children:(0,x.jsx)(`ul`,{className:`feather-grid`,children:Object.keys(c).map(e=>(0,x.jsxs)(`li`,{children:[(0,x.jsx)(a,{kind:e}),(0,x.jsx)(`strong`,{children:c[e].label}),(0,x.jsx)(`span`,{children:c[e].use})]},e))})}),(0,x.jsx)(Z,{id:`components`,title:`Components`,note:`The same classes the demo uses.`,children:(0,x.jsxs)(`div`,{className:`component-row`,children:[(0,x.jsxs)(`button`,{className:`t-primary`,type:`button`,children:[`Take the next step `,(0,x.jsx)(o,{children:`↵`})]}),(0,x.jsxs)(`button`,{className:`t-secondary`,type:`button`,children:[`Compare the options `,(0,x.jsx)(o,{children:`o`})]}),(0,x.jsx)(s,{tone:`oxide`,children:`Deciding`}),(0,x.jsx)(s,{tone:`chalk`,children:`Must hold`}),(0,x.jsx)(s,{children:`Supporting`})]})}),(0,x.jsx)(Z,{id:`voice`,title:`Voice`,note:`A line says what the thing is or does. If it could sit unchanged on another product's page, it is cut.`,children:(0,x.jsxs)(`table`,{className:`copy-table`,children:[(0,x.jsx)(`thead`,{children:(0,x.jsxs)(`tr`,{children:[(0,x.jsx)(`th`,{scope:`col`,children:`Before`}),(0,x.jsx)(`th`,{scope:`col`,children:`After`})]})}),(0,x.jsx)(`tbody`,{children:ve.map(([e,t])=>(0,x.jsxs)(`tr`,{children:[(0,x.jsx)(`td`,{children:e}),(0,x.jsx)(`td`,{children:t})]},e))})]})}),(0,x.jsxs)(`footer`,{className:`brand-footer`,children:[(0,x.jsx)(`span`,{children:`Unlisted page. Not indexed.`}),(0,x.jsx)(`span`,{children:`Crowbo, 2026`})]})]})}var $=document.getElementById(`root`);if(!$)throw Error(`The Crowbo root element is missing.`);(0,v.createRoot)($).render((0,x.jsx)(_.StrictMode,{children:(0,x.jsx)(ye,{})}));

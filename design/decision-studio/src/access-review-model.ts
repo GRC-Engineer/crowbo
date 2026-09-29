@@ -139,7 +139,7 @@ export const recoveryPaths: Record<RecoveryPath, DemoSource> = {
     claim: "Temporary recovery access worked in a controlled test.",
     quote:
       "Fictional test record: In Acme support staging, Alex received an approved 45-minute administrative grant, completed the annual queue-recovery task, and could export only the support team's own queue. Cross-queue export attempts were denied. The grant expired and a subsequent admin action was denied. The record includes test approval, grant, task, expiry and denial logs; Maya reviewed the result.",
-    why: "Provides a demonstrated recovery path alongside narrower everyday access in this prepared example. The expiry and export checks are observed results, not promises in a runbook.",
+    why: "Provides a demonstrated recovery path alongside narrower everyday access. The expiry and export checks are observed results, not promises in a runbook.",
     limit:
       "One synthetic tenant and rehearsal on 29 September. No claim about a vendor's real capabilities. The everyday role still needs its own effective-permission test. Test approval is not approval to change anyone's access.",
     period: "Controlled staging rehearsal, 29 September 2026 · 45-minute grant",

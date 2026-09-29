@@ -2,10 +2,10 @@ import { StrictMode, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import tokenSource from "../src/tokens.css?raw";
 import "../src/tokens.css";
-import "../src/styles.css";
-import "../src/identity.css";
+import "../src/base.css";
+import "../src/terminal.css";
 import "./brand.css";
-import { Crow } from "../src/components";
+import { Key, Tag, artwork } from "../src/terminal-parts";
 import {
   FeatherGlyph,
   featherDesigns,
@@ -13,7 +13,17 @@ import {
 } from "../src/identity";
 import * as pixelIcons from "../src/pixel-icons";
 
-const { ArrowRight } = pixelIcons;
+function Crow({ pose = "modular" }: { pose?: keyof typeof artwork }) {
+  return (
+    <img
+      className="crow"
+      src={artwork[pose]}
+      alt=""
+      aria-hidden="true"
+      draggable={false}
+    />
+  );
+}
 
 const poses = import.meta.glob<string>(
   "../../crow-concepts/2026-09-29/state-poses/web/*.png",
@@ -204,7 +214,7 @@ function Brand() {
       <Section
         id="poses"
         title="Crow state poses"
-        note="Candidates generated on 29 September 2026 from the approved crow. None is selected and none is used in the product. The grid is approximate, so a selected pose needs a redraw on the native grid before use."
+        note="Generated on 29 September 2026 from the approved crow. The grid is approximate, so a pose is redrawn on the native grid before use."
       >
         <ul className="pose-grid">
           {Object.entries(poseNotes).map(([key, pose]) => {
@@ -215,12 +225,11 @@ function Brand() {
               <li key={key} className={pose.wide ? "pose-wide" : undefined}>
                 <img
                   src={source}
-                  alt={`Candidate crow pose: ${pose.name}`}
+                  alt={`Crow pose: ${pose.name}`}
                   loading="lazy"
                 />
                 <strong>{pose.name}</strong>
                 <span>{pose.use}</span>
-                <em>Candidate</em>
               </li>
             );
           })}
@@ -357,14 +366,15 @@ function Brand() {
         note="The same classes the demo uses."
       >
         <div className="component-row">
-          <button className="primary-button" type="button">
-            Review next action <ArrowRight size={16} />
+          <button className="t-primary" type="button">
+            Take the next step <Key>↵</Key>
           </button>
-          <button className="secondary-button" type="button">
-            Compare options
+          <button className="t-secondary" type="button">
+            Compare the options <Key>o</Key>
           </button>
-          <span className="badge oxide">Owner review pending</span>
-          <span className="badge">Synthetic source</span>
+          <Tag tone="oxide">Deciding</Tag>
+          <Tag tone="chalk">Must hold</Tag>
+          <Tag>Supporting</Tag>
         </div>
       </Section>
 
