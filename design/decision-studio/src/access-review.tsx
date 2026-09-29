@@ -11,7 +11,7 @@ import {
   Pause,
   Play,
   Search,
-} from "lucide-react";
+} from "./pixel-icons";
 import { Crow } from "./components";
 import { FeatherGlyph } from "./identity";
 import { ProviderMark } from "./providers";
@@ -198,7 +198,7 @@ export function AccessReview({
     <div className={`ask-result access-review access-view-${view}`}>
       <div className="ask-result-question">
         <div>
-          <span className="ask-small">03 / Decide · Support access</span>
+          <span className="ask-small">Support access</span>
           <h1 ref={headingRef} tabIndex={-1}>
             {view === "decision"
               ? demoCases.access.question

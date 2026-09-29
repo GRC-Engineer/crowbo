@@ -17,7 +17,7 @@ import {
   LockKeyhole,
   Search,
   X,
-} from "lucide-react";
+} from "./pixel-icons";
 import { Badge, Crow, Eyebrow, PermissionTable } from "./components";
 import {
   advice,

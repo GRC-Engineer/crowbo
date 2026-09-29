@@ -13,9 +13,9 @@ import {
   Play,
   RotateCcw,
   Search,
-  Sparkles,
+  MissingPiece,
   X,
-} from "lucide-react";
+} from "./pixel-icons";
 import { Crow } from "./components";
 import { FeatherGlyph } from "./identity";
 import {
@@ -138,19 +138,14 @@ export default function QuestionDemo() {
               <div className="ask-welcome-art" aria-hidden="true">
                 <div className="ask-quiet-grid" />
                 <Crow />
-                <span className="ask-art-coordinate">
-                  01 / A LITTLE PERSPECTIVE
-                </span>
               </div>
-              <span className="ask-small">Decisions, with context.</span>
               <h1 ref={heading} tabIndex={-1}>
                 What needs
                 <br />a decision?
               </h1>
               <p>
-                Start with a question.
-                <br />
-                Put the context around it.
+                Pick a prepared security question and see the records behind the
+                recommendation.
               </p>
               <button
                 className="ask-primary"
@@ -165,7 +160,6 @@ export default function QuestionDemo() {
             <form className="ask-composer" onSubmit={submit}>
               <div className="ask-composer-heading">
                 <div>
-                  <span className="ask-small">01 / Ask</span>
                   <h1 ref={heading} tabIndex={-1}>
                     What’s your question?
                   </h1>
@@ -204,7 +198,7 @@ export default function QuestionDemo() {
               )}
               <div className="ask-example-heading">
                 <span>Try a prepared question</span>
-                <span className="ask-small">02 EXAMPLES</span>
+                <span className="ask-small">2 examples</span>
               </div>
               <div className="ask-examples">
                 {Object.values(demoCases).map((entry) => (
@@ -234,7 +228,7 @@ export default function QuestionDemo() {
                 <p id="ask-prepared-note">
                   A scripted demo with fictional sources.
                   <br />
-                  Choose an example to see the full journey.
+                  Choose an example to see the whole walkthrough.
                 </p>
                 <button
                   className="ask-primary"
@@ -251,9 +245,7 @@ export default function QuestionDemo() {
             <div className="ask-research">
               <div className="ask-research-header">
                 <div>
-                  <span className="ask-small">
-                    02 / Explore · {caseData.label}
-                  </span>
+                  <span className="ask-small">Explore · {caseData.label}</span>
                   <h1 ref={heading} tabIndex={-1}>
                     Putting the context together.
                   </h1>
@@ -475,7 +467,7 @@ export default function QuestionDemo() {
                   <details className="ask-disclosure ask-challenge">
                     <summary>
                       <span>
-                        <Sparkles size={17} />
+                        <MissingPiece size={17} />
                         What might we be missing?
                       </span>
                       <span className="ask-disclosure-hint">

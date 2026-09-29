@@ -374,9 +374,9 @@ export function createNetwork(container) {
     }
     if (focus < 0) {
       label.textContent = website
-        ? "Signals in context."
+        ? "Records a decision draws on"
         : motif === "original"
-          ? "Small signals. Connected."
+          ? "Records a decision draws on"
           : "Each mark, one item.";
       detail.textContent = website
         ? "Illustrative network · explore a feather"

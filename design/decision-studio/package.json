@@ -7,12 +7,12 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "test": "node --test tests/*.test.mjs",
-    "format": "prettier --write src tests landing index.html demo/index.html vite.config.ts",
-    "preview": "vite preview --host 127.0.0.1"
+    "format": "prettier --write src tests landing brand tools index.html demo/index.html brand/index.html vite.config.ts",
+    "preview": "vite preview --host 127.0.0.1",
+    "tokens": "node tools/apply-brand-tokens.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.1.23",
-    "lucide-react": "1.48.0",
     "motion": "13.4.4",
     "react": "19.3.0",
     "react-dom": "19.3.0"

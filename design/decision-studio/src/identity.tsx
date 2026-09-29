@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown } from "./pixel-icons";
 import { ProviderTag, type Provider } from "./providers";
 import { useId, useState } from "react";
 import topology from "../../homepage-mockups/2026-09-21/assets/crowbo-feathers-topology-modular-v1.png";
@@ -181,8 +181,8 @@ export function FeatherLibrary() {
     <details className="feather-library">
       <summary>
         <span>
-          <span className="eyebrow">The wider picture</span>
-          <strong>Twelve shapes. Different kinds of context.</strong>
+          <span className="eyebrow">Feather library</span>
+          <strong>Twelve feather shapes, one per kind of source</strong>
         </span>
         <span className="library-count">12</span>
         <ChevronDown size={18} />

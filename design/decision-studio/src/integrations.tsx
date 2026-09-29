@@ -1,4 +1,4 @@
-import { ArrowUpRight, ChevronRight, Plug } from "lucide-react";
+import { ArrowUpRight, ChevronRight, Plug } from "./pixel-icons";
 import { Badge, Eyebrow } from "./components";
 import { feathers } from "./domain";
 import {

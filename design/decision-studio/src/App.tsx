@@ -34,7 +34,7 @@ import {
   Settings,
   Users,
   X,
-} from "lucide-react";
+} from "./pixel-icons";
 import { Badge, Crow, Eyebrow, FeatherRow } from "./components";
 import Panels, { type Panel } from "./dialogs";
 import {
@@ -159,7 +159,7 @@ function FlightLog({
       ))}
       <div className="log-end">
         <Crow pose="down" />
-        <span>The original stays. The context grows.</span>
+        <span>Earlier versions stay available.</span>
       </div>
     </div>
   );

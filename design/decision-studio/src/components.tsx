@@ -1,7 +1,7 @@
 import { ProviderMark, ProviderTag, sourceProvider } from "./providers";
 import type { ReactNode } from "react";
 import { FeatherGlyph, sourceDesign } from "./identity";
-import { ArrowUpRight, Fingerprint, Check, Minus } from "lucide-react";
+import { ArrowUpRight, Fingerprint, Check, Minus } from "./pixel-icons";
 import modular from "../../crow-concepts/2026-09-24/approved-runtime/modular-crow.png";
 import glide from "../../crow-concepts/2026-09-24/approved-runtime/runner-glide.png";
 import up from "../../crow-concepts/2026-09-24/approved-runtime/runner-up.png";
@@ -74,8 +74,8 @@ export function EvidenceMap({
     <section className="observatory" aria-labelledby="map-title">
       <div className="instrument-header">
         <div>
-          <Eyebrow>01 / Sources</Eyebrow>
-          <h2 id="map-title">The context behind the choice.</h2>
+          <Eyebrow>Sources</Eyebrow>
+          <h2 id="map-title">Records behind this recommendation</h2>
         </div>
         <span className="instrument-count">
           06<small>SOURCES</small>
