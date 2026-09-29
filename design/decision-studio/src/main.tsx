@@ -10,10 +10,10 @@ const root = document.getElementById("root");
 if (!root) throw new Error("The Crowbo root element is missing.");
 createRoot(root).render(
   <StrictMode>
-    {new URLSearchParams(window.location.search).get("view") === "ask" ? (
-      <QuestionDemo />
-    ) : (
+    {new URLSearchParams(window.location.search).get("view") === "workspace" ? (
       <App />
+    ) : (
+      <QuestionDemo />
     )}
   </StrictMode>,
 );
