@@ -493,3 +493,12 @@ html[data-variant="network"] .review-meta {
     font-size: 11px;
   }
 }
+
+@media (min-width: 801px) {
+  html[data-presentation="website"] .page {
+    position: relative;
+  }
+  html[data-presentation="website"] .portrait-wrap {
+    position: absolute;
+  }
+}

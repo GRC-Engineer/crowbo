@@ -30,7 +30,7 @@
 .access-review .ask-condition strong {
   display: block;
   font-weight: 600;
-  color: var(--ink-400);
+  color: var(--chalk);
   margin-bottom: 5px;
 }
 .access-review .ask-answer > .access-next-description {

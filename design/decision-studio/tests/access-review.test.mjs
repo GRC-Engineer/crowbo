@@ -25,7 +25,7 @@ test("an ordinary-language follow-up stages context without changing the answer"
   );
   assert.deepEqual(next.pending, { kind: "annual-task" });
   assert.deepEqual(next.current, accessInitialState.current);
-  assert.equal(versionSources(next.current).length, 6);
+  assert.equal(versionSources(next.current).length, 8);
   assert.equal(next.followup.draft, "");
   assert.deepEqual(next.recordedVersions, []);
 });
@@ -110,7 +110,7 @@ test("new context is staged without changing the recommendation or its sources",
   const staged = accessReducer(accessInitialState, { type: "challenge" });
   assert.equal(staged.pending.kind, "annual-task");
   assert.deepEqual(staged.current, accessInitialState.current);
-  assert.equal(versionSources(staged.current).length, 6);
+  assert.equal(versionSources(staged.current).length, 8);
   assert.equal(staged.previous.length, 0);
   assert.equal(accessReducer(staged, { type: "discard" }).pending, null);
   assert.equal(accessInitialState.pending, null);
@@ -133,8 +133,8 @@ test("annual recovery changes the advice while retaining the original source set
   const revised = annualContext();
   assert.deepEqual(revised.current, { number: 2, basis: "recovery-known" });
   assert.deepEqual(revised.previous, [accessInitialState.current]);
-  assert.equal(versionSources(revised.current).length, 7);
-  assert.equal(versionSources(revised.previous[0]).length, 6);
+  assert.equal(versionSources(revised.current).length, 9);
+  assert.equal(versionSources(revised.previous[0]).length, 8);
   assert.match(
     accessAdvice[revised.current.basis].reason,
     /quiet activity log missed/,

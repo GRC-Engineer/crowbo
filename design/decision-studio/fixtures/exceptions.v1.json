@@ -1,0 +1,747 @@
+{
+  "schemaVersion": "crowbo.synthetic-workflow.v1",
+  "provenance": {
+    "author": "Codex synthetic development fixture",
+    "humanReview": "Not yet qualified",
+    "status": "Candidate authored advice; not a backend run or evaluation answer key",
+    "data": "Fictional Acme records. No customer material.",
+    "influence": "Authored categories only; no measured weights or confidence."
+  },
+  "id": "exceptions",
+  "specVersion": "1.0.1",
+  "question": "A production service is missing required admin audit logs. Should we remediate now or request a time-limited exception?",
+  "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+  "initialStage": "open",
+  "alternatives": [
+    {
+      "title": "Remediate immediately",
+      "tradeoff": "Closes the intended gap after verification, but Inez must confirm feasible delivery and displaced billing work."
+    },
+    {
+      "title": "Request a bounded deviation",
+      "tradeoff": "Needs scoped approval, effective safeguards and an expiry. A request alone gives no authority."
+    },
+    {
+      "title": "Accept the ticket status",
+      "tradeoff": "Contradicted by the direct sink test. It leaves the required fields unverified."
+    }
+  ],
+  "challenge": {
+    "title": "Does “logs exist” mean the right actions are reviewable?",
+    "body": "Event volume can look healthy while the acting identity is missing. Two records repeat the same gateway claim.",
+    "check": "Test actor, action, target and time end to end, then inspect approval separately.",
+    "sourceId": "logging-gap"
+  },
+  "stages": [
+    {
+      "id": "open",
+      "focus": [
+        "logging-gap",
+        "logging-issue",
+        "exception-request"
+      ],
+      "label": "Logging gap",
+      "advice": {
+        "title": "Test the safeguard before seeking approval.",
+        "reason": "Required admin activity is missing from the logs, despite the ticket saying it is covered. Keep fixing the gap. A temporary safeguard needs testing and approval before it can support an exception.",
+        "condition": "Inez must confirm the team can deliver the safeguard. Only the security owner can approve a temporary exception; a request alone is not approval.",
+        "next": "Inez: check that the safeguard records who made each admin change, then prepare a request with scope and expiry.",
+        "support": "The selected sources establish the gap, not effective compensation or approval."
+      },
+      "change": "Initial selected basis.",
+      "status": "Gap observed · safeguard untested · request only",
+      "options": [
+        "tested",
+        "irrelevant"
+      ],
+      "sourceRefs": [
+        "logging-policy@logging-policy / v3",
+        "logging-gap@logging-gap / r1",
+        "logging-issue@logging-issue / r1",
+        "logging-owner@logging-owner / r1",
+        "logging-incident@logging-incident / r1",
+        "safeguard-plan@safeguard-plan / r1",
+        "exception-request@exception-request / r1"
+      ]
+    },
+    {
+      "id": "tested",
+      "focus": [
+        "safeguard-test",
+        "exception-request",
+        "logging-policy"
+      ],
+      "label": "Add safeguard test",
+      "advice": {
+        "title": "The safeguard works in the test. Approval is still missing.",
+        "reason": "The independent test supports the interim feed for prod-eu. Ask Jules to decide the bounded request while Inez keeps remediation moving.",
+        "condition": "The request remains unapproved. Daily review and delivery feasibility need accountable confirmation.",
+        "next": "Jules: review EX-19, its conditions and the expiry.",
+        "support": "A successful test answers effectiveness in its scope. It cannot authorise a deviation."
+      },
+      "change": "TEST-SG-19 resolves the initial coverage doubt. It does not turn the request into approval.",
+      "status": "Safeguard tested · exception unapproved",
+      "options": [
+        "approved",
+        "irrelevant"
+      ],
+      "sourceRefs": [
+        "logging-policy@logging-policy / v3",
+        "logging-gap@logging-gap / r1",
+        "logging-issue@logging-issue / r1",
+        "logging-owner@logging-owner / r1",
+        "logging-incident@logging-incident / r1",
+        "safeguard-plan@safeguard-plan / r1",
+        "exception-request@exception-request / r1",
+        "safeguard-test@safeguard-test / r1"
+      ]
+    },
+    {
+      "id": "approved",
+      "focus": [
+        "exception-approval",
+        "safeguard-test",
+        "daily-review"
+      ],
+      "label": "Add approval and review records",
+      "advice": {
+        "title": "Use the bounded arrangement. Keep the fix moving.",
+        "reason": "APR-19 supplies approval and REV-19 records the first daily check. The gap remains open while Inez delivers the app fix.",
+        "condition": "Valid only through 7 October at 18:00 UTC, for prod-eu, with feed delivery and daily review. Later compliance is unobserved.",
+        "next": "Inez: continue the daily checks and verify the app fix before expiry.",
+        "support": "The approval, test and review are separate records. This does not close the underlying logging issue."
+      },
+      "change": "Attributed approval and a daily review now support the interim arrangement as of 30 September.",
+      "status": "Approved for scope · first review observed · issue open",
+      "options": [
+        "expired",
+        "stopped",
+        "expanded",
+        "irrelevant"
+      ],
+      "sourceRefs": [
+        "logging-policy@logging-policy / v3",
+        "logging-gap@logging-gap / r1",
+        "logging-issue@logging-issue / r1",
+        "logging-owner@logging-owner / r1",
+        "logging-incident@logging-incident / r1",
+        "safeguard-plan@safeguard-plan / r1",
+        "exception-request@exception-request / r1",
+        "safeguard-test@safeguard-test / r1",
+        "exception-approval@exception-approval / r1",
+        "daily-review@daily-review / r1"
+      ]
+    },
+    {
+      "id": "expired",
+      "focus": [
+        "validity-check",
+        "exception-approval",
+        "logging-issue"
+      ],
+      "label": "Try expiry without a fix",
+      "advice": {
+        "title": "The approval expired. Reassess the gap.",
+        "reason": "The prior arrangement cannot support continued deviation after its end date. Escalate the unresolved logging gap to Jules and Inez.",
+        "condition": "No renewed approval or verified remediation is supplied. Do not imply automatic renewal.",
+        "next": "Jules and Inez: decide the immediate treatment of the unresolved gap.",
+        "support": "The unchanged approval is historical evidence; its validity is no longer current."
+      },
+      "change": "The assessment date crossed APR-19’s expiry. Historical approval remains inspectable.",
+      "status": "Approval expired · verified fix missing",
+      "options": [
+        "irrelevant"
+      ],
+      "sourceRefs": [
+        "logging-policy@logging-policy / v3",
+        "logging-gap@logging-gap / r1",
+        "logging-issue@logging-issue / r1",
+        "logging-owner@logging-owner / r1",
+        "logging-incident@logging-incident / r1",
+        "safeguard-plan@safeguard-plan / r1",
+        "exception-request@exception-request / r1",
+        "safeguard-test@safeguard-test / r1",
+        "exception-approval@exception-approval / r1",
+        "daily-review@daily-review / r1",
+        "validity-check@validity-check / r1"
+      ]
+    },
+    {
+      "id": "stopped",
+      "focus": [
+        "feed-stopped",
+        "exception-approval",
+        "logging-gap"
+      ],
+      "label": "Try a stopped feed",
+      "advice": {
+        "title": "A required safeguard failed. Reopen the decision.",
+        "reason": "The feed stopped while the exception period was still open. Its date alone cannot sustain the conditional arrangement.",
+        "condition": "Restore and verify the feed or seek another explicitly authorised response. The gap remains unresolved.",
+        "next": "Inez and Jules: respond to failed delivery and reassess EX-19.",
+        "support": "The new failed probe changes the effective safeguard state; yesterday’s successful test is retained."
+      },
+      "change": "The later failed delivery check defeats a condition of APR-19.",
+      "status": "Approval in date · safeguard failed",
+      "options": [
+        "irrelevant"
+      ],
+      "sourceRefs": [
+        "logging-policy@logging-policy / v3",
+        "logging-gap@logging-gap / r1",
+        "logging-issue@logging-issue / r1",
+        "logging-owner@logging-owner / r1",
+        "logging-incident@logging-incident / r1",
+        "safeguard-plan@safeguard-plan / r1",
+        "exception-request@exception-request / r1",
+        "safeguard-test@safeguard-test / r1",
+        "exception-approval@exception-approval / r1",
+        "daily-review@daily-review / r1",
+        "feed-stopped@feed-stopped / r1"
+      ]
+    },
+    {
+      "id": "expanded",
+      "focus": [
+        "expanded-scope",
+        "exception-approval",
+        "logging-policy"
+      ],
+      "label": "Try expanded scope",
+      "advice": {
+        "title": "The new environment needs its own decision.",
+        "reason": "APR-19 is limited to prod-eu. Confirm prod-us coverage and treatment instead of extending the old approval by analogy.",
+        "condition": "No prod-us approval or demonstrated safeguard is supplied. prod-eu records do not establish prod-us coverage.",
+        "next": "Inez and Jules: scope the prod-us gap and its required response.",
+        "support": "This changes the subject scope, not the wording of the existing approval."
+      },
+      "change": "A new environment lies outside the earlier approval.",
+      "status": "prod-eu scoped approval · prod-us unresolved",
+      "options": [
+        "irrelevant"
+      ],
+      "sourceRefs": [
+        "logging-policy@logging-policy / v3",
+        "logging-gap@logging-gap / r1",
+        "logging-issue@logging-issue / r1",
+        "logging-owner@logging-owner / r1",
+        "logging-incident@logging-incident / r1",
+        "safeguard-plan@safeguard-plan / r1",
+        "exception-request@exception-request / r1",
+        "safeguard-test@safeguard-test / r1",
+        "exception-approval@exception-approval / r1",
+        "daily-review@daily-review / r1",
+        "expanded-scope@expanded-scope / r1"
+      ]
+    }
+  ],
+  "irrelevantOverlay": {
+    "sourceRef": "review-room@review-room / r1",
+    "behavior": "Append this source to the selected stage; preserve its advice and all conditions. Explicit reassessment only. Do not append twice."
+  },
+  "sourceRecords": {
+    "logging-policy@logging-policy / v3": {
+      "id": "logging-policy",
+      "label": "Logging requirement",
+      "provider": "notion",
+      "feather": "spine",
+      "influence": "constraint",
+      "claim": "Admin changes must reach the protected audit sink.",
+      "quote": "LOG-7 v3: Capture actor, action, target and time for privileged billing-admin changes. Forward to the protected sink. A deviation needs a scoped, time-bounded approval by the security owner.",
+      "why": "Establishes the applicable requirement and exception authority.",
+      "limit": "The requirement does not prove delivery or approve a deviation.",
+      "period": "28 September 2026",
+      "revision": "logging-policy / v3",
+      "record": {
+        "subject": "LOG-7 v3",
+        "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "logging-policy-7",
+        "links": [
+          {
+            "label": "Observed gap",
+            "targetId": "logging-gap",
+            "identity": "billing-admin prod-eu"
+          },
+          {
+            "label": "Exception request",
+            "targetId": "exception-request",
+            "identity": "LOG-7 → EX-19"
+          }
+        ]
+      }
+    },
+    "logging-gap@logging-gap / r1": {
+      "id": "logging-gap",
+      "label": "Coverage check",
+      "provider": "datadog",
+      "feather": "series",
+      "influence": "deciding",
+      "claim": "Privilege-change events are missing.",
+      "quote": "CHK-19: Test privilege changes on billing-admin prod-eu emit app-local events but do not reach the protected sink. Export actions do reach it.",
+      "why": "Identifies the exact missing coverage. The existing feed is only partial.",
+      "limit": "One sampled action set on 28 September. Unchecked actions remain unknown.",
+      "period": "28 September 2026",
+      "revision": "logging-gap / r1",
+      "record": {
+        "subject": "CHK-19 · billing-admin prod-eu",
+        "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "sink-check-19",
+        "links": [
+          {
+            "label": "Applicable requirement",
+            "targetId": "logging-policy",
+            "identity": "LOG-7"
+          },
+          {
+            "label": "Tracking issue",
+            "targetId": "logging-issue",
+            "identity": "CHK-19 → ISS-19"
+          }
+        ]
+      }
+    },
+    "logging-issue@logging-issue / r1": {
+      "id": "logging-issue",
+      "label": "Logging issue",
+      "provider": "linear",
+      "feather": "column",
+      "influence": "deciding",
+      "claim": "The issue says covered; its basis is a vendor claim.",
+      "quote": "ISS-19: Owner marked \"covered by gateway logs\" from the delivery discussion. No actor-level sink test is attached. Fix scheduled for 7 October.",
+      "why": "Conflicts with CHK-19. The ticket and discussion share a claim, not two independent checks.",
+      "limit": "Status and a schedule do not establish coverage or capacity.",
+      "period": "28 September 2026",
+      "revision": "logging-issue / r1",
+      "record": {
+        "subject": "ISS-19 → LOG-7",
+        "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "delivery-discussion-19",
+        "links": [
+          {
+            "label": "Contradicting test",
+            "targetId": "logging-gap",
+            "identity": "ISS-19 → CHK-19"
+          },
+          {
+            "label": "Original discussion",
+            "targetId": "logging-owner",
+            "identity": "delivery discussion 19"
+          }
+        ]
+      }
+    },
+    "logging-owner@logging-owner / r1": {
+      "id": "logging-owner",
+      "label": "Delivery context",
+      "provider": "slack",
+      "feather": "braid",
+      "influence": "supporting",
+      "claim": "The fix competes with the billing release.",
+      "quote": "Inez, service owner: Gateway logs should cover this until the 7 October app fix. The billing release uses the same delivery team. The earlier actor-field incident is relevant.",
+      "why": "Supports checking an interim option and validating feasibility with Inez.",
+      "limit": "Neither the date nor the assertion grants a logging exception.",
+      "period": "28 September 2026",
+      "revision": "logging-owner / r1",
+      "record": {
+        "subject": "Inez · ISS-19",
+        "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "delivery-discussion-19",
+        "links": [
+          {
+            "label": "Earlier missing-field incident",
+            "targetId": "logging-incident",
+            "identity": "billing-admin actor field"
+          },
+          {
+            "label": "Issue repeating this claim",
+            "targetId": "logging-issue",
+            "identity": "ISS-19"
+          }
+        ]
+      }
+    },
+    "logging-incident@logging-incident / r1": {
+      "id": "logging-incident",
+      "label": "Earlier logging incident",
+      "provider": "linear",
+      "feather": "loop",
+      "influence": "context",
+      "claim": "An earlier feed omitted the acting identity.",
+      "quote": "INC-9: Gateway logs included the route and timestamp, but omitted the authenticated admin ID needed to review a privilege change.",
+      "why": "Makes the actor field a specific safeguard test, rather than trusting event counts.",
+      "limit": "Past failure does not prove the new forwarding arrangement fails.",
+      "period": "18 August 2026",
+      "revision": "logging-incident / r1",
+      "record": {
+        "subject": "INC-9",
+        "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+        "checked": "Prepared observation: 18 August 2026. No current refresh.",
+        "origin": "incident-9",
+        "links": [
+          {
+            "label": "Interim arrangement",
+            "targetId": "safeguard-plan",
+            "identity": "billing-admin actor field"
+          }
+        ]
+      }
+    },
+    "safeguard-plan@safeguard-plan / r1": {
+      "id": "safeguard-plan",
+      "label": "Interim safeguard plan",
+      "provider": "notion",
+      "feather": "mesh",
+      "influence": "supporting",
+      "claim": "A gateway feed and daily review are proposed.",
+      "quote": "Plan SG-19: Forward actor, action, target and time through a restricted gateway feed; Inez reviews it daily. This would cover only prod-eu privileged changes until the app fix.",
+      "why": "Gives a bounded alternative to evaluate if immediate remediation is infeasible.",
+      "limit": "No successful end-to-end test or daily review observation is supplied yet.",
+      "period": "28 September 2026",
+      "revision": "safeguard-plan / r1",
+      "record": {
+        "subject": "SG-19",
+        "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "safeguard-plan-19",
+        "links": [
+          {
+            "label": "Required fields",
+            "targetId": "logging-policy",
+            "identity": "LOG-7"
+          },
+          {
+            "label": "Safeguard test",
+            "targetId": null,
+            "identity": "TEST-SG-19 / not supplied"
+          }
+        ]
+      }
+    },
+    "exception-request@exception-request / r1": {
+      "id": "exception-request",
+      "label": "Exception request",
+      "provider": "notion",
+      "feather": "object",
+      "influence": "constraint",
+      "claim": "An exception is requested, not approved.",
+      "quote": "EX-19: Inez requests a deviation for prod-eu privilege-change forwarding through 7 October, conditional on the SG-19 feed and daily review. Status: requested. Approver: security owner.",
+      "why": "Keeps a request separate from authority, safeguards and expiry.",
+      "limit": "No approval is supplied. The request does not authorise continuing the gap.",
+      "period": "28 September 2026",
+      "revision": "exception-request / r1",
+      "record": {
+        "subject": "EX-19 → ISS-19",
+        "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "exception-request-19",
+        "links": [
+          {
+            "label": "Related issue",
+            "targetId": "logging-issue",
+            "identity": "EX-19 → ISS-19"
+          },
+          {
+            "label": "Required safeguard",
+            "targetId": "safeguard-plan",
+            "identity": "EX-19 → SG-19"
+          },
+          {
+            "label": "Approval record",
+            "targetId": null,
+            "identity": "EX-19 / approval absent"
+          }
+        ]
+      }
+    },
+    "safeguard-test@safeguard-test / r1": {
+      "id": "safeguard-test",
+      "label": "Independent safeguard test",
+      "provider": "datadog",
+      "feather": "loop",
+      "influence": "deciding",
+      "claim": "The interim feed delivered the required fields.",
+      "quote": "TEST-SG-19: Suri generated privilege changes on prod-eu. The protected sink contained actor, action, target and time for each probe. Delivery stopped when access to the sink was revoked in the negative check.",
+      "why": "Demonstrates selected fields and the scope of the interim feed.",
+      "limit": "Does not approve a deviation or prove tomorrow’s delivery. Daily review remains a separate requirement.",
+      "period": "30 September 2026 · 09:00",
+      "revision": "safeguard-test / r1",
+      "record": {
+        "subject": "TEST-SG-19 → SG-19",
+        "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+        "checked": "Prepared observation: 30 September 2026 · 09:00. No current refresh.",
+        "origin": "independent-test-sg-19",
+        "links": [
+          {
+            "label": "Plan tested",
+            "targetId": "safeguard-plan",
+            "identity": "TEST-SG-19 → SG-19"
+          },
+          {
+            "label": "Requested scope",
+            "targetId": "exception-request",
+            "identity": "EX-19 / prod-eu"
+          }
+        ]
+      }
+    },
+    "exception-approval@exception-approval / r1": {
+      "id": "exception-approval",
+      "label": "Attributed approval",
+      "provider": "notion",
+      "feather": "object",
+      "influence": "constraint",
+      "claim": "A bounded deviation is approved with conditions.",
+      "quote": "APR-19: Jules, designated security owner under LOG-7, approves EX-19 for prod-eu privilege changes until 7 October 2026 at 18:00 UTC. Requires SG-19 delivery, daily review and the app fix tracked in ISS-19.",
+      "why": "Supplies attributed authority for this synthetic scope and period.",
+      "limit": "Does not waive conditions, approve other environments or renew automatically.",
+      "period": "30 September 2026 · 10:00",
+      "revision": "exception-approval / r1",
+      "record": {
+        "subject": "APR-19 → EX-19",
+        "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+        "checked": "Prepared observation: 30 September 2026 · 10:00. No current refresh.",
+        "origin": "approval-19",
+        "links": [
+          {
+            "label": "Approved request",
+            "targetId": "exception-request",
+            "identity": "APR-19 → EX-19"
+          },
+          {
+            "label": "Authority rule",
+            "targetId": "logging-policy",
+            "identity": "Jules / designated security owner / LOG-7"
+          },
+          {
+            "label": "Tested condition",
+            "targetId": "safeguard-test",
+            "identity": "SG-19"
+          }
+        ]
+      }
+    },
+    "daily-review@daily-review / r1": {
+      "id": "daily-review",
+      "label": "Daily review observation",
+      "provider": "linear",
+      "feather": "loop",
+      "influence": "supporting",
+      "claim": "The first required review is recorded.",
+      "quote": "REV-19: Inez compared the expected prod-eu privilege changes with the SG-19 sink at 16:00. No missing action was found in that window.",
+      "why": "Supports the daily-review condition for this observed day only.",
+      "limit": "Not evidence of any later daily review.",
+      "period": "30 September 2026 · 16:00",
+      "revision": "daily-review / r1",
+      "record": {
+        "subject": "REV-19 → SG-19",
+        "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+        "checked": "Prepared observation: 30 September 2026 · 16:00. No current refresh.",
+        "origin": "daily-review-19",
+        "links": [
+          {
+            "label": "Approval conditions",
+            "targetId": "exception-approval",
+            "identity": "APR-19"
+          }
+        ]
+      }
+    },
+    "validity-check@validity-check / r1": {
+      "id": "validity-check",
+      "label": "Expiry check",
+      "provider": "notion",
+      "feather": "column",
+      "influence": "constraint",
+      "claim": "The approved period has ended.",
+      "quote": "At 8 October 2026 09:00 UTC, APR-19 is past its 7 October 18:00 expiry. No renewed approval or verified app fix is supplied.",
+      "why": "The previous approval cannot support the current deviation.",
+      "limit": "This is a prepared future checkpoint, not a live timer or automatic monitoring.",
+      "period": "8 October 2026 · 09:00",
+      "revision": "validity-check / r1",
+      "record": {
+        "subject": "APR-19 / validity",
+        "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+        "checked": "Prepared observation: 8 October 2026 · 09:00. No current refresh.",
+        "origin": "expiry-check-19",
+        "links": [
+          {
+            "label": "Original approval",
+            "targetId": "exception-approval",
+            "identity": "APR-19 ends 2026-10-07T18:00Z"
+          },
+          {
+            "label": "Missing verified fix",
+            "targetId": null,
+            "identity": "ISS-19 / outcome not supplied"
+          }
+        ]
+      }
+    },
+    "feed-stopped@feed-stopped / r1": {
+      "id": "feed-stopped",
+      "label": "Stopped feed",
+      "provider": "datadog",
+      "feather": "series",
+      "influence": "deciding",
+      "claim": "The approved safeguard is no longer delivering.",
+      "quote": "At 1 October 09:00, expected privilege-change probes do not arrive at the sink. Monitoring records a stopped forwarding feed. App-local records still exist.",
+      "why": "A condition of APR-19 has failed inside the approval period.",
+      "limit": "Approval is not a substitute for an effective safeguard. No alternative is demonstrated.",
+      "period": "1 October 2026 · 09:00",
+      "revision": "feed-stopped / r1",
+      "record": {
+        "subject": "SG-19 / feed",
+        "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+        "checked": "Prepared observation: 1 October 2026 · 09:00. No current refresh.",
+        "origin": "feed-check-oct1",
+        "links": [
+          {
+            "label": "Conditional approval",
+            "targetId": "exception-approval",
+            "identity": "APR-19 requires SG-19"
+          }
+        ]
+      }
+    },
+    "expanded-scope@expanded-scope / r1": {
+      "id": "expanded-scope",
+      "label": "Additional environment",
+      "provider": "aws",
+      "feather": "mesh",
+      "influence": "deciding",
+      "claim": "A second environment is outside the approval.",
+      "quote": "Deployment inventory now includes billing-admin prod-us with the same missing sink coverage. APR-19 names prod-eu only.",
+      "why": "The existing exception cannot authorise the additional scope.",
+      "limit": "Matching service names cannot broaden approval. prod-us controls remain unverified.",
+      "period": "1 October 2026",
+      "revision": "expanded-scope / r1",
+      "record": {
+        "subject": "billing-admin prod-us",
+        "scope": "Acme billing-admin · prod-us",
+        "checked": "Prepared observation: 1 October 2026. No current refresh.",
+        "origin": "inventory-us",
+        "links": [
+          {
+            "label": "Existing scope limit",
+            "targetId": "exception-approval",
+            "identity": "APR-19 / prod-eu only"
+          },
+          {
+            "label": "prod-us approval",
+            "targetId": null,
+            "identity": "No approval record for prod-us"
+          }
+        ]
+      }
+    },
+    "review-room@review-room / r1": {
+      "id": "review-room",
+      "label": "Irrelevant context",
+      "provider": "slack",
+      "feather": "braid",
+      "influence": "context",
+      "claim": "The review meeting title changed.",
+      "quote": "The weekly review is now called Billing readiness. Owners, required fields, scope, delivery dates and approval conditions are unchanged.",
+      "why": "Does not change any prerequisite for the decision.",
+      "limit": "This is an irrelevant-context variation.",
+      "period": "30 September 2026",
+      "revision": "review-room / r1",
+      "record": {
+        "subject": "Review meeting",
+        "scope": "Acme billing-admin · prod-eu · privileged admin actions",
+        "checked": "Prepared observation: 30 September 2026. No current refresh.",
+        "origin": "review-title-update",
+        "links": []
+      }
+    }
+  },
+  "sourceFamilies": [
+    {
+      "id": "finding-review",
+      "question": "What finding or review actually needs a decision?",
+      "limit": "Workflow status is not verified treatment or approval.",
+      "coverage": [
+        "logging-gap"
+      ]
+    },
+    {
+      "id": "people-identity",
+      "question": "Which immutable account belongs to which custodian?",
+      "limit": "Names and employment do not establish permissions.",
+      "coverage": "Not used: attributed approval is synthetic development material; no authenticated people integration."
+    },
+    {
+      "id": "effective-permissions",
+      "question": "What can the exact account or service do, including inherited grants?",
+      "limit": "A role catalogue is not a test of effective rights.",
+      "coverage": "Not used: no account entitlement decision."
+    },
+    {
+      "id": "activity-monitoring",
+      "question": "What happened in the observed window and what coverage is missing?",
+      "limit": "No observed event is not proof of no activity or no need.",
+      "coverage": [
+        "logging-gap",
+        "safeguard-test",
+        "feed-stopped"
+      ]
+    },
+    {
+      "id": "code-build-inventory",
+      "question": "Which change produced which artifact?",
+      "limit": "A merge or component match is not production treatment.",
+      "coverage": "Not used: proposed app fix has no build or delivery receipt. Missing outcome remains unresolved."
+    },
+    {
+      "id": "deployment-verification",
+      "question": "What ran, and what exact outcome was independently checked?",
+      "limit": "Implementation does not establish effective treatment or authority.",
+      "coverage": [
+        "safeguard-test",
+        "daily-review"
+      ]
+    },
+    {
+      "id": "policy-runbook-exception",
+      "question": "What requirement, boundary, approval and validity apply?",
+      "limit": "A request or runbook does not implement or authorise a safeguard.",
+      "coverage": [
+        "logging-policy",
+        "safeguard-plan",
+        "exception-request",
+        "exception-approval",
+        "validity-check"
+      ]
+    },
+    {
+      "id": "work-tracking",
+      "question": "Who owns the treatment and which dependencies remain?",
+      "limit": "A done ticket does not prove verification or delivery authority.",
+      "coverage": [
+        "logging-issue"
+      ]
+    },
+    {
+      "id": "prior-records",
+      "question": "Which earlier incident or review makes a check relevant?",
+      "limit": "Past similarity does not predict the new outcome.",
+      "coverage": [
+        "logging-incident"
+      ]
+    },
+    {
+      "id": "owner-context",
+      "question": "Which attributed work or delivery constraint affects the choice?",
+      "limit": "A date or statement does not grant approval or make an obligation mandatory.",
+      "coverage": [
+        "logging-owner",
+        "review-room"
+      ]
+    }
+  ],
+  "replayBoundary": "Use this packet for development replay only. Backend run receipts and differences must be retained separately; the frontend does not call backend tools."
+}

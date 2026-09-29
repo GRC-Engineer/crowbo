@@ -215,11 +215,11 @@
   margin: 18px 0 4px;
 }
 .assistant-support summary {
-  font-size: 11px;
-  color: var(--slate);
+  font-size: 13px;
+  color: var(--oxide);
 }
 .assistant-support p {
-  color: var(--ink-400);
+  color: var(--chalk-300);
   font-size: 12px;
   line-height: 1.6;
 }
@@ -283,8 +283,8 @@
   background: var(--ink-700);
 }
 .assistant-input:focus-within {
-  border-color: var(--oxide);
-  outline: 1px solid var(--oxide);
+  border-color: var(--sage);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sage) 7%, transparent);
 }
 .assistant-input textarea {
   background: transparent;

@@ -1,21 +1,13 @@
 import type { RefObject } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  GitCompareArrows,
-  X,
-} from "./pixel-icons";
+import { ArrowRight, ArrowUpRight, GitCompareArrows, X } from "./pixel-icons";
 import { ProviderMark } from "./providers";
 import type { DemoSource } from "./question-demo-model";
 import {
-  accessAdvice,
   accessOptions,
   basisLabels,
   pendingSource,
   type AccessBasis,
-  type AccessVersion,
   type PendingContext,
 } from "./access-review-model";
 
@@ -36,13 +28,15 @@ export function PendingContextCard({
 }) {
   const source = pendingSource(context);
   const explanation =
-    context.kind === "annual-task"
-      ? "Ninety quiet days missed work that happens once a year. The owner's new statement challenges the original view."
-      : context.status === "tested"
-        ? "The fictional record includes successful recovery, timed expiry and denied cross-queue exports. The daily role and rollout approval still need checking."
-        : context.status === "unverified"
-          ? "This alternative contains a runbook, with no successful test or expiry record. It cannot establish that temporary access works."
-          : "This alternative says the required temporary-access mechanism is unavailable. We need a different supported path.";
+    context.kind === "check"
+      ? source.why
+      : context.kind === "annual-task"
+        ? "Ninety quiet days missed work that happens once a year. The owner's new statement challenges the original view."
+        : context.status === "tested"
+          ? "The fictional record includes successful recovery, timed expiry and denied cross-queue exports. The daily role and rollout approval still need checking."
+          : context.status === "unverified"
+            ? "This alternative contains a runbook, with no successful test or expiry record. It cannot establish that temporary access works."
+            : "This alternative says the required temporary-access mechanism is unavailable. We need a different supported path.";
   return (
     <div className="access-pending">
       <div className="access-section-label">
@@ -108,67 +102,6 @@ export function CompareOptions({ basis }: { basis: AccessBasis }) {
                 </div>
               </section>
             ))}
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
-  );
-}
-
-export function NextStep({
-  version,
-  recorded,
-  onRecord,
-}: {
-  version: AccessVersion;
-  recorded: boolean;
-  onRecord: () => void;
-}) {
-  return (
-    <Dialog.Root>
-      <Dialog.Trigger className="ask-primary ask-answer-action">
-        Review next action <ArrowRight size={16} />
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="dialog-overlay" />
-        <Dialog.Content className="dialog-content ask-choice-dialog">
-          <div className="ask-dialog-top">
-            <span className="ask-small">
-              Simulation · Advice {version.number}
-            </span>
-            <Dialog.Close className="ask-icon" aria-label="Close next action">
-              <X size={20} />
-            </Dialog.Close>
-          </div>
-          <Dialog.Title>Make the next step explicit.</Dialog.Title>
-          <Dialog.Description>
-            Record a proposed next step for this version. This does not approve
-            access, contact anyone or create work.
-          </Dialog.Description>
-          <p className="ask-chosen-step">{accessAdvice[version.basis].next}</p>
-          <button
-            className="ask-primary"
-            aria-disabled={recorded}
-            onClick={() => {
-              if (!recorded) onRecord();
-            }}
-          >
-            {recorded ? (
-              <>
-                <Check size={16} /> Recorded for this version
-              </>
-            ) : (
-              <>
-                Record simulated next step <ArrowRight size={16} />
-              </>
-            )}
-          </button>
-          <div role="status">
-            {recorded && (
-              <p className="ask-fine">
-                Saved in this tab. The conditions in the advice still apply.
-              </p>
-            )}
           </div>
         </Dialog.Content>
       </Dialog.Portal>

@@ -1,28 +1,19 @@
 import { useEffect, useReducer, useRef, useState, type FormEvent } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
 import { motion, useReducedMotion } from "motion/react";
 import {
   ArrowLeft,
+  CornerDownRight,
   ArrowRight,
   ArrowUpRight,
   Check,
-  ChevronDown,
-  CornerDownRight,
-  LockKeyhole,
   Pause,
   Play,
-  RotateCcw,
-  Search,
-  Sparkles,
-  X,
 } from "./pixel-icons";
+import { caseGuides } from "./case-guidance";
+import { WorkflowReview } from "./workflow-review";
 import { Crow } from "./components";
 import { FeatherGlyph } from "./identity";
-import {
-  SourceNetwork,
-  SourceInspector,
-  ContextNote,
-} from "./question-components";
+import { SourceNetwork, SourceInspector } from "./question-components";
 import { AccessReview } from "./access-review";
 import {
   demoCases,
@@ -42,10 +33,7 @@ export default function QuestionDemo() {
   const previousStage = useRef("welcome");
   const reducedMotion = useReducedMotion();
   const caseData = "caseId" in state ? demoCases[state.caseId] : null;
-  const viewKey =
-    state.kind === "result" && state.caseId === "upgrade"
-      ? `${state.kind}-${state.version}`
-      : state.kind;
+  const viewKey = state.kind;
 
   useEffect(() => {
     document.title = "Crowbo · Ask a question";
@@ -138,13 +126,18 @@ export default function QuestionDemo() {
               <div className="ask-welcome-art" aria-hidden="true">
                 <div className="ask-quiet-grid" />
                 <Crow />
+                <span className="ask-art-coordinate">
+                  01 / A LITTLE PERSPECTIVE
+                </span>
               </div>
+              <span className="ask-small">Decisions, with context.</span>
               <h1 ref={heading} tabIndex={-1}>
                 What needs <br />a decision?
               </h1>
               <p>
-                Pick a prepared security question and see the records behind the
-                recommendation.
+                Start with a question.
+                <br />
+                Put the context around it.
               </p>
               <button
                 className="ask-primary"
@@ -159,6 +152,7 @@ export default function QuestionDemo() {
             <form className="ask-composer" onSubmit={submit}>
               <div className="ask-composer-heading">
                 <div>
+                  <span className="ask-small">01 / Ask</span>
                   <h1 ref={heading} tabIndex={-1}>
                     What’s your question?
                   </h1>
@@ -197,7 +191,7 @@ export default function QuestionDemo() {
               )}
               <div className="ask-example-heading">
                 <span>Try a prepared question</span>
-                <span className="ask-small">2 examples</span>
+                <span className="ask-small">03 EXAMPLES</span>
               </div>
               <div className="ask-examples">
                 {Object.values(demoCases).map((entry) => (
@@ -214,12 +208,18 @@ export default function QuestionDemo() {
                   >
                     <span>
                       <FeatherGlyph
-                        kind={entry.id === "access" ? "branch" : "merge"}
+                        kind={
+                          entry.id === "access"
+                            ? "branch"
+                            : entry.id === "exceptions"
+                              ? "spine"
+                              : "merge"
+                        }
                       />
                     </span>
                     <span>
                       <strong>{entry.label}</strong>
-                      <small>{entry.question}</small>
+                      <small>{caseGuides[entry.id].invitation}</small>
                     </span>
                     <CornerDownRight size={16} />
                   </button>
@@ -229,7 +229,7 @@ export default function QuestionDemo() {
                 <p id="ask-prepared-note">
                   A scripted demo with fictional sources.
                   <br />
-                  Choosing an example starts its walkthrough.
+                  Choose an example to start its journey.
                 </p>
                 <button
                   className="ask-primary"
@@ -246,7 +246,9 @@ export default function QuestionDemo() {
             <div className="ask-research">
               <div className="ask-research-header">
                 <div>
-                  <span className="ask-small">Explore · {caseData.label}</span>
+                  <span className="ask-small">
+                    02 / Explore · {caseData.label}
+                  </span>
                   <h1 ref={heading} tabIndex={-1}>
                     Putting the context together.
                   </h1>
@@ -298,7 +300,7 @@ export default function QuestionDemo() {
                     <small>
                       {state.paused
                         ? "Explore a source, then resume when you’re ready."
-                        : researchSteps[state.step].detail}
+                        : caseGuides[state.caseId].research[state.step]}
                     </small>
                   </span>
                 </div>
@@ -316,254 +318,24 @@ export default function QuestionDemo() {
           )}
 
           {state.kind === "result" && state.caseId === "access" && (
-            <AccessReview headingRef={heading} />
+            <AccessReview
+              headingRef={heading}
+              onTryAnother={() => dispatch({ type: "question" })}
+            />
           )}
-          {state.kind === "result" &&
-            state.caseId === "upgrade" &&
-            caseData?.id === "upgrade" && (
-              <div className="ask-result">
-                <div className="ask-result-question">
-                  <div>
-                    <span className="ask-small">
-                      03 / Decide · {caseData.label}
-                    </span>
-                    <h1 ref={heading} tabIndex={-1}>
-                      {caseData.question}
-                    </h1>
-                    <p>{caseData.scope}</p>
-                  </div>
-                  <Crow pose="glide" />
-                </div>
-                {state.version === "changed" && (
-                  <div className="ask-version-change" role="status">
-                    <span className="ask-small">Prepared what-if</span>
-                    <strong>{caseData.whatIf}</strong>
-                    <p>
-                      Before: {caseData.baseline.title}
-                      <br />
-                      Now: {caseData.changed.title}
-                    </p>
-                    <button onClick={() => dispatch({ type: "restore" })}>
-                      <RotateCcw size={14} />
-                      Return to original
-                    </button>
-                  </div>
-                )}
-                <div className="ask-answer-grid">
-                  <section className="ask-answer">
-                    <div className="ask-answer-label">
-                      <span className="ask-small">Recommended next move</span>
-                      <span>0{state.version === "baseline" ? 1 : 2}</span>
-                    </div>
-                    <h2>{caseData[state.version].title}</h2>
-                    <p>{caseData[state.version].reason}</p>
-                    <div className="ask-condition">
-                      <LockKeyhole size={16} />
-                      <span>{caseData[state.version].condition}</span>
-                    </div>
-                    <Dialog.Root>
-                      <Dialog.Trigger className="ask-primary ask-answer-action">
-                        Choose a next step <ArrowRight size={16} />
-                      </Dialog.Trigger>
-                      <Dialog.Portal>
-                        <Dialog.Overlay className="dialog-overlay" />
-                        <Dialog.Content className="dialog-content ask-choice-dialog">
-                          <div className="ask-dialog-top">
-                            <span className="ask-small">Simulation only</span>
-                            <Dialog.Close
-                              className="ask-icon"
-                              aria-label="Close next step"
-                            >
-                              <X size={20} />
-                            </Dialog.Close>
-                          </div>
-                          <Dialog.Title>
-                            Make the next step explicit.
-                          </Dialog.Title>
-                          <Dialog.Description>
-                            This records a preference in this tab. It does not
-                            approve a change, contact an owner or create work.
-                          </Dialog.Description>
-                          <p className="ask-chosen-step">
-                            {caseData[state.version].next}
-                          </p>
-                          <button
-                            className="ask-primary"
-                            aria-disabled={state.recorded}
-                            onClick={() => {
-                              if (!state.recorded) dispatch({ type: "record" });
-                            }}
-                          >
-                            {state.recorded ? (
-                              <>
-                                <Check size={16} />
-                                Recorded in this tab
-                              </>
-                            ) : (
-                              <>
-                                Record simulated next step{" "}
-                                <ArrowRight size={16} />
-                              </>
-                            )}
-                          </button>
-                          <div role="status">
-                            {state.recorded && (
-                              <p className="ask-fine">
-                                The owner’s review is still needed. No action
-                                has been taken.
-                              </p>
-                            )}
-                          </div>
-                        </Dialog.Content>
-                      </Dialog.Portal>
-                    </Dialog.Root>
-                    {state.recorded && (
-                      <p className="ask-recorded">
-                        <Check size={13} />
-                        Simulated next step recorded
-                      </p>
-                    )}
-                  </section>
-                  <aside className="ask-basis">
-                    <span className="ask-small">Why this move</span>
-                    {caseData.sources
-                      .filter(
-                        (record) =>
-                          record.influence === "deciding" ||
-                          record.influence === "constraint",
-                      )
-                      .map((record) => (
-                        <button
-                          key={record.id}
-                          onClick={(event) =>
-                            inspect(record, event.currentTarget)
-                          }
-                        >
-                          <FeatherGlyph kind={record.feather} />
-                          <span>
-                            <small>
-                              {record.influence === "constraint"
-                                ? "Must hold"
-                                : record.label}
-                            </small>
-                            <strong>{record.claim}</strong>
-                          </span>
-                          <ArrowUpRight size={14} />
-                        </button>
-                      ))}
-                    <details className="ask-confidence">
-                      <summary>
-                        How confident is this?
-                        <ChevronDown size={14} />
-                      </summary>
-                      <p>{caseData[state.version].support}</p>
-                      <p>
-                        This is conditional support for a next step, not a
-                        measured probability that the decision is correct.
-                      </p>
-                    </details>
-                  </aside>
-                </div>
-                <div className="ask-result-details">
-                  <details className="ask-disclosure ask-challenge">
-                    <summary>
-                      <span>
-                        <Sparkles size={17} />
-                        What might we be missing?
-                      </span>
-                      <span className="ask-disclosure-hint">
-                        Challenge the view <ChevronDown size={16} />
-                      </span>
-                    </summary>
-                    <div className="ask-disclosure-body">
-                      <span className="ask-small">Another angle</span>
-                      <h2>{caseData.challenge.title}</h2>
-                      <p>{caseData.challenge.body}</p>
-                      <div className="ask-challenge-check">
-                        <CornerDownRight size={17} />
-                        <p>
-                          <strong>The check that would help</strong>
-                          {caseData.challenge.check}
-                        </p>
-                      </div>
-                      <button
-                        className="ask-text-button"
-                        onClick={(event) => {
-                          const record = caseData.sources.find(
-                            (item) => item.id === caseData.challenge.sourceId,
-                          );
-                          if (record) inspect(record, event.currentTarget);
-                        }}
-                      >
-                        Inspect the source behind this{" "}
-                        <ArrowUpRight size={14} />
-                      </button>
-                      <div className="ask-what-if">
-                        <span>See how the next move changes</span>
-                        <button
-                          onClick={() => dispatch({ type: "what-if" })}
-                          disabled={state.version === "changed"}
-                        >
-                          Try: {caseData.whatIf} <ArrowRight size={15} />
-                        </button>
-                        <small>A prepared scenario. No inference runs.</small>
-                      </div>
-                      <ContextNote
-                        note={state.note}
-                        onSave={(value) => dispatch({ type: "note", value })}
-                      />
-                    </div>
-                  </details>
-                  <details className="ask-disclosure">
-                    <summary>
-                      <span>
-                        <Search size={17} />
-                        Explore the sources
-                      </span>
-                      <span className="ask-disclosure-hint">
-                        6 example records <ChevronDown size={16} />
-                      </span>
-                    </summary>
-                    <div className="ask-disclosure-body ask-source-body">
-                      {state.version === "changed" && (
-                        <p className="ask-network-note">
-                          Original source set. The prepared what-if above
-                          overrides the owner’s test availability for this
-                          illustration.
-                        </p>
-                      )}
-                      <SourceNetwork
-                        sources={caseData.sources}
-                        onInspect={inspect}
-                      />
-                    </div>
-                  </details>
-                  <details className="ask-disclosure">
-                    <summary>
-                      <span>
-                        <CornerDownRight size={17} />
-                        What else could we do?
-                      </span>
-                      <ChevronDown size={16} />
-                    </summary>
-                    <div className="ask-disclosure-body ask-options">
-                      {caseData.alternatives.map((option) => (
-                        <div key={option.title}>
-                          <h3>{option.title}</h3>
-                          <p>{option.tradeoff}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                </div>
-              </div>
-            )}
+          {state.kind === "result" && state.caseId !== "access" && (
+            <WorkflowReview
+              caseId={state.caseId}
+              headingRef={heading}
+              onTryAnother={() => dispatch({ type: "question" })}
+            />
+          )}
         </motion.section>
         <footer className="ask-footer">
           <span>
             <i />
             {state.kind === "welcome"
-              ? "Two questions to explore."
+              ? "Three questions to explore."
               : "Prepared examples · resets on reload."}
           </span>
           <span>NO LIVE CONNECTIONS</span>
@@ -575,15 +347,8 @@ export default function QuestionDemo() {
           scope={caseData.scope}
           onClose={() => setSource(null)}
           returnFocus={sourceTrigger}
-          override={
-            state.kind === "result" &&
-            state.caseId === "upgrade" &&
-            caseData.id === "upgrade" &&
-            state.version === "changed" &&
-            source.id === "capacity"
-              ? caseData.whatIf
-              : undefined
-          }
+          sources={caseData.sources}
+          context={`${caseData.id} · initial selected basis`}
         />
       )}
     </div>
