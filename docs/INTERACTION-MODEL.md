@@ -90,6 +90,16 @@ The control guide separates a practical control objective, the risk being consid
 
 References checked on 29 September 2026: [AICPA TSC, with 2022 revised points of focus](https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022), [AICPA published redline, pp. 30, 34, 37](https://us.aicpa.org/content/dam/aicpa/interestareas/frc/assuranceadvisoryservices/downloadabledocuments/trust-services-criteria-redlined.pdf), [ISO SC27 Journal 2025, pp. 21–22, control identifiers and explanatory example](https://committee.iso.org/files/live/sites/jtc1sc27/files/resources/Journal%202025.pdf), and [NIST CSWP 29, Appendix A](https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf). The ISO journal is supporting commentary, not a substitute for the applicable licensed standard. SOC 2 criteria, ISO controls and CSF outcomes are different kinds of reference; this is not an equivalence crosswalk. Verify applicability against the organisation’s control design, assessment scope and, for ISO, its Statement of Applicability.
 
+### Decision to next step, 29 September
+
+The three question-first cases now continue inline through **Take the next step**. This replaces the recording dialog that left a visitor looking for its close icon. The next page states the actual task and offers an agent preview or **I’ll handle this myself**. Both routes end with a clear return to the retained decision or a choice of another case.
+
+The preview offers Codex, Claude Code, Claude Chat, Cowork and Lovable, then a plan or draft-change outline. These are destination preferences, not integrations or tested launch targets. **Run agent demo** plays an authored three-stage sequence and shows an example response. It performs no model call, external launch, repository access, permission grant or system change. Reduced motion skips the sequence; the user can also skip or cancel it. The personal route records only the proposed next step for the current version in this tab.
+
+A closed **What goes with the task?** disclosure explains the question, scope, recommendation, conditions, source revisions, operator note and illustrative framework notes. Starting a preview snapshots the exact reviewed context. A pending source update blocks handoff until it is reassessed or discarded. Returning preserves the recommendation and assistant presentation; reassessment creates a new version and resets its handoff.
+
+**Copy task brief** is the only export. It copies plain text after an explicit click, with a selectable fallback if clipboard access fails. The brief labels all records as fictional, source quotes and notes as untrusted data, framework notes as illustrative, and requested work as a proposal without execution authority. It contains no application launch link. A future live handoff must follow the contracts owned by the backend; this preview does not establish session creation, delegated access, execution or verified results.
+
 ## What the user comes to do
 
 Help a GRC or Security Assurance team decide what deserves attention, understand the trade-off, involve the right owner, and check what happened afterward. The three workflows above share that loop. The accountable owner and delivery team have different responsibilities.
