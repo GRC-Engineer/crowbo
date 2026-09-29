@@ -74,8 +74,8 @@ html[data-variant="flock"][data-crow-ready] #crow-bytes {
   bottom: 16px;
   transform: translateX(-50%);
   width: min(720px, calc(100% - 28px));
-  border: 1px solid #38413c;
-  background: #121817;
+  border: 1px solid var(--charcoal);
+  background: var(--ink-900);
   color: var(--chalk);
   font:
     400 12px / 1.5 ui-monospace,
@@ -110,7 +110,7 @@ html[data-variant="flock"][data-crow-ready] #crow-bytes {
   flex: 1;
 }
 .motion-review button:hover {
-  background: #1e2924;
+  background: var(--ink-700);
 }
 .motion-review button[aria-pressed="true"] {
   background: var(--sage);
@@ -121,7 +121,7 @@ html[data-variant="flock"][data-crow-ready] #crow-bytes {
   outline-offset: 2px;
 }
 .motion-review .motion-toggle {
-  border-left: 1px solid #38413c;
+  border-left: 1px solid var(--charcoal);
   min-width: 65px;
 }
 .option-index {
@@ -133,7 +133,7 @@ html[data-variant="flock"][data-crow-ready] #crow-bytes {
   flex-wrap: wrap;
   gap: 3px 14px;
   padding: 0 14px 9px;
-  color: #9fa9a3;
+  color: var(--muted);
   font-size: 10px;
 }
 
@@ -165,7 +165,7 @@ html[data-variant="flock"][data-crow-ready] #crow-bytes {
     position: relative;
     right: auto;
     bottom: auto;
-    mask-image: linear-gradient(#000 82%, transparent);
+    mask-image: linear-gradient(var(--black) 82%, transparent);
   }
   html[data-variant] .footer {
     margin-top: 18px;
