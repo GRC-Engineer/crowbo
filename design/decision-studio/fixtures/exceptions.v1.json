@@ -8,7 +8,7 @@
     "influence": "Authored categories only; no measured weights or confidence."
   },
   "id": "exceptions",
-  "specVersion": "1.0.0",
+  "specVersion": "1.0.1",
   "question": "A production service is missing required admin audit logs. Should we remediate now or request a time-limited exception?",
   "scope": "Acme billing-admin · prod-eu · privileged admin actions",
   "initialStage": "open",
@@ -42,10 +42,10 @@
       ],
       "label": "Logging gap",
       "advice": {
-        "title": "Test the safeguard. Keep approval separate.",
-        "reason": "The sink test contradicts the \"covered\" ticket. Remediation remains the target; a bounded interim arrangement is only an option if its coverage works and the right owner approves.",
-        "condition": "Inez must confirm delivery feasibility. The security owner must decide any deviation. The requested exception grants no authority.",
-        "next": "Inez: arrange an actor-level safeguard test and prepare the scoped request.",
+        "title": "Test the safeguard before seeking approval.",
+        "reason": "Required admin activity is missing from the logs, despite the ticket saying it is covered. Keep fixing the gap. A temporary safeguard needs testing and approval before it can support an exception.",
+        "condition": "Inez must confirm the team can deliver the safeguard. Only the security owner can approve a temporary exception; a request alone is not approval.",
+        "next": "Inez: check that the safeguard records who made each admin change, then prepare a request with scope and expiry.",
         "support": "The selected sources establish the gap, not effective compensation or approval."
       },
       "change": "Initial selected basis.",

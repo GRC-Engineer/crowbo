@@ -8,7 +8,7 @@
     "influence": "Authored categories only; no measured weights or confidence."
   },
   "id": "remediation",
-  "specVersion": "1.0.0",
+  "specVersion": "1.0.1",
   "question": "The gateway security fix is merged. What should happen next, and can we close the finding?",
   "scope": "Acme gateway · gw-prod-eu · customer sign-in",
   "initialStage": "open",
@@ -38,10 +38,10 @@
       ],
       "label": "Merged fix",
       "advice": {
-        "title": "Merge is a start. Verify the fix in production.",
-        "reason": "The ticket is done, but the affected gateway is still serving traffic. Plan the approved rollout and test the actual customer sign-in path.",
-        "condition": "Nora must resolve the change window and rollback check. Closure is unsupported until the scoped security check passes on every serving replica.",
-        "next": "Nora: confirm the window, rollout and verification owner.",
+        "title": "Deploy, then verify the fix.",
+        "reason": "The code is ready, but the live service still runs the vulnerable version. Arrange the approved rollout, then check that unsafe sign-ins fail and normal ones still work.",
+        "condition": "Nora must confirm release timing and the rollback check. Keep the finding open until the security check passes on every running copy of the service.",
+        "next": "Nora: confirm release timing, how to undo the change and who will verify it.",
         "support": "The production version decides this next step. A completed ticket repeats the patch review and adds no independent confirmation."
       },
       "change": "Initial selected basis.",

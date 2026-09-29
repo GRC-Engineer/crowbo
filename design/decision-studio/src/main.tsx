@@ -5,6 +5,7 @@ import QuestionDemo from "./question-demo";
 import "./styles.css";
 import "./identity.css";
 import "./clarity.css";
+import "./case-guidance.css";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("The Crowbo root element is missing.");

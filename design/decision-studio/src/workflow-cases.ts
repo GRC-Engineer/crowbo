@@ -806,7 +806,7 @@ const records = {
 } satisfies Record<string, DemoSource>;
 const remediation = {
   id: "remediation",
-  specVersion: "1.0.0",
+  specVersion: "1.0.1",
   label: "Remediation tracking",
   question:
     "The gateway security fix is merged. What should happen next, and can we close the finding?",
@@ -858,12 +858,12 @@ const remediation = {
       focus: ["finding", "inventory", "change-policy"],
       label: "Merged fix",
       advice: {
-        title: "Merge is a start. Verify the fix in production.",
+        title: "Deploy, then verify the fix.",
         reason:
-          "The ticket is done, but the affected gateway is still serving traffic. Plan the approved rollout and test the actual customer sign-in path.",
+          "The code is ready, but the live service still runs the vulnerable version. Arrange the approved rollout, then check that unsafe sign-ins fail and normal ones still work.",
         condition:
-          "Nora must resolve the change window and rollback check. Closure is unsupported until the scoped security check passes on every serving replica.",
-        next: "Nora: confirm the window, rollout and verification owner.",
+          "Nora must confirm release timing and the rollback check. Keep the finding open until the security check passes on every running copy of the service.",
+        next: "Nora: confirm release timing, how to undo the change and who will verify it.",
         support:
           "The production version decides this next step. A completed ticket repeats the patch review and adds no independent confirmation.",
       },
@@ -1003,7 +1003,7 @@ const remediation = {
 } satisfies Omit<WorkflowCase, "initial" | "sources" | "baseline">;
 const exceptions = {
   id: "exceptions",
-  specVersion: "1.0.0",
+  specVersion: "1.0.1",
   label: "Issues and exceptions",
   question:
     "A production service is missing required admin audit logs. Should we remediate now or request a time-limited exception?",
@@ -1059,12 +1059,12 @@ const exceptions = {
       focus: ["logging-gap", "logging-issue", "exception-request"],
       label: "Logging gap",
       advice: {
-        title: "Test the safeguard. Keep approval separate.",
+        title: "Test the safeguard before seeking approval.",
         reason:
-          'The sink test contradicts the "covered" ticket. Remediation remains the target; a bounded interim arrangement is only an option if its coverage works and the right owner approves.',
+          "Required admin activity is missing from the logs, despite the ticket saying it is covered. Keep fixing the gap. A temporary safeguard needs testing and approval before it can support an exception.",
         condition:
-          "Inez must confirm delivery feasibility. The security owner must decide any deviation. The requested exception grants no authority.",
-        next: "Inez: arrange an actor-level safeguard test and prepare the scoped request.",
+          "Inez must confirm the team can deliver the safeguard. Only the security owner can approve a temporary exception; a request alone is not approval.",
+        next: "Inez: check that the safeguard records who made each admin change, then prepare a request with scope and expiry.",
         support:
           "The selected sources establish the gap, not effective compensation or approval.",
       },

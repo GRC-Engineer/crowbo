@@ -74,6 +74,22 @@ Today the public animation and source influence labels are authored. Retain a vi
 
 The [data model](DECISION-DATA-MODEL.md#proposed-portfolio-extensions) owns domain facts and lifecycle semantics; [permissions](PERMISSIONS.md) owns disclosure boundaries; the [backend brief](TECHNICAL-PLAN.md) owns implementation sequencing. Existing MCP operations are local tools, not browser endpoints. Public frontend work remains static and synthetic, with no provider keys or private evidence. A future private connection needs a separately designed authenticated boundary. The founder subsequently authorised end-to-end implementation and publication of this static frontend. A backend integration remains outside this scope.
 
+### Guided decisions and progressive disclosure, 29 September
+
+The founder requested clearer handholding for ordinary GRC users and less information on the first result screen. Each of the three examples now introduces the practical question in everyday language and narrates its own source checks. The result keeps one dark recommendation card, its blocking condition and one next-action button visible. Pixel icons accompany text labels; they do not replace them.
+
+Four closed disclosures provide reasoning and sources; controls, risk and compliance; a change to try; and options, context and history. The full question, account/environment scope and historical source versions remain available under those sections. A staged update or recovery challenge appears when requested; it still requires explicit reassessment. The assistant view shares the dark recommendation treatment and retains the same access state.
+
+The control guide separates a practical control objective, the risk being considered and the records that can support a compliance review. A framework selector shows illustrative connections for all three requested frameworks. These authored teaching notes are outside the synthetic evidence packets, do not affect recommendations and establish neither applicability nor compliance. The exact-case question to ask a control owner is an interpretation, not quoted standard text.
+
+| Example | SOC 2 TSC | ISO/IEC 27001:2022 Annex A | NIST CSF 2.0 |
+| --- | --- | --- | --- |
+| Remediation | CC8.1: change management | A.8.8: technical vulnerabilities | PR.PS-02: software maintenance |
+| Access | CC6.3: role-related permissions | A.8.2: privileged access | PR.AA-05: permissions review and least privilege |
+| Logging gap / exception | CC7.2: system monitoring | A.8.15: logging | PR.PS-04: logs; ID.RA-07: exceptions |
+
+References checked on 29 September 2026: [AICPA TSC, with 2022 revised points of focus](https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022), [AICPA published redline, pp. 30, 34, 37](https://us.aicpa.org/content/dam/aicpa/interestareas/frc/assuranceadvisoryservices/downloadabledocuments/trust-services-criteria-redlined.pdf), [ISO SC27 Journal 2025, pp. 21–22, control identifiers and explanatory example](https://committee.iso.org/files/live/sites/jtc1sc27/files/resources/Journal%202025.pdf), and [NIST CSWP 29, Appendix A](https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf). The ISO journal is supporting commentary, not a substitute for the applicable licensed standard. SOC 2 criteria, ISO controls and CSF outcomes are different kinds of reference; this is not an equivalence crosswalk. Verify applicability against the organisation’s control design, assessment scope and, for ISO, its Statement of Applicability.
+
 ## What the user comes to do
 
 Help a GRC or Security Assurance team decide what deserves attention, understand the trade-off, involve the right owner, and check what happened afterward. The three workflows above share that loop. The accountable owner and delivery team have different responsibilities.

@@ -190,3 +190,11 @@ The browser checks covered 1440px desktop, 768px tablet, 390px phone, and a 320p
 `npm test` passed five decision-loop tests. `npm run build` passed strict TypeScript checking and production bundling. Formatting and whitespace checks passed. Vite reports non-fatal `use client` directive warnings for the client-only dependencies; this study does not use server rendering. That baseline JS bundle was approximately 142 kB gzipped. Original full-resolution PNG exports are retained; a production asset-size pass is still appropriate.
 
 These receipts establish local UI behavior, not a full accessibility audit, a user study, backend integration, or decision quality. No site was published or deployed at that time; publication followed on 29 September as described above.
+
+### Guided, quieter results — 29 September
+
+The question-first demo now gives each case a plain-language introduction and case-specific explanations during research. Results use a single dark recommendation surface with oxide accents. The recommendation, blocking condition and next action stay visible; reasoning and all sources, control/risk/compliance guidance, changed facts, and options/context/history are labelled disclosures. Access and its assistant preview still share the same decision state.
+
+The control guide includes SOC 2, ISO 27001:2022 and NIST CSF 2.0 for each case. The [interaction model](../../docs/INTERACTION-MODEL.md#guided-decisions-and-progressive-disclosure-29-september) owns mappings, references and interpretation limits. These notes remain separate from evidence and do not establish compliance or approval. The initial remediation/exception wording is simpler; those packet specifications advance to 1.0.1 with unchanged source facts and state transitions.
+
+Validation: all 30 behaviour tests and shared-packet parity pass; TypeScript and the production build pass. Browser checks cover all three results, framework selection including keyboard activation, source inspection with Escape returning focus, staged remediation reassessment and retained history, the annual-recovery challenge and assistant continuity, and the exception next-action dialog at 390×844. The phone layout has no horizontal overflow. This is UI verification, not an accessibility audit or decision-quality evaluation.

@@ -515,9 +515,11 @@ kbd,
   text-transform: none;
   color: #b9c2b8;
 }
-.recommendation-card .access-field-label,
-.ask-answer .access-field-label {
+.recommendation-card .access-field-label {
   color: #55625b;
+}
+.ask-answer .access-field-label {
+  color: var(--sage);
 }
 .access-field-label {
   margin: 18px 0 6px;
