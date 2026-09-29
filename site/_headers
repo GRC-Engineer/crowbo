@@ -6,3 +6,9 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
   Strict-Transport-Security: max-age=31536000
   Cross-Origin-Opener-Policy: same-origin
+
+# Search directives only; the demo remains accessible by URL.
+/demo
+  X-Robots-Tag: noindex, nofollow
+/demo/*
+  X-Robots-Tag: noindex, nofollow

@@ -4,11 +4,11 @@ React design study, updated 29 September 2026 in the main checkout. Since 29 Sep
 
 ## Publication as the website — 29 September
 
-The public root is the approved two-paragraph company homepage, with Modular Crow, the boxed feather network, contact information and an Open the demo link. The existing React walkthrough lives at `/demo/`; its full workspace is at `/demo/?view=workspace`. The demo wordmark returns to the company homepage. The earlier Command Room is retained as design history.
+The public root is the approved two-paragraph company homepage, with Modular Crow, the boxed feather network, contact information. There is no public homepage link to the demo. The existing React walkthrough lives at `/demo/`; its full workspace is at `/demo/?view=workspace`. The demo wordmark returns to the company homepage. The earlier Command Room is retained as design history.
 
 Vite builds `index.html` and `demo/index.html` together into the repository's `site/` directory and empties stale files first. Edit source files rather than the generated output. `landing/` reuses the approved homepage study; `src/` owns the synthetic demo. The `public/` folder supplies the unchanged security headers, static 404 page and font/provider-mark licences. Commit the regenerated `site/` with source changes so the Git-triggered deployment publishes both pages together.
 
-Both pages are public and static. No authentication or access policy is implemented. The demo calls no backend, model or external service; `connect-src 'none'` and `form-action 'none'` remain in force. Publishing it establishes no evaluation result or user acceptance.
+Both pages are public and static. The demo is unlinked from the homepage and has `noindex, nofollow` in its HTML and HTTP headers, including its workspace view. The homepage remains indexable. No `robots.txt` restriction prevents crawlers from reading the demo directives. These directives do not control access or establish removal from an existing search index. No authentication or access policy is implemented. The demo calls no backend, model or external service; `connect-src 'none'` and `form-action 'none'` remain in force. Publishing it establishes no evaluation result or user acceptance.
 
 ## Workflow coverage and next refinement
 
