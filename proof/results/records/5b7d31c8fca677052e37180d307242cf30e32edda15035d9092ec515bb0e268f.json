@@ -1,0 +1,924 @@
+{
+  "body": {
+    "alternatives": [
+      {
+        "assumption": "Product can supply a data-flow description and intended provider settings. This is not permission to launch.",
+        "business_basis": "The planned preview involves customer support data, but the current source is an assertion. A focused information request uses security capacity.",
+        "control": "ai",
+        "disposition": "proposed",
+        "effort": {
+          "cash_usd": [
+            0,
+            0
+          ],
+          "platform_half_days": [
+            0,
+            0
+          ],
+          "security_half_days": [
+            2,
+            2
+          ]
+        },
+        "eligible": true,
+        "evidence_refs": [
+          "ai_assertion"
+        ],
+        "evidence_state": "unresolved",
+        "id": "ai_data_review",
+        "label": "Resolve data handling before the support-assistant preview",
+        "mode": "investigate",
+        "priority": 8,
+        "reason": "Evidence prerequisite met",
+        "would_change": "A supported data-flow record or a postponed preview changes the need and urgency of review."
+      },
+      {
+        "assumption": "The fix uses the existing pipeline. Two platform days is an unverified upper planning bound.",
+        "business_basis": "A current bypass in the service releasing customer features deserves the flexible platform capacity when no higher-priority confirmed gap displaces it.",
+        "control": "application",
+        "disposition": "deferred_by_capacity_and_declared_preference",
+        "effort": {
+          "cash_usd": [
+            0,
+            0
+          ],
+          "platform_half_days": [
+            3,
+            4
+          ],
+          "security_half_days": [
+            1,
+            2
+          ]
+        },
+        "eligible": true,
+        "evidence_refs": [
+          "application_bypass"
+        ],
+        "evidence_state": "gap_supported",
+        "id": "application_fix",
+        "label": "Remove the production approval bypass",
+        "mode": "improve",
+        "priority": 3,
+        "reason": "Evidence prerequisite met",
+        "would_change": "Evidence that the bypass is already closed, a release constraint, or a material access incident changes this choice."
+      },
+      {
+        "assumption": "The reviewers can identify which configuration actually governed the observed release.",
+        "business_basis": "Conflicting pipeline evidence needs a scoped check before treating the repair as justified.",
+        "control": "application",
+        "disposition": "needs_evidence_or_not_indicated",
+        "effort": {
+          "cash_usd": [
+            0,
+            0
+          ],
+          "platform_half_days": [
+            1,
+            1
+          ],
+          "security_half_days": [
+            1,
+            1
+          ]
+        },
+        "eligible": false,
+        "evidence_refs": [
+          "application_bypass"
+        ],
+        "evidence_state": "gap_supported",
+        "id": "application_investigate",
+        "label": "Reconcile the approval-bypass evidence",
+        "mode": "investigate",
+        "priority": 5,
+        "reason": "Evidence prerequisite not met; no automatic commitment",
+        "would_change": "Resolving the conflicting observations can make the repair eligible or remove its basis."
+      },
+      {
+        "assumption": "An authorised inventory export can establish which assets need coverage.",
+        "business_basis": "The old export and vendor assertion do not establish current production coverage.",
+        "control": "endpoint",
+        "disposition": "deferred_by_capacity_and_declared_preference",
+        "effort": {
+          "cash_usd": [
+            0,
+            0
+          ],
+          "platform_half_days": [
+            1,
+            1
+          ],
+          "security_half_days": [
+            1,
+            1
+          ]
+        },
+        "eligible": true,
+        "evidence_refs": [
+          "endpoint_old"
+        ],
+        "evidence_state": "unresolved",
+        "id": "endpoint_inventory",
+        "label": "Refresh endpoint inventory before funding a pilot",
+        "mode": "investigate",
+        "priority": 7,
+        "reason": "Evidence prerequisite met",
+        "would_change": "Fresh inventory demonstrating a gap can support the pilot; existing coverage can support using current resources."
+      },
+      {
+        "assumption": "USD 6000 is an invented pilot cost, with no annual purchase or promised coverage gain. Owners confirm scope and capacity before a real commitment.",
+        "business_basis": "Fresh inventory proving an unmanaged production segment can justify a bounded tool pilot.",
+        "control": "endpoint",
+        "disposition": "needs_evidence_or_not_indicated",
+        "effort": {
+          "cash_usd": [
+            6000,
+            6000
+          ],
+          "platform_half_days": [
+            2,
+            2
+          ],
+          "security_half_days": [
+            2,
+            2
+          ]
+        },
+        "eligible": false,
+        "evidence_refs": [
+          "endpoint_old"
+        ],
+        "evidence_state": "unresolved",
+        "id": "endpoint_pilot",
+        "label": "Run a bounded endpoint coverage pilot",
+        "mode": "improve",
+        "priority": 1,
+        "reason": "Evidence prerequisite not met; no automatic commitment",
+        "would_change": "Existing agents covering the segment, insufficient handling capacity, or an unsupported inventory invalidates this option."
+      },
+      {
+        "assumption": "The owner can close the identified approval path within two platform days; urgent containment is already complete in the fictional incident.",
+        "business_basis": "A confirmed production access gap takes the next flexible platform slot under this proposed scenario policy.",
+        "control": "identity",
+        "disposition": "proposed",
+        "effort": {
+          "cash_usd": [
+            0,
+            0
+          ],
+          "platform_half_days": [
+            2,
+            4
+          ],
+          "security_half_days": [
+            1,
+            2
+          ]
+        },
+        "eligible": true,
+        "evidence_refs": [
+          "access_incident",
+          "access_sample"
+        ],
+        "evidence_state": "gap_supported",
+        "id": "identity_fix",
+        "label": "Repair privileged access approval using existing identity tooling",
+        "mode": "improve",
+        "priority": 0,
+        "reason": "Evidence prerequisite met",
+        "would_change": "A corrected finding, a larger fix estimate, or a stronger competing exposure would change this priority."
+      },
+      {
+        "assumption": "An authorised export can resolve the current population and approval trail in half a day per team.",
+        "business_basis": "Resolve whether the production-access claim is supported before choosing a repair.",
+        "control": "identity",
+        "disposition": "needs_evidence_or_not_indicated",
+        "effort": {
+          "cash_usd": [
+            0,
+            0
+          ],
+          "platform_half_days": [
+            1,
+            1
+          ],
+          "security_half_days": [
+            1,
+            1
+          ]
+        },
+        "eligible": false,
+        "evidence_refs": [
+          "access_incident",
+          "access_sample"
+        ],
+        "evidence_state": "gap_supported",
+        "id": "identity_investigate",
+        "label": "Obtain a current privileged-access sample",
+        "mode": "investigate",
+        "priority": 4,
+        "reason": "Evidence prerequisite not met; no automatic commitment",
+        "would_change": "A current, scoped observation replaces the information request with the appropriate improvement or deferral."
+      },
+      {
+        "assumption": "The records are already reviewed; cleanup does not remediate the approval bypass.",
+        "business_basis": "Routine work uses remaining security capacity and can be deferred to retain contingency.",
+        "control": "application",
+        "disposition": "proposed",
+        "effort": {
+          "cash_usd": [
+            0,
+            0
+          ],
+          "platform_half_days": [
+            0,
+            0
+          ],
+          "security_half_days": [
+            1,
+            1
+          ]
+        },
+        "eligible": true,
+        "evidence_refs": [
+          "application_bypass"
+        ],
+        "evidence_state": "gap_supported",
+        "id": "record_cleanup",
+        "label": "Clean up already-reviewed assurance records",
+        "mode": "maintain",
+        "priority": 9,
+        "reason": "Evidence prerequisite met",
+        "would_change": "The owner may prefer to keep the half day free for uncertainty."
+      },
+      {
+        "assumption": "The reservation and customer date are scenario configuration supplied by the owner; neither proves the restore will work.",
+        "business_basis": "A customer recovery exercise due within the horizon has two reserved platform days. This fixture treats it as a named commitment.",
+        "control": "recovery",
+        "disposition": "proposed",
+        "effort": {
+          "cash_usd": [
+            0,
+            0
+          ],
+          "platform_half_days": [
+            4,
+            4
+          ],
+          "security_half_days": [
+            1,
+            1
+          ]
+        },
+        "eligible": true,
+        "evidence_refs": [
+          "recovery_rehearsal"
+        ],
+        "evidence_state": "gap_supported",
+        "id": "recovery_fix",
+        "label": "Repair and repeat the recovery rehearsal",
+        "mode": "improve",
+        "priority": 2,
+        "reason": "Evidence prerequisite met",
+        "would_change": "A rescheduled commitment or fresh successful rehearsal may release the reservation. This requires an explicit new case revision."
+      },
+      {
+        "assumption": "The owner can obtain fresh evidence and reconsider the commitment.",
+        "business_basis": "The named recovery commitment needs current facts; stale results cannot justify a current effectiveness conclusion.",
+        "control": "recovery",
+        "disposition": "needs_evidence_or_not_indicated",
+        "effort": {
+          "cash_usd": [
+            0,
+            0
+          ],
+          "platform_half_days": [
+            1,
+            1
+          ],
+          "security_half_days": [
+            1,
+            1
+          ]
+        },
+        "eligible": false,
+        "evidence_refs": [
+          "recovery_rehearsal"
+        ],
+        "evidence_state": "gap_supported",
+        "id": "recovery_investigate",
+        "label": "Refresh the recovery rehearsal evidence",
+        "mode": "investigate",
+        "priority": 6,
+        "reason": "Evidence prerequisite not met; no automatic commitment",
+        "would_change": "A scoped rehearsal result can make repair or deferral defensible."
+      }
+    ],
+    "authored_by": "Codex",
+    "authority": "Recommendation only. No action executes and no real authorisation is granted.",
+    "basis": {
+      "actions": [
+        {
+          "assumption": "Product can supply a data-flow description and intended provider settings. This is not permission to launch.",
+          "business_basis": "The planned preview involves customer support data, but the current source is an assertion. A focused information request uses security capacity.",
+          "control": "ai",
+          "effort": {
+            "cash_usd": [
+              0,
+              0
+            ],
+            "platform_half_days": [
+              0,
+              0
+            ],
+            "security_half_days": [
+              2,
+              2
+            ]
+          },
+          "id": "ai_data_review",
+          "label": "Resolve data handling before the support-assistant preview",
+          "mode": "investigate",
+          "priority": 8,
+          "would_change": "A supported data-flow record or a postponed preview changes the need and urgency of review."
+        },
+        {
+          "assumption": "The fix uses the existing pipeline. Two platform days is an unverified upper planning bound.",
+          "business_basis": "A current bypass in the service releasing customer features deserves the flexible platform capacity when no higher-priority confirmed gap displaces it.",
+          "control": "application",
+          "effort": {
+            "cash_usd": [
+              0,
+              0
+            ],
+            "platform_half_days": [
+              3,
+              4
+            ],
+            "security_half_days": [
+              1,
+              2
+            ]
+          },
+          "id": "application_fix",
+          "label": "Remove the production approval bypass",
+          "mode": "improve",
+          "priority": 3,
+          "would_change": "Evidence that the bypass is already closed, a release constraint, or a material access incident changes this choice."
+        },
+        {
+          "assumption": "The reviewers can identify which configuration actually governed the observed release.",
+          "business_basis": "Conflicting pipeline evidence needs a scoped check before treating the repair as justified.",
+          "control": "application",
+          "effort": {
+            "cash_usd": [
+              0,
+              0
+            ],
+            "platform_half_days": [
+              1,
+              1
+            ],
+            "security_half_days": [
+              1,
+              1
+            ]
+          },
+          "id": "application_investigate",
+          "label": "Reconcile the approval-bypass evidence",
+          "mode": "investigate",
+          "priority": 5,
+          "would_change": "Resolving the conflicting observations can make the repair eligible or remove its basis."
+        },
+        {
+          "assumption": "An authorised inventory export can establish which assets need coverage.",
+          "business_basis": "The old export and vendor assertion do not establish current production coverage.",
+          "control": "endpoint",
+          "effort": {
+            "cash_usd": [
+              0,
+              0
+            ],
+            "platform_half_days": [
+              1,
+              1
+            ],
+            "security_half_days": [
+              1,
+              1
+            ]
+          },
+          "id": "endpoint_inventory",
+          "label": "Refresh endpoint inventory before funding a pilot",
+          "mode": "investigate",
+          "priority": 7,
+          "would_change": "Fresh inventory demonstrating a gap can support the pilot; existing coverage can support using current resources."
+        },
+        {
+          "assumption": "USD 6000 is an invented pilot cost, with no annual purchase or promised coverage gain. Owners confirm scope and capacity before a real commitment.",
+          "business_basis": "Fresh inventory proving an unmanaged production segment can justify a bounded tool pilot.",
+          "control": "endpoint",
+          "effort": {
+            "cash_usd": [
+              6000,
+              6000
+            ],
+            "platform_half_days": [
+              2,
+              2
+            ],
+            "security_half_days": [
+              2,
+              2
+            ]
+          },
+          "id": "endpoint_pilot",
+          "label": "Run a bounded endpoint coverage pilot",
+          "mode": "improve",
+          "priority": 1,
+          "would_change": "Existing agents covering the segment, insufficient handling capacity, or an unsupported inventory invalidates this option."
+        },
+        {
+          "assumption": "The owner can close the identified approval path within two platform days; urgent containment is already complete in the fictional incident.",
+          "business_basis": "A confirmed production access gap takes the next flexible platform slot under this proposed scenario policy.",
+          "control": "identity",
+          "effort": {
+            "cash_usd": [
+              0,
+              0
+            ],
+            "platform_half_days": [
+              2,
+              4
+            ],
+            "security_half_days": [
+              1,
+              2
+            ]
+          },
+          "id": "identity_fix",
+          "label": "Repair privileged access approval using existing identity tooling",
+          "mode": "improve",
+          "priority": 0,
+          "would_change": "A corrected finding, a larger fix estimate, or a stronger competing exposure would change this priority."
+        },
+        {
+          "assumption": "An authorised export can resolve the current population and approval trail in half a day per team.",
+          "business_basis": "Resolve whether the production-access claim is supported before choosing a repair.",
+          "control": "identity",
+          "effort": {
+            "cash_usd": [
+              0,
+              0
+            ],
+            "platform_half_days": [
+              1,
+              1
+            ],
+            "security_half_days": [
+              1,
+              1
+            ]
+          },
+          "id": "identity_investigate",
+          "label": "Obtain a current privileged-access sample",
+          "mode": "investigate",
+          "priority": 4,
+          "would_change": "A current, scoped observation replaces the information request with the appropriate improvement or deferral."
+        },
+        {
+          "assumption": "The records are already reviewed; cleanup does not remediate the approval bypass.",
+          "business_basis": "Routine work uses remaining security capacity and can be deferred to retain contingency.",
+          "control": "application",
+          "effort": {
+            "cash_usd": [
+              0,
+              0
+            ],
+            "platform_half_days": [
+              0,
+              0
+            ],
+            "security_half_days": [
+              1,
+              1
+            ]
+          },
+          "id": "record_cleanup",
+          "label": "Clean up already-reviewed assurance records",
+          "mode": "maintain",
+          "priority": 9,
+          "would_change": "The owner may prefer to keep the half day free for uncertainty."
+        },
+        {
+          "assumption": "The reservation and customer date are scenario configuration supplied by the owner; neither proves the restore will work.",
+          "business_basis": "A customer recovery exercise due within the horizon has two reserved platform days. This fixture treats it as a named commitment.",
+          "control": "recovery",
+          "effort": {
+            "cash_usd": [
+              0,
+              0
+            ],
+            "platform_half_days": [
+              4,
+              4
+            ],
+            "security_half_days": [
+              1,
+              1
+            ]
+          },
+          "id": "recovery_fix",
+          "label": "Repair and repeat the recovery rehearsal",
+          "mode": "improve",
+          "priority": 2,
+          "would_change": "A rescheduled commitment or fresh successful rehearsal may release the reservation. This requires an explicit new case revision."
+        },
+        {
+          "assumption": "The owner can obtain fresh evidence and reconsider the commitment.",
+          "business_basis": "The named recovery commitment needs current facts; stale results cannot justify a current effectiveness conclusion.",
+          "control": "recovery",
+          "effort": {
+            "cash_usd": [
+              0,
+              0
+            ],
+            "platform_half_days": [
+              1,
+              1
+            ],
+            "security_half_days": [
+              1,
+              1
+            ]
+          },
+          "id": "recovery_investigate",
+          "label": "Refresh the recovery rehearsal evidence",
+          "mode": "investigate",
+          "priority": 6,
+          "would_change": "A scoped rehearsal result can make repair or deferral defensible."
+        }
+      ],
+      "as_of": "2026-10-02",
+      "capacity": {
+        "cash_usd": 8000,
+        "platform_half_days": 8,
+        "security_half_days": 6
+      },
+      "case_id": "incident",
+      "controls": {
+        "ai": {
+          "claim": "The proposed support assistant has unresolved customer-data handling",
+          "max_age_days": 14,
+          "scope": "support-assistant-preview"
+        },
+        "application": {
+          "claim": "The production change approval path has a bypass",
+          "max_age_days": 14,
+          "scope": "prod-api"
+        },
+        "endpoint": {
+          "claim": "Unmanaged production endpoints need a supported response",
+          "max_age_days": 14,
+          "scope": "prod-endpoints"
+        },
+        "identity": {
+          "claim": "A privileged production access gap requires follow-up",
+          "max_age_days": 14,
+          "scope": "prod-admin"
+        },
+        "recovery": {
+          "claim": "The recovery rehearsal needs correction before the agreed customer exercise",
+          "max_age_days": 14,
+          "scope": "primary-service-restore"
+        }
+      },
+      "evidence": [
+        {
+          "control": "identity",
+          "coverage": "complete",
+          "gap": true,
+          "id": "access_incident",
+          "interpretation_basis": "Material new evidence, available only from 1 October. Not retroactively visible to the September assessment.",
+          "kind": "observation",
+          "observed_end": "2026-09-30",
+          "observed_start": "2026-09-29",
+          "readers": [
+            "grc-lead",
+            "executive"
+          ],
+          "recorded_at": "2026-10-01",
+          "scope": "prod-admin",
+          "source": "Synthetic closed incident I-7 and newer access sample",
+          "supersedes": "access_sample",
+          "synthetic": true,
+          "tenant": "northstar-demo",
+          "text": "A later grant bypassed approval. Containment is complete; the workflow repair remains. This newer sample replaces the earlier sample for the current-state question, without changing the earlier record."
+        },
+        {
+          "control": "identity",
+          "coverage": "complete",
+          "gap": false,
+          "id": "access_sample",
+          "interpretation_basis": "Assistant-supplied structured interpretation of a fictional sample, unreviewed.",
+          "kind": "observation",
+          "observed_end": "2026-09-20",
+          "observed_start": "2026-09-19",
+          "readers": [
+            "grc-lead",
+            "executive"
+          ],
+          "recorded_at": "2026-09-21",
+          "scope": "prod-admin",
+          "source": "Synthetic access-export revision 1",
+          "synthetic": true,
+          "tenant": "northstar-demo",
+          "text": "The stipulated production-admin sample had approval references for all sampled grants. It says nothing about later grants."
+        },
+        {
+          "control": "ai",
+          "coverage": "partial",
+          "gap": false,
+          "id": "ai_assertion",
+          "interpretation_basis": "An assertion is neither a demonstrated gap nor operating evidence that the data handling is acceptable.",
+          "kind": "assertion",
+          "observed_end": "2026-09-23",
+          "observed_start": "2026-09-23",
+          "readers": [
+            "grc-lead",
+            "executive"
+          ],
+          "recorded_at": "2026-09-24",
+          "scope": "support-assistant-preview",
+          "source": "Synthetic product planning note",
+          "synthetic": true,
+          "tenant": "northstar-demo",
+          "text": "The product owner believes the support assistant will not retain customer data. No data flow or provider configuration is attached."
+        },
+        {
+          "control": "application",
+          "coverage": "complete",
+          "gap": true,
+          "id": "application_bypass",
+          "interpretation_basis": "A fictional execution log and matching configuration establish this scoped bypass.",
+          "kind": "observation",
+          "observed_end": "2026-09-22",
+          "observed_start": "2026-09-20",
+          "readers": [
+            "grc-lead",
+            "executive"
+          ],
+          "recorded_at": "2026-09-23",
+          "scope": "prod-api",
+          "source": "Synthetic pipeline export and closed incident A-12",
+          "synthetic": true,
+          "tenant": "northstar-demo",
+          "text": "The production API emergency path allowed a release without the required independent approval. The closed incident is contained; the bypass remains to be removed."
+        },
+        {
+          "control": "endpoint",
+          "coverage": "complete",
+          "gap": true,
+          "id": "endpoint_old",
+          "interpretation_basis": "This observation is real only within the fiction and is stale at every supplied assessment date.",
+          "kind": "observation",
+          "observed_end": "2026-06-02",
+          "observed_start": "2026-06-01",
+          "readers": [
+            "grc-lead",
+            "executive"
+          ],
+          "recorded_at": "2026-06-03",
+          "scope": "prod-endpoints",
+          "source": "Synthetic old endpoint inventory",
+          "synthetic": true,
+          "tenant": "northstar-demo",
+          "text": "The June inventory listed six unmanaged production endpoints. Current asset membership is unknown."
+        },
+        {
+          "control": "recovery",
+          "coverage": "complete",
+          "gap": true,
+          "id": "recovery_rehearsal",
+          "interpretation_basis": "The stipulated rehearsal observed a concrete failed step, without claiming a loss estimate.",
+          "kind": "observation",
+          "observed_end": "2026-09-23",
+          "observed_start": "2026-09-22",
+          "readers": [
+            "grc-lead",
+            "executive"
+          ],
+          "recorded_at": "2026-09-24",
+          "scope": "primary-service-restore",
+          "source": "Synthetic rehearsal transcript R-3",
+          "synthetic": true,
+          "tenant": "northstar-demo",
+          "text": "The recovery rehearsal failed at the key-restoration step. The fictional customer exercise needs a corrected rehearsal within the next ten working days."
+        }
+      ],
+      "horizon": "Next ten working days; reassess immediately when a material fact changes.",
+      "method_status": "Assistant-authored scenario criteria; awaiting qualified review",
+      "owner": "grc-lead",
+      "principal": "grc-lead",
+      "question": "Which improvements should this fictional SaaS security programme prioritise next, given its evidence, business commitments and available capacity?",
+      "required_actions": [
+        "recovery_fix"
+      ],
+      "schema_version": 1,
+      "scope": "Fictional B2B SaaS programme after its first assurance cycle. All records, costs, estimates and judgments are invented development material.",
+      "synthetic": true,
+      "tenant": "northstar-demo"
+    },
+    "basis_hash": "da286623c9fd62724923ce1874cbed6bbd0aa3ce233d9a596a16c037026b16fe",
+    "changes": {
+      "added_actions": [
+        "identity_fix"
+      ],
+      "capacity_changed": false,
+      "displaced_actions": [
+        "application_fix"
+      ],
+      "evidence_states": {
+        "identity": {
+          "after": "gap_supported",
+          "before": "no_gap_observed"
+        }
+      },
+      "owner_choice_now_needs_review": true
+    },
+    "engine_version": "programme-proof-0.1",
+    "evidence_assessment": {
+      "ai": {
+        "claim": "The proposed support assistant has unresolved customer-data handling",
+        "limitation": "Applies only to this claim, scope and period; no compliance pass or risk reduction is inferred.",
+        "records": [
+          {
+            "gap": false,
+            "id": "ai_assertion",
+            "limits": [
+              "partial",
+              "not_operating_evidence"
+            ]
+          }
+        ],
+        "scope": "support-assistant-preview",
+        "state": "unresolved"
+      },
+      "application": {
+        "claim": "The production change approval path has a bypass",
+        "limitation": "Applies only to this claim, scope and period; no compliance pass or risk reduction is inferred.",
+        "records": [
+          {
+            "gap": true,
+            "id": "application_bypass",
+            "limits": []
+          }
+        ],
+        "scope": "prod-api",
+        "state": "gap_supported"
+      },
+      "endpoint": {
+        "claim": "Unmanaged production endpoints need a supported response",
+        "limitation": "Applies only to this claim, scope and period; no compliance pass or risk reduction is inferred.",
+        "records": [
+          {
+            "gap": true,
+            "id": "endpoint_old",
+            "limits": [
+              "stale"
+            ]
+          }
+        ],
+        "scope": "prod-endpoints",
+        "state": "unresolved"
+      },
+      "identity": {
+        "claim": "A privileged production access gap requires follow-up",
+        "limitation": "Applies only to this claim, scope and period; no compliance pass or risk reduction is inferred.",
+        "records": [
+          {
+            "gap": true,
+            "id": "access_incident",
+            "limits": []
+          },
+          {
+            "gap": false,
+            "id": "access_sample",
+            "limits": [
+              "superseded"
+            ]
+          }
+        ],
+        "scope": "prod-admin",
+        "state": "gap_supported"
+      },
+      "recovery": {
+        "claim": "The recovery rehearsal needs correction before the agreed customer exercise",
+        "limitation": "Applies only to this claim, scope and period; no compliance pass or risk reduction is inferred.",
+        "records": [
+          {
+            "gap": true,
+            "id": "recovery_rehearsal",
+            "limits": []
+          }
+        ],
+        "scope": "primary-service-restore",
+        "state": "gap_supported"
+      }
+    },
+    "kind": "recommendation",
+    "method": "Enumerate feasible subsets at upper effort bounds. Maximise count of named commitments, then the explicit action preference order. This is a proposed scenario policy, not a risk model or trained judgment.",
+    "next_step": "Ask the simulated owner to review the assumptions and choose a feasible portfolio or defer.",
+    "other_feasible_portfolios": [
+      {
+        "actions": [
+          "ai_data_review",
+          "identity_fix",
+          "recovery_fix"
+        ],
+        "usage_high": {
+          "cash_usd": 0,
+          "platform_half_days": 8,
+          "security_half_days": 5
+        }
+      },
+      {
+        "actions": [
+          "identity_fix",
+          "record_cleanup",
+          "recovery_fix"
+        ],
+        "usage_high": {
+          "cash_usd": 0,
+          "platform_half_days": 8,
+          "security_half_days": 4
+        }
+      },
+      {
+        "actions": [
+          "identity_fix",
+          "recovery_fix"
+        ],
+        "usage_high": {
+          "cash_usd": 0,
+          "platform_half_days": 8,
+          "security_half_days": 3
+        }
+      },
+      {
+        "actions": [
+          "ai_data_review",
+          "application_fix",
+          "record_cleanup",
+          "recovery_fix"
+        ],
+        "usage_high": {
+          "cash_usd": 0,
+          "platform_half_days": 8,
+          "security_half_days": 6
+        }
+      },
+      {
+        "actions": [
+          "ai_data_review",
+          "application_fix",
+          "recovery_fix"
+        ],
+        "usage_high": {
+          "cash_usd": 0,
+          "platform_half_days": 8,
+          "security_half_days": 5
+        }
+      }
+    ],
+    "previous_owner_decision_id": "7662899bf5c251b5b3beb0be30441681dd6094776d2965a815edf698b7d9d5f2",
+    "previous_recommendation_id": "3f7d9d3a0929306a8dfd1df0cc8e7d4720cbeb80bc9549debbc6ee7ef3e80659",
+    "review_status": "proposed_unreviewed",
+    "selected": [
+      "ai_data_review",
+      "identity_fix",
+      "record_cleanup",
+      "recovery_fix"
+    ],
+    "status": "conditional_recommendation",
+    "uncertainties": [
+      "Effort and benefits are synthetic estimates; confirm scope and delivery feasibility with owners.",
+      "Missing or restricted evidence cannot establish that a control works.",
+      "The preference order is unreviewed and may change the chosen portfolio."
+    ],
+    "unmet_commitments": [],
+    "usage_range": {
+      "high": {
+        "cash_usd": 0,
+        "platform_half_days": 8,
+        "security_half_days": 6
+      },
+      "low": {
+        "cash_usd": 0,
+        "platform_half_days": 6,
+        "security_half_days": 5
+      }
+    }
+  },
+  "id": "5b7d31c8fca677052e37180d307242cf30e32edda15035d9092ec515bb0e268f"
+}

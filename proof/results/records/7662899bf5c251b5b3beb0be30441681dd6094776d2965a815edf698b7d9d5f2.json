@@ -1,0 +1,19 @@
+{
+  "body": {
+    "authority": "Fictional choice only. No execution, purchase, acceptance of real risk or identity verification.",
+    "disposition": "simulated_choice",
+    "kind": "simulated_owner_decision",
+    "owner": "grc-lead",
+    "principal": "grc-lead",
+    "rationale": "Keep the remaining half day as contingency instead of cleaning records.",
+    "recommendation_id": "3f7d9d3a0929306a8dfd1df0cc8e7d4720cbeb80bc9549debbc6ee7ef3e80659",
+    "selected": [
+      "ai_data_review",
+      "application_fix",
+      "recovery_fix"
+    ],
+    "tenant": "northstar-demo",
+    "unmet_commitments": []
+  },
+  "id": "7662899bf5c251b5b3beb0be30441681dd6094776d2965a815edf698b7d9d5f2"
+}

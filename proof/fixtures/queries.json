@@ -1,0 +1,10 @@
+[
+  {"id": "q1_access", "case": "baseline", "as_of": "2026-09-25", "question": "production admin approval grants", "proposed_relevant_ids": ["access_sample"]},
+  {"id": "q2_contradiction", "case": "contradictory", "as_of": "2026-09-25", "question": "production API independent approval path", "proposed_relevant_ids": ["application_bypass", "application_conflict"]},
+  {"id": "q3_recovery", "case": "baseline", "as_of": "2026-09-25", "question": "customer recovery exercise key restoration", "proposed_relevant_ids": ["recovery_rehearsal"]},
+  {"id": "q4_age", "case": "baseline", "as_of": "2026-09-25", "question": "unmanaged production endpoints current inventory", "proposed_relevant_ids": ["endpoint_old"]},
+  {"id": "q5_ai", "case": "baseline", "as_of": "2026-09-25", "question": "support assistant customer data configuration", "proposed_relevant_ids": ["ai_assertion"]},
+  {"id": "q6_change", "case": "incident", "as_of": "2026-10-02", "question": "later grant bypassed approval workflow", "proposed_relevant_ids": ["access_incident", "access_sample"]},
+  {"id": "q7_paraphrase", "case": "baseline", "as_of": "2026-09-25", "question": "Can the business get its information back after a disaster?", "proposed_relevant_ids": ["recovery_rehearsal"]},
+  {"id": "q8_scope", "case": "partial", "as_of": "2026-09-25", "question": "emergency release path missing sample", "proposed_relevant_ids": ["application_partial"]}
+]

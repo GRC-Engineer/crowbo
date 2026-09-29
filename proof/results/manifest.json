@@ -1,0 +1,28 @@
+{
+  "recorded_date": "2026-09-25",
+  "engine_version": "programme-proof-0.1",
+  "repository_base_commit": "09abc65b03361073737e0c9c703f16e3ee346c30",
+  "python_version": "3.14.5",
+  "sqlite_version": "3.53.1",
+  "synthetic": true,
+  "review_status": "assistant_authored_unreviewed_development",
+  "behavioural_tests_passed": 17,
+  "public_case_variations": 9,
+  "retrieval_queries": 8,
+  "retrieval_repetitions_per_query": 50,
+  "hosted_vendor_runs": 0,
+  "model_baseline_runs": 0,
+  "corridor_plan_calls_before_code_batches": 2,
+  "corridor_feedback_cli_invocations": 1,
+  "file_sha256": {
+    "proof/crowbo.py": "f511726f35d60efb0114a6a3bbd195497a45c03451a25b68b7c1516a890f8989",
+    "proof/fixtures/programme.json": "dfd0a18564b17bfc318977835bb716e2800e4909bf496e197a2c7a4881745141",
+    "proof/retrieval.py": "83670cb46efcee4ad2c089bc73906c1de01cf410701ef631aecf69ef85d22dc6",
+    "proof/test_proof.py": "a8fd95b7e89b9c2b4f69fc6cbb44e380eabd7912db2b0225a8c7ef2ead72f620"
+  },
+  "records": {
+    "recommendation": "3f7d9d3a0929306a8dfd1df0cc8e7d4720cbeb80bc9549debbc6ee7ef3e80659",
+    "simulated_owner_decision": "7662899bf5c251b5b3beb0be30441681dd6094776d2965a815edf698b7d9d5f2",
+    "reassessment": "5b7d31c8fca677052e37180d307242cf30e32edda15035d9092ec515bb0e268f"
+  }
+}
