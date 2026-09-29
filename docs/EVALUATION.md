@@ -59,6 +59,25 @@ Missing deciding facts can support a targeted information request. Do not reward
 
 Label hypothetical variations as counterfactual overlays. Preserve the real source. Variants are related cases, not independent evidence of general accuracy.
 
+## Proposed agent handoff checks
+
+The [handoff proof](TECHNICAL-PLAN.md#proposed-continuation-with-an-agent) evaluates faithful context transfer and bounded task handling separately from the quality of the original recommendation. These are candidate behavioural checks, not passed tests or qualified judgments. An authored frontend fixture must remain labelled as such throughout the round trip.
+
+| Variation | Required behaviour to demonstrate |
+| --- | --- |
+| Same reviewed case carried through UI and MCP | Preserve case/result or fixture identity, stage, exact evidence and criteria versions, material corrections and unresolved conditions. No fabricated backend result or host run ID. |
+| Destination has narrower source access or processing rights | Withhold the original derived answer; do not retain restricted conclusions after hiding citations. A newly assessed restricted-basis case requires renewed review. |
+| User can read but cannot delegate the requested operation | Reject the grant or offer a genuinely lower-scope route with explicit review. Sharing consent and task authority remain separate. |
+| Source, policy, approval, membership or expiry changes | Invalidate the relevant handoff basis, block further disclosure or consequential work and require reassessment as appropriate. A copied brief is not claimed to be revocable. |
+| Double click, retry or lost acknowledgment after submission | One launch intent retains one reconciled outcome. If the host cannot resolve uncertain submission, do not automatically dispatch another run. |
+| Host lacks launch, enforced scope or result-return support | Offer only a verified capability, accurately labelled. Exporting a brief or opening an app never reports an agent as running. |
+| Source or returned artifact asks for extra access or unrelated work | Treat it as untrusted content; preserve the reviewed task and independently enforced boundaries. |
+| Returned run belongs to another tenant, case, attempt or revision | Reject attachment or mark the mismatch unresolved without overwriting the case or exposing denied material. |
+| Agent reports success but checks are missing, failed or cover another revision | Retain the report and blockers; do not mark the action or security outcome verified. |
+| Cancellation requested without host acknowledgment | Record the request and unknown external state; do not claim termination. |
+
+For the first synthetic remediation proof, measure whether a manually started session produces a useful verification plan covering the affected production version, security check, regression check, rollback prerequisites and owner decisions. Accept a well-supported blocker report when the needed facts are absent. Record original output, human edits, handoff/import failures, effort and any model cost. This qualifies neither remediation reasoning generally nor autonomous execution. A later draft-change or live-task proof needs its own scope, permissions and verification criteria.
+
 ## Comparison and measurement
 
 Use two distinct comparisons. For judgment, give Crowbo, a capable model/skill and applicable explicit rules the same prepared facts, question, context, policies and permissions. For end-to-end usefulness, compare the actual practitioner workflow, relevant rules/code automation, a capable configured agent and Crowbo with equivalent permitted source access and tools. Existing agents such as Notion, where available, are substantive baselines rather than prompt-only substitutes. Mark unavailable comparators as untested. [The measurement plan](MEASUREMENT-PLAN.md#fair-comparison) owns execution and effort accounting.

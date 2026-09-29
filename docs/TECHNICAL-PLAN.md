@@ -125,9 +125,9 @@ These are proposed verifiable units, not authorisation to implement the portfoli
 
 The founder requested a concrete mapping between the demo and the three agreed security workflows. Keep operational and business context when it changes a security decision. Each prepared question must identify the security problem, the choice being made and what would establish a useful outcome. A general upgrade or launch question does not demonstrate remediation tracking without an identified security finding, treatment and closure basis.
 
-The published `/demo/` and `/demo/?view=workspace` were inspected through the browser on 29 September. The opening journey offers two prepared questions: support access and service upgrade. The access answer compares broad administration with a proposed support role and preserves owner review and permissions testing. It is a security case, though its entry wording emphasises quarter-end reporting. The upgrade answer recommends sign-in and rollback tests before a customer launch; its own sources leave vulnerability exposure and the security impact of delay unresolved. There is no prepared issues/exception question. The workspace opens on support access. All of this is a scripted synthetic walkthrough, not a backend run.
+The initial browser inspection of `/demo/` and `/demo/?view=workspace` on 29 September found two prepared questions: support access and service upgrade. The access answer compared broad administration with a proposed support role and preserved owner review and permissions testing. Its entry wording emphasised quarter-end reporting. The upgrade answer recommended sign-in and rollback tests before a customer launch; its own sources left vulnerability exposure and the security impact of delay unresolved. No prepared issues/exception question existed at that checkpoint. The workspace opened on support access. This was a scripted synthetic walkthrough, not a backend run.
 
-The existing frontend source confirms the gap: `CaseId` in `design/decision-studio/src/question-demo-model.ts` contains only `access` and `upgrade`, and the influence labels are authored fixture values. That frontend file is maintained in the frontend checkout. The mapping below is a candidate development specification, not a new data contract, a qualified answer key or a claim that the backend already supports all three workflows.
+The frontend source inspected at that checkpoint had only `access` and `upgrade` cases, with authored influence labels. Later merged frontend work now implements all three synthetic examples and scopes access to one account; the [current frontend checkpoint](#frontend-checkpoint-for-the-handoff) records the receipts. The mapping below remains a candidate backend development specification, not an implemented remediation/exception contract or qualified answer key.
 
 | Workflow and proposed opening question | Security evidence and relevant business context | Decision the demo should make inspectable | Backend reuse and missing behaviour |
 | --- | --- | --- | --- |
@@ -195,7 +195,57 @@ Apply the [evaluation contract](EVALUATION.md#development-cases) before judging 
 - All stories preserve the initial recommendation, attributed challenge, explicit reassessment and later result. Irrelevant context or wording changes should not change the substantive choice.
 - UI replay and backend comparison use the same case and evidence versions. Record scripted behaviour, actual backend output, qualified judgment and customer outcomes as separate receipts.
 
-The next backend unit is to prepare the two non-access case specifications and qualify their candidate expectations, then implement only the missing workflow semantics in the existing decision path. In parallel ownership, the frontend can present these three clearly labelled synthetic stories using its existing components. This mapping changes no runtime behaviour, data processing scope or website deployment. The separate homepage feedback about a right-hand element following scroll belongs to frontend layout work and is not a backend requirement.
+The next backend unit is to reconcile the exported non-access case specifications with the backend and qualify their candidate expectations, then implement only the missing workflow semantics in the existing decision path. The frontend now presents three synthetic stories; their authored advice still needs backend comparison. This mapping changes no runtime behaviour, data processing scope or website deployment. The separate homepage feedback about a right-hand element following scroll belongs to frontend layout work and is not a backend requirement.
+
+### Proposed continuation with an agent
+
+The founder's direction, relayed by the frontend chat on 29 September, is: review a Crowbo decision, choose "Continue with an agent", select a destination, review the task/shared context/permitted actions, then open or start the supported destination. Desired destinations are Claude Code, Codex, Claude Chat, Cowork and Lovable. This is planning scope only. It does not authorise launching an agent, installing connectors, granting access, performing a task, merging or deploying.
+
+Treat the handoff as a version-bound task derived from the reviewed decision. Keep the current engine responsible for its evidence and recommendation, and a future destination adapter responsible for delivery and observed run state. [The data contract](DECISION-DATA-MODEL.md#proposed-agent-handoff-records) owns the task, basis and receipts; [permissions](PERMISSIONS.md#proposed-agent-handoff-boundary) owns disclosure and delegation; [evaluation](EVALUATION.md#proposed-agent-handoff-checks) owns failure cases. The frontend interaction model owns the chooser and review presentation. Do not create a second decision engine or an execution service for a copy/import proof.
+
+#### Frontend checkpoint for the handoff
+
+Merged [PR #12](https://github.com/GRC-Engineer/crowbo/pull/12) and [PR #13](https://github.com/GRC-Engineer/crowbo/pull/13) contain the three synthetic workflows and guided decision presentation. The backend planning check read `origin/main` at `f988641cf4f7f61534e5860d5cbc0e56e714c61d`, including the [shared fixture definitions](https://github.com/GRC-Engineer/crowbo/tree/f988641cf4f7f61534e5860d5cbc0e56e714c61d/design/decision-studio/fixtures) and frontend interaction model. The frontend handoff reports production verification; this planning pass does not rerun that browser/deployment check.
+
+The JSON packets use schema `crowbo.synthetic-workflow.v1`: `access` specification `1.0.0`, `remediation` and `exceptions` specification `1.0.1`. They contain exact source references and stages with authored candidate advice. They are not backend result snapshots or reviewed answer keys. The typed frontend source owns their generation; do not edit an independent copy of the JSON. Preserve fixture hash/version/stage when using one in a backend comparison.
+
+The current UI presents a concise recommendation with blocking conditions and optional reasoning, version-bound sources, challenge/reassessment, alternatives and history. Its SOC 2, ISO and NIST explanations are illustrative teaching material outside the evidence packets. Preserve that separation in an export. The UI has no backend call or live agent connection. The shared cases are available now; authenticated handoff, task grants, dispatch and return receipts are not.
+
+#### Proposed task modes
+
+| Mode | Useful result | Authority boundary |
+| --- | --- | --- |
+| Investigate | A scoped explanation, verification plan or identified blocker using permitted material. | No source-system writes, production changes or new access. Model processing and any extra reads still need permission. |
+| Prepare a change | A local patch, test changes or a draft PR in a named repository/environment. | Specify allowed paths, base revision and tools. Authoring, pushing a branch and publishing a PR are separate permissions. No merge or deployment follows from this mode. |
+| Perform a specifically approved task | The exact approved operation, with receipts and verification. | Offer only after authenticated, enforceable target/action scope, expiry, approval points and invalidation are qualified for that destination. Prompt wording cannot provide enforcement. |
+
+Review the selected next step and deliverable, shared evidence and corrections, blocking conditions, destination identity, exact allowed operations, validity and verification criteria before handoff. A blocker on deployment need not prevent preparing a verification plan, but must remain visible. An unsupported mode stays unavailable; changing destinations or action scope requires a new review of the relevant terms.
+
+#### Destination qualification
+
+No Crowbo-to-host launcher has been tested. MCP supplies tools and context; it is not a general launch API. The app tools available in a development chat do not establish a product integration. The table is the qualification worklist, not a support claim.
+
+| Requested destination | Integration to establish before offering start | Current status |
+| --- | --- | --- |
+| Claude Code | Supported entry/import route, repository and tool scope, principal/processor identity, acknowledgment and artifact return. | Untested; no launch promise. |
+| Codex | Supported product entry point and local/cloud mode, workspace scope, identity, enforced approvals, run reference and artifact return. | Untested; candidate for the first manually started synthetic session. |
+| Claude Chat | Supported context import or permitted tool route, workspace/processor access, artifact export and ability to observe any delegated work. | Untested; no assumption that opening a chat starts an agent. |
+| Cowork | Supported session entry, filesystem/workspace boundaries, identity, permissions, run state and return path. | Untested; capabilities must be checked separately from Claude Chat. |
+| Lovable | Supported project entry, project membership and processing route, allowed changes, preview/publication boundaries and artifact return. | Untested; no assumption that opening a project starts a task. |
+
+For each host, retain product/client version and date, official integration documentation, the actual tested entry method, permission enforcement, duplicate-submission behaviour, acknowledgment/run lookup, cancellation/revocation and result-return receipts. Qualify each mode separately. Do not expose "Start" until the relevant route passes. Where a tested copy/import or open-only route is the available capability, label it accurately and require the user to start the work. Never put credentials or private task/evidence payloads into launch URLs. Unsupported or unobserved execution remains unknown, not running or complete.
+
+#### Smallest proposed implementation slice
+
+1. Reuse the existing synthetic remediation fixture at an exact version and stage. Select an investigation task: prepare a plan to verify the gateway fix, including affected deployed version, security and sign-in regression checks, rollback prerequisites and owner decisions. The authored recommendation remains labelled; no backend result is fabricated. This tests context transfer while the remediation decision contract is still pending.
+2. Implement local preparation and inspection of one reviewable brief plus its structured metadata. Derive both from one validated handoff record and preserve unresolved facts, source versions and teaching-note provenance. Grant no production access and dispatch nothing. Choose the final command and record shape during the separately authorised implementation, with the required pre-code analysis; do not add a service, queue, host SDK or generic adapter framework for this slice.
+3. After approval for that test, use one manually started destination session, provisionally Codex, in an isolated scratch workspace with only the synthetic inputs and no source-system connections or production credentials. Collect its original verification plan or blocker report. Record the destination/version, any processing cost and human edits. Do not call this one-click launch or evidence of a live backend decision.
+4. Validate and attach the returned artifact/report to the exact handoff and case. Keep a manual association labelled as such; it does not authenticate a host run. Compare it against the declared criteria and record verification separately. A fabricated or mismatched run/result identity must not become a completion receipt.
+5. Exercise [the handoff checks](EVALUATION.md#proposed-agent-handoff-checks). Qualify authenticated sharing, action grants and a single supported dispatch/return adapter only in a later bounded increment. Preparation of a draft change and performance of a live task are subsequent proofs with their own authority.
+
+Reuse the current `inspect_result` and `inspect_evidence` checks when the basis is a real saved backend result, and `record_feedback` for an attributed report only where its existing semantics fit. The six current MCP tools do not prepare, authorise, launch, cancel or authenticate handoffs. Do not encode those operations in free-text `context` or a simulated `ReportedChoice`. A future UI and MCP route should call the same checked handoff operation, with destination identities and audience verified at the boundary. Private result sharing, server authentication and new operation schemas remain unresolved implementation work.
+
+The remaining choices are the first supported destination route, its enforceable authority/processing model, the exact structured record and return format, and operational retention/cancellation/revocation behaviour. Repeated attempts need a durable intent/receipt relationship and host reconciliation; exactly-once execution cannot be promised when the destination provides neither deduplication nor run lookup. These gaps do not prevent the bounded synthetic copy/import proof, but they prevent a private production launcher claim.
 
 ### Historical deck alignment, 28 September 2026
 
