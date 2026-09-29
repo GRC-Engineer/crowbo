@@ -42,7 +42,7 @@
 .decision-scope {
   font-size: 13px;
   line-height: 1.7;
-  color: #a8b5ac;
+  color: var(--muted);
   margin-bottom: 20px;
 }
 .decision-scope strong {
@@ -72,7 +72,7 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.65;
-  color: #bbc7be;
+  color: var(--fog);
 }
 .framework-picker {
   display: flex;
@@ -83,10 +83,9 @@
 .framework-picker button {
   min-height: 44px;
   padding: 10px 14px;
-  border: 1px solid #435049;
-  border-radius: 4px;
+  border: 1px solid var(--ink-400);
   font-size: 13px;
-  color: #c3ccc4;
+  color: var(--fog);
 }
 .framework-picker button:hover {
   border-color: var(--oxide);
@@ -112,7 +111,7 @@
 .framework-mapping p {
   font-size: 14px;
   line-height: 1.6;
-  color: #bbc7be;
+  color: var(--fog);
   margin: 10px 0;
 }
 .framework-mapping strong {
@@ -128,7 +127,7 @@
   font-size: 13px;
 }
 .case-mapping-note {
-  color: #a3b0a7;
+  color: var(--muted);
   font-size: 12px;
   line-height: 1.65;
   margin: 20px 0 0;

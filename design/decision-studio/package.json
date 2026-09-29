@@ -7,8 +7,9 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "test": "node scripts/export-cases.mjs --check && node --test tests/*.test.mjs",
-    "format": "prettier --write src tests landing index.html demo/index.html vite.config.ts",
+    "format": "prettier --write src tests landing brand tools index.html demo/index.html brand/index.html vite.config.ts",
     "preview": "vite preview --host 127.0.0.1",
+    "tokens": "node tools/apply-brand-tokens.mjs",
     "cases:export": "node scripts/export-cases.mjs",
     "cases:check": "node scripts/export-cases.mjs --check"
   },

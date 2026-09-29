@@ -76,7 +76,7 @@ export function CompareOptions({ basis }: { basis: AccessBasis }) {
         <Dialog.Overlay className="dialog-overlay" />
         <Dialog.Content className="dialog-content access-comparison">
           <div className="ask-dialog-top">
-            <span className="ask-small">Same work. Different tradeoffs.</span>
+            <span className="ask-small">Options for the same work</span>
             <Dialog.Close className="ask-icon" aria-label="Close comparison">
               <X size={20} />
             </Dialog.Close>

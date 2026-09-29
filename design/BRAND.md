@@ -30,6 +30,10 @@ The terminal study defaults to a sprite, reveals bytes on hover, restores the sp
 
 The earlier [Circuit Frames V3 head icon](crow-concepts/2026-09-22/circuit-frames/archivist-circuit-favicon-v3.png) retains lemon gate-shaped spectacles and mint eyes on midnight. Its [generation prompt](crow-concepts/2026-09-22/circuit-frames/archivist-circuit-favicon-v3-prompt.md), [actual-size preview](homepage-mockups/2026-09-21/terminal-prototype/favicon-preview.html), [homepage/terminal copy](homepage-mockups/2026-09-21/assets/crowbo-circuit-favicon-v3.png) and [typography copy](typography/2026-09-21/assets/crowbo-circuit-favicon-v3.png) remain implementation references. The current homepage uses the [Modular Crow head icon](crow-concepts/2026-09-24/modular-crow/website/crowbo-modular-favicon-v1.png); historical previews retain their earlier icons.
 
+### State pose candidates
+
+On 29 September 2026, twelve [state poses](crow-concepts/2026-09-29/state-poses/README.md) were generated from the approved Modular Crow and Packet Runner: inspecting, weighing, challenging, unresolved, resting, pointing, carrying a feather, a pair, a runner with a record, an expression sheet, a size ladder and a compact head. This runs the crow iteration brief in the [brand system sheet](brand-system/2026-09-29/README.md). They are candidates awaiting selection. The product uses none of them. Their pixel grid is approximate, so a selected pose needs a redraw on a native grid before it becomes a sprite.
+
 ## Wordmark and palette
 
 The selected wordmark remains lowercase **crowbo** in Geist Pixel Square, weight 400, letter spacing -0.04em, with plain light lettering and no glow or shadow. The [typography study](typography/2026-09-21/README.md) owns the type selection record and font licensing notes.
@@ -50,6 +54,22 @@ The [four-colour Modular Crow and Packet Runner specimen](crow-concepts/2026-09-
 ### Presentation backgrounds
 
 The earlier presentation direction, selected on 22 September, used crow purple `#28243E` or mint green `#A4EDC3` backgrounds, with warm ivory `#F3E9D5` or mint text on purple and crow purple text on mint. Lemon `#EEF34B` was an accent; midnight was `#10101B`. Those are historical tokens. The selected deck uses black, chalk, sage and oxide. Use dark text on sage or oxide surfaces and chalk or oxide text on the dark background; choose each pairing for readable contrast in its composition.
+
+## Interface rules
+
+Added 29 September 2026 by the [second pass](decision-studio/UNSLOP-PASS.md), which follows the de-generic pass recorded below. The selected colours, typefaces, label rule and icon set are unchanged. These rules cover what the first pass left open and are enforced by `decision-studio/tests/brand-tokens.test.mjs`.
+
+| Rule | Detail |
+| --- | --- |
+| Tokens | Stylesheets take every colour from `decision-studio/src/tokens.css`: a neutral ramp from black to chalk and an oxide ramp, 23 colour tokens in total. Steps between the selected colours are interpolations, not new brand colours. |
+| Corners | Square. Primary buttons and tags take a stepped corner one grid pixel deep. One grid pixel is 4 CSS pixels. |
+| Shadows | Floating layers cast one hard offset shadow. Panels in the page cast none. |
+| Overlays | A flat scrim. No blur. |
+| Marks | Squares. No circles. |
+| Text size | The 11 pixel floor in the label rule applies to every text size in a stylesheet. |
+| Copy | A line says what the thing is or does. Two-beat taglines are removed. |
+
+The [brand system page](decision-studio/brand/index.html) renders all of this from the live tokens, icons and artwork. It builds to `/brand/`, unlisted and marked `noindex`.
 
 ## Website direction
 
@@ -77,4 +97,4 @@ A review of the published site against generic dashboard and generated-design pa
 - **One border per layer.** Inside a dialog, a card holds text buttons rather than bordered buttons, and a notice is a paragraph with an oxide left rule rather than a bordered box.
 - **Shell.** The studio wordmark links to the company page, the sidebar carries an Ask a question entry back to the question-first view, the duplicate sidebar search is removed, and the viewer mark is a square monospace monogram rather than a circular avatar.
 
-Further Modular Crow poses are briefed in the brand system sheet and have not been generated; the approved artwork is unchanged. These are design decisions verified in the local browser, not audience or customer evidence.
+Further Modular Crow poses were briefed in the brand system sheet and generated later the same day as [unselected candidates](crow-concepts/2026-09-29/state-poses/README.md); the approved artwork is unchanged. These are design decisions verified in the local browser, not audience or customer evidence.

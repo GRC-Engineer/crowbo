@@ -1,0 +1,84 @@
+/*
+ * Crowbo brand tokens. design/BRAND.md owns the four selected colours
+ * (chalk, sage, near-black, oxide) and the two supporting values
+ * (charcoal, base). Every other step is an interpolation between them.
+ *
+ * Stylesheets use these names only. tests/brand-tokens.test.mjs fails on a
+ * raw colour, a corner radius, a blur or a soft shadow anywhere else.
+ */
+:root {
+  --black: #000000;
+  --base: #0c1010;
+  --ink-900: #111615;
+  --ink: #171b1a;
+  --ink-700: #1f2523;
+  --line: #29312e;
+  --charcoal: #38413c;
+  --ink-400: #48524c;
+  --slate: #59645e;
+  --ink-200: #748579;
+  --sage: #91aa9d;
+  --muted: #a0aaa3;
+  --fog: #bfc6be;
+  --chalk-300: #d1d2c5;
+  --chalk-200: #e4e6d9;
+  --chalk: #f5f3e8;
+
+  --oxide-950: #241b17;
+  --oxide-900: #35291e;
+  --oxide-700: #785238;
+  --oxide-600: #a77453;
+  --oxide: #d18a66;
+  --oxide-300: #e1a17e;
+  --oxide-200: #f1c5aa;
+
+  --background: var(--base);
+
+  --pixel: GeistPixel, monospace;
+  --mono: Departure, monospace;
+  --display: Bricolage, sans-serif;
+  --body: SpaceGrotesk, sans-serif;
+
+  /* One pixel of the interface grid. Corners, offsets and marks step by it. */
+  --px: 4px;
+  --shadow-hard: var(--px) var(--px) 0
+    color-mix(in srgb, var(--black) 55%, transparent);
+  --scrim: color-mix(in srgb, var(--base) 88%, transparent);
+}
+
+/* Square corners everywhere. The identity is drawn in square pixels. */
+*,
+*::before,
+*::after {
+  border-radius: 0;
+}
+
+/*
+ * Stepped corner for buttons and tags: one grid pixel removed from each
+ * corner. clip-path also clips outlines, so these elements draw their focus
+ * ring inside the box.
+ */
+.pixel-corner,
+.primary-button,
+.ask-primary,
+.badge {
+  clip-path: polygon(
+    0 var(--px),
+    var(--px) var(--px),
+    var(--px) 0,
+    calc(100% - var(--px)) 0,
+    calc(100% - var(--px)) var(--px),
+    100% var(--px),
+    100% calc(100% - var(--px)),
+    calc(100% - var(--px)) calc(100% - var(--px)),
+    calc(100% - var(--px)) 100%,
+    var(--px) 100%,
+    var(--px) calc(100% - var(--px)),
+    0 calc(100% - var(--px))
+  );
+}
+.pixel-corner:focus-visible,
+.primary-button:focus-visible,
+.ask-primary:focus-visible {
+  outline-offset: -5px;
+}

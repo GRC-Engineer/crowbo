@@ -1,6 +1,6 @@
 .decision-continue > p {
   font-size: 12px;
-  color: #b7c4ba;
+  color: var(--fog);
   margin-top: 12px;
 }
 .decision-continue button:disabled {
@@ -44,7 +44,7 @@
 }
 .handoff-next {
   padding: 14px 19px;
-  background: #171d1b;
+  background: var(--ink);
   border-left: 2px solid var(--oxide);
 }
 .handoff-next .ask-small {
@@ -58,7 +58,7 @@
 .handoff-intro {
   font-size: 14px;
   line-height: 1.6;
-  color: #bdc8be;
+  color: var(--fog);
   margin: 16px 0;
   max-width: 620px;
 }
@@ -71,9 +71,8 @@
 }
 .handoff-setup select {
   appearance: auto;
-  background: #19221d;
-  border: 1px solid #526158;
-  border-radius: 4px;
+  background: var(--ink-700);
+  border: 1px solid var(--slate);
   color: var(--chalk);
   padding: 12px 15px;
   width: 100%;
@@ -102,13 +101,12 @@
   align-items: flex-start;
   gap: 13px;
   padding: 14px;
-  border: 1px solid #39463e;
-  border-radius: 4px;
+  border: 1px solid var(--charcoal);
   cursor: pointer;
 }
 .handoff-task[data-selected="true"] {
   border-color: var(--sage);
-  background: #1c2821;
+  background: var(--ink-700);
 }
 .handoff-task input {
   margin: 4px 0 0;
@@ -127,7 +125,7 @@
 }
 .handoff-task small {
   display: block;
-  color: #b2c1b4;
+  color: var(--fog);
   font-size: 13px;
   line-height: 1.5;
   margin-top: 5px;
@@ -136,7 +134,7 @@
 .handoff-boundary {
   display: flex;
   gap: 10px;
-  color: #b7c5b9;
+  color: var(--fog);
   font-size: 13px;
   line-height: 1.65;
 }
@@ -157,7 +155,7 @@
   font-size: 13px;
   line-height: 1.65;
   margin: 12px 0;
-  color: #bbc8be;
+  color: var(--fog);
 }
 .handoff-context strong {
   color: var(--chalk);
@@ -166,7 +164,7 @@
 .handoff-context ul {
   list-style: none;
   padding: 0;
-  border-block: 1px solid #354136;
+  border-block: 1px solid var(--charcoal);
 }
 .handoff-context li {
   display: flex;
@@ -193,7 +191,7 @@
 }
 .handoff-footnote,
 .handoff-copy > p {
-  color: #a9b8ae;
+  color: var(--muted);
   font-size: 12px;
   line-height: 1.6;
   margin-top: 15px;
@@ -213,10 +211,10 @@
   gap: 17px;
   align-items: flex-start;
   padding: 18px 0;
-  border-bottom: 1px solid #344238;
+  border-bottom: 1px solid var(--charcoal);
 }
 .handoff-running li {
-  color: #a6b4aa;
+  color: var(--muted);
   font-size: 15px;
 }
 .handoff-running li[aria-current="step"] {
@@ -232,23 +230,21 @@
   width: 25px;
   height: 25px;
   font: 11px var(--mono);
-  border: 1px solid #47564b;
-  border-radius: 3px;
+  border: 1px solid var(--ink-400);
 }
 .handoff-running li[data-done="true"] > span {
   color: var(--sage);
 }
 .handoff-running > p {
-  color: #b5c3b9;
+  color: var(--fog);
   font-size: 13px;
   line-height: 1.6;
 }
 .handoff-response {
-  border: 1px solid #425246;
+  border: 1px solid var(--ink-400);
   border-top: 3px solid var(--oxide);
-  border-radius: 4px;
   padding: 24px;
-  background: #171d1b;
+  background: var(--ink);
 }
 .handoff-response .ask-small {
   color: var(--oxide);
@@ -264,7 +260,7 @@
 .handoff-response p {
   font-size: 14px;
   line-height: 1.65;
-  color: #c0ccc2;
+  color: var(--fog);
 }
 .handoff-response .handoff-boundary {
   font-size: 12px;
@@ -282,11 +278,10 @@
   width: 100%;
   min-height: 180px;
   color: var(--chalk);
-  background: #101612;
+  background: var(--ink-900);
   padding: 16px;
   font: 12px/1.6 var(--mono);
   border: 1px solid var(--sage);
-  border-radius: 4px;
 }
 @media (max-width: 740px) {
   .handoff-setup fieldset {

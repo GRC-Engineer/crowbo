@@ -160,7 +160,7 @@ function FlightLog({
       ))}
       <div className="log-end">
         <Crow pose="down" />
-        <span>The original stays. The context grows.</span>
+        <span>Earlier versions stay available.</span>
       </div>
     </div>
   );

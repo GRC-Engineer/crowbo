@@ -74,8 +74,8 @@ export function EvidenceMap({
     <section className="observatory" aria-labelledby="map-title">
       <div className="instrument-header">
         <div>
-          <Eyebrow>01 / Sources</Eyebrow>
-          <h2 id="map-title">The context behind the choice.</h2>
+          <Eyebrow>Sources</Eyebrow>
+          <h2 id="map-title">Records behind this recommendation</h2>
         </div>
         <span className="instrument-count">
           06<small>SOURCES</small>

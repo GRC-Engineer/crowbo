@@ -7,8 +7,12 @@
   Strict-Transport-Security: max-age=31536000
   Cross-Origin-Opener-Policy: same-origin
 
-# Search directives only; the demo remains accessible by URL.
+# Search directives only; the demo and brand pages remain accessible by URL.
 /demo
   X-Robots-Tag: noindex, nofollow
 /demo/*
+  X-Robots-Tag: noindex, nofollow
+/brand
+  X-Robots-Tag: noindex, nofollow
+/brand/*
   X-Robots-Tag: noindex, nofollow

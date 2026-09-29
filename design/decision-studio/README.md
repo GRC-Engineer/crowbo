@@ -6,7 +6,7 @@ React design study, updated 29 September 2026 in the main checkout. Since 29 Sep
 
 The public root is the approved two-paragraph company homepage, with Modular Crow, the boxed feather network, contact information. There is no public homepage link to the demo. The existing React walkthrough lives at `/demo/`; its full workspace is at `/demo/?view=workspace`. The demo wordmark returns to the company homepage. The earlier Command Room is retained as design history.
 
-Vite builds `index.html` and `demo/index.html` together into the repository's `site/` directory and empties stale files first. Edit source files rather than the generated output. `landing/` reuses the approved homepage study; `src/` owns the synthetic demo. The `public/` folder supplies the unchanged security headers, static 404 page and font/provider-mark licences. Commit the regenerated `site/` with source changes so the Git-triggered deployment publishes both pages together.
+Vite builds `index.html`, `demo/index.html` and `brand/index.html` together into the repository's `site/` directory and empties stale files first. Edit source files rather than the generated output. `landing/` reuses the approved homepage study; `src/` owns the synthetic demo. The `public/` folder supplies the unchanged security headers, static 404 page and font/provider-mark licences. Commit the regenerated `site/` with source changes so the Git-triggered deployment publishes both pages together.
 
 Both pages are public and static. The demo is unlinked from the homepage and has `noindex, nofollow` in its HTML and HTTP headers, including its workspace view. The homepage remains indexable. No `robots.txt` restriction prevents crawlers from reading the demo directives. These directives do not control access or establish removal from an existing search index. No authentication or access policy is implemented. The demo calls no backend, model or external service; `connect-src 'none'` and `form-action 'none'` remain in force. Publishing it establishes no evaluation result or user acceptance.
 
@@ -21,6 +21,10 @@ A full review of the published site against generic dashboard and generated-desi
 - The welcome heading reads "What needs a decision?" to assistive technology, and choosing a prepared question starts its journey directly.
 
 Checked in the local browser from the rebuilt `site/` at 1280×900, 390×1300 and 390×844: all four fonts load on both pages; no Lucide elements remain; the compare and review dialogs, the Sources page, the mobile navigation and the Ask result render with pixel icons and sentence-case field labels; the landing footer no longer stretches on tall narrow screens; the browser console is empty. Type-check, production build and all 23 behaviour tests pass. These are local UI checks, not an accessibility audit, a user study or decision-quality evidence.
+
+## Second pass: brand rules in code, 29 September
+
+The [unslop pass](UNSLOP-PASS.md) followed the de-generic pass above and moved colour, corner and shadow rules into code. `src/tokens.css` holds the tokens. `tools/apply-brand-tokens.mjs` rewrites a stylesheet against the tokens, and `npm run tokens` runs it. `tests/brand-tokens.test.mjs` fails when a stylesheet uses a raw colour, a radius, a blur or a soft shadow. The build now has a third page, the [brand system](brand/index.html), published at `/brand/`, unlisted and marked `noindex`.
 
 ## Workflow coverage and next refinement
 
@@ -151,7 +155,7 @@ breadcrumb. Build, the five decision tests and formatting passed. The fresh
 browser tab reported no warnings or errors. [Settings preview](previews/2026-09-29-integrations.png)
 and [phone preview](previews/2026-09-29-integrations-phone.png) show the result.
 
-React/ReactDOM own rendering and state. Radix Dialog owns modal focus, Escape and screen-reader semantics. Native details/summary elements provide keyboard-accessible disclosures. Motion handles short view and layout transitions. Lucide supplies consistent ordinary UI icons; the crow artwork stays original. TypeScript checks the state model; Vite bundles a local static build. Versions are pinned in package.json and package-lock.json.
+React/ReactDOM own rendering and state. Radix Dialog owns modal focus, Escape and screen-reader semantics. Native details/summary elements provide keyboard-accessible disclosures. Motion handles short view and layout transitions. The interface icons are local pixel drawings in `src/pixel-icons.tsx`; the crow artwork stays original. TypeScript checks the state model; Vite bundles a local static build. Versions are pinned in package.json and package-lock.json.
 
 Prettier is development-only and keeps the React and CSS source formatted. No formatter code is included in the browser bundle. This checkout was built and tested with Node 26.0.0 and npm 11.12.1.
 

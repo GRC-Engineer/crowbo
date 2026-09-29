@@ -22,11 +22,6 @@
 
 :root {
   color-scheme: dark;
-  --background: #0c1010;
-  --chalk: #f5f3e8;
-  --sage: #91aa9d;
-  --oxide: #d18a66;
-  --muted: #9fa9a3;
   background: var(--background);
   color: var(--chalk);
   font-synthesis: none;
@@ -110,7 +105,7 @@ body {
     ui-monospace,
     monospace;
   text-decoration: underline;
-  text-decoration-color: #66766e;
+  text-decoration-color: var(--ink-200);
   text-underline-offset: 6px;
   text-decoration-thickness: 1px;
   transition:
@@ -273,7 +268,7 @@ body {
     flex-wrap: wrap;
     gap: 7px 20px;
     padding-top: 18px;
-    font-size: 10px;
+    font-size: 11px;
   }
 }
 

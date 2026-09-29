@@ -181,8 +181,8 @@ export function FeatherLibrary() {
     <details className="feather-library">
       <summary>
         <span>
-          <span className="eyebrow">The wider picture</span>
-          <strong>Twelve shapes. Different kinds of context.</strong>
+          <span className="eyebrow">Feather library</span>
+          <strong>Twelve feather shapes, one per kind of source</strong>
         </span>
         <span className="library-count">12</span>
         <ChevronDown size={18} />

@@ -81,7 +81,7 @@ export function DecisionOverview({
           className="decision-context"
           aria-labelledby="decision-context-title"
         >
-          <Eyebrow>What matters</Eyebrow>
+          <Eyebrow>Summary</Eyebrow>
           <h2 id="decision-context-title">{current.headline}</h2>
           <p>{current.reason}</p>
           <div className="overview-links">

@@ -25,9 +25,8 @@
   align-items: flex-start;
   gap: 12px;
   padding: 17px 20px;
-  border: 1px solid #d18a664d;
-  border-radius: 4px;
-  background: #d18a660a;
+  border: 1px solid color-mix(in srgb, var(--oxide) 30%, transparent);
+  background: color-mix(in srgb, var(--oxide) 4%, transparent);
   margin-bottom: 30px;
 }
 .integration-demo-note > svg {
@@ -58,7 +57,6 @@
   padding: 0;
   margin: 0;
   border: 1px solid var(--line);
-  border-radius: 4px;
 }
 .integration-list li + li {
   border-top: 1px solid var(--line);
@@ -75,16 +73,15 @@
 }
 .integration-row:hover,
 .integration-row:focus-visible {
-  background: #91aa9d0c;
+  background: color-mix(in srgb, var(--sage) 5%, transparent);
 }
 .integration-logo {
   width: 42px;
   height: 42px;
   display: grid;
   place-items: center;
-  background: #f5f3e80a;
-  border: 1px solid #f5f3e819;
-  border-radius: 6px;
+  background: color-mix(in srgb, var(--chalk) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chalk) 10%, transparent);
   flex-shrink: 0;
 }
 .integration-logo .provider-mark {
@@ -161,9 +158,8 @@
 }
 .source-provider-filter {
   padding: 8px 12px;
-  border: 1px solid #d18a6655;
-  border-radius: 4px;
-  background: #d18a6610;
+  border: 1px solid color-mix(in srgb, var(--oxide) 33%, transparent);
+  background: color-mix(in srgb, var(--oxide) 6%, transparent);
   color: var(--chalk);
   margin-bottom: 14px;
 }

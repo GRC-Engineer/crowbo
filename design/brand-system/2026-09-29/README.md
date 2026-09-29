@@ -66,3 +66,9 @@ later under the [asset generation conventions](../../crow-concepts/2026-09-24/mo
 
 These are candidates until the founder selects them. The current approved
 artwork is unchanged.
+
+Later on 29 September 2026 the brief was run with an image model and
+extended to twelve poses. The [state pose record](../../crow-concepts/2026-09-29/state-poses/README.md)
+holds the images, prompts and review notes. None is selected. The
+[live brand page](../../decision-studio/brand/index.html) shows them beside
+the tokens and shape rules added in the second pass.
