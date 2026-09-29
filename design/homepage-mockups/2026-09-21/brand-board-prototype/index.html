@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en" data-view="overview">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A Crowbo identity study across the website, product and investor presentation.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <title>crowbo / identity in use</title>
+  <link rel="icon" type="image/png" href="../assets/crowbo-circuit-favicon-v3.png">
+  <link rel="stylesheet" href="board.css?v=2">
+  <script src="board.js?v=2" defer></script>
+</head>
+<body>
+  <svg class="symbol-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <symbol id="circuit-frames" viewBox="0 0 250 110">
+        <g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round">
+          <path class="signal-wire" d="M13 34H48M13 76H48M118 44H153M118 66H153M220 55H240"/>
+          <path d="M48 18H81C131 18 131 92 81 92H48Z"/>
+          <path d="M150 18Q190 18 220 55Q190 92 150 92Q169 55 150 18Z"/>
+          <circle cx="13" cy="34" r="5" fill="currentColor"/>
+          <circle cx="13" cy="76" r="5" fill="currentColor"/>
+          <circle cx="136" cy="44" r="5" fill="currentColor"/>
+          <circle cx="240" cy="55" r="5" fill="currentColor"/>
+        </g>
+      </symbol>
+    </defs>
+  </svg>
+
+  <a class="skip" href="#applications">Skip to the applications</a>
+  <header class="board-header">
+    <a href="?view=overview" class="wordmark" aria-label="Crowbo brand board overview">crowbo</a>
+    <span class="board-path">design / identity-in-use</span>
+    <div class="header-tools"><span class="study-badge">PROPOSAL 02</span><button id="motion-toggle" type="button" aria-pressed="true">[fx:on]</button></div>
+  </header>
+
+  <main class="board">
+    <section class="intro" aria-labelledby="board-title">
+      <div><p class="eyebrow"><span class="node"></span> SAME IDENTITY. THREE APPLICATIONS.</p><h1 id="board-title">The shape of<br> <span>what comes next.</span></h1><p class="intro-copy">The crow gives us a character. Its circuit frames give us a language.<br>Here is how both could carry through the website, product and pitch.</p></div>
+      <div class="signature-study">
+        <button type="button" class="signature-button" id="trace-mark" aria-label="Trace a signal through the circuit frames">
+          <svg class="signature" viewBox="0 0 250 110" aria-hidden="true"><use href="#circuit-frames"/></svg>
+          <span class="signature-signal" aria-hidden="true">01</span>
+        </button>
+        <div class="specimen-label"><span>FRAME → CONNECTION → DIRECTION</span><span id="trace-label" role="status">click to trace ↵</span></div>
+      </div>
+    </section>
+
+    <div class="identity-line" aria-label="Identity constants">
+      <span>ARCHIVIST / CIRCUIT FRAMES V3</span><span>geist pixel + departure mono</span>
+      <div class="mini-palette" aria-label="Midnight, ink, mint, lemon and ivory"><i class="midnight"></i><i class="ink"></i><i class="mint"></i><i class="lemon"></i><i class="ivory"></i></div>
+      <span>small details. clear rules.</span>
+    </div>
+
+    <div class="applications-heading"><h2>01 / the identity in use</h2><span id="view-note" role="status">Open any application to explore it.</span></div>
+    <section id="applications" class="applications" aria-label="Three brand applications">
+
+      <article class="application" data-application="website" aria-labelledby="website-label">
+        <header class="application-label"><h3 id="website-label"><span>01</span> WEBSITE</h3><button type="button" data-open="website" aria-label="Open website application">open ↗</button></header>
+        <div class="application-screen website-screen">
+          <nav class="site-nav" aria-label="Website specimen navigation"><a class="wordmark" href="?view=website" data-open="website" aria-label="Crowbo website specimen">crowbo</a><span class="site-category">security decision infrastructure</span><button data-open="product" type="button" class="text-link" data-scramble>explore a decision ↗</button></nav>
+          <div class="site-hero">
+            <div class="site-copy"><p class="eyebrow"><span class="node"></span> FOR THE PEOPLE MAKING THE CALL</p><h2>More signals.<br><span>A clearer<br>next move.</span></h2><p class="hero-description">Turn fragmented security evidence and the reality of your organisation into guidance you can inspect, challenge and act on.</p><button class="primary-button" type="button" data-open="product"><span data-scramble>explore a decision</span><span aria-hidden="true">↗</span></button><p class="hero-fine">Evidence first. Your judgment, always.</p></div>
+            <figure class="hero-crow">
+              <div class="crow-caption"><span>resident / archivist.v3</span><span class="mint-text">●</span></div>
+              <button class="crow-stage" id="crow-stage" type="button" aria-label="Toggle the Archivist between sprite and bytes" aria-pressed="false" aria-describedby="crow-hint">
+                <span class="crow-sprite"><img id="crow-source" draggable="false" src="../assets/crowbo-circuit-frames-v3.png" alt="" width="1254" height="1254"></span>
+                <canvas id="crow-bytes" width="720" height="684" aria-hidden="true"></canvas>
+                <span class="corner top-left" aria-hidden="true"></span><span class="corner bottom-right" aria-hidden="true"></span>
+              </button>
+              <figcaption><span id="crow-hint">hover to decode. tap to switch.</span><span id="crow-mode">SPRITE</span></figcaption>
+            </figure>
+          </div>
+          <div class="website-route" aria-label="Evidence plus context informs direction"><span>evidence</span><i aria-hidden="true"></i><span>context</span><i aria-hidden="true"></i><strong>direction ↗</strong></div>
+          <div class="site-below"><span>ONE QUESTION WORTH ASKING</span><h3>What would change<br>your mind?</h3><p>Follow a decision from the facts it rests on to the uncertainty that could change the answer.</p><button type="button" class="text-link" data-open="product">open the fictional case ↗</button></div>
+        </div>
+        <p class="application-caption">A character to remember. A useful place to start.</p>
+      </article>
+
+      <article class="application" data-application="product" aria-labelledby="product-label">
+        <header class="application-label"><h3 id="product-label"><span>02</span> PRODUCT</h3><button type="button" data-open="product" aria-label="Open product application">open ↗</button></header>
+        <div class="application-screen product-screen">
+          <div class="product-top"><span class="wordmark">crowbo</span><span class="simulation">FICTIONAL CASE / DESIGN SPECIMEN</span></div>
+          <div class="product-shell">
+            <aside class="product-sidebar" aria-label="Case contents"><span class="sidebar-label">WORKSPACE / DEMO</span><span class="sidebar-item selected"><span>↳</span> current decision</span><span class="sidebar-item">evidence / 04</span><span class="sidebar-item">alternatives / 03</span><span class="sidebar-item">owner / pending</span><div class="sidebar-mark"><svg viewBox="0 0 250 110" aria-hidden="true"><use href="#circuit-frames"/></svg><span>One more question.</span></div></aside>
+            <div class="decision-content">
+              <div class="decision-heading"><p class="eyebrow">PROGRAMME / VULNERABILITIES / 001</p><h2>Where does the<br> next $120k go?</h2><p class="product-subtitle">More detection, more capacity, or a closer look at the constraint.</p></div>
+              <div class="case-chooser"><span>CHANGE THE CONTEXT</span><div role="group" aria-label="Fictional case variation"><button type="button" data-case="unknown" aria-pressed="true">unclear</button><button type="button" data-case="gap" aria-pressed="false">coverage gap</button><button type="button" data-case="capacity" aria-pressed="false">capacity plan</button></div></div>
+              <div class="decision-columns">
+                <section class="facts" aria-label="Fictional evidence"><div class="pane-heading"><span>01 / THE EVIDENCE</span><span>synthetic</span></div><dl><div><dt>available budget</dt><dd>$120k <small>/ year</small></dd></div><div><dt>incoming findings</dt><dd>12 <small>/ week</small></dd></div><div><dt>resolved findings</dt><dd>8 <small>/ week</small></dd></div><div><dt>overdue backlog</dt><dd>32 <small>findings</small></dd></div></dl><details class="source-details"><summary>inspect source + limits</summary><p>Public fictional development case. Eight weeks of synthetic records for one defined service population. These counts describe a queue, not severity or risk reduction.</p></details><div class="case-fact"><span class="node"></span><p id="case-fact">The cause of the constraint is still unknown.</p></div><div class="alternatives"><div class="pane-heading">02 / FEASIBLE ALTERNATIVES</div><p><span>tool pilot</span><strong>$60k</strong></p><p><span>capacity plan</span><strong>$90k</strong></p><p class="excluded"><span>both immediately</span><strong>$150k / over budget</strong></p><small>Fictional annual costs. Existing process changes remain an option.</small></div></section>
+                <section class="candidate" aria-label="Illustrative candidate guidance"><div class="candidate-heading"><span class="node"></span><span>CANDIDATE GUIDANCE</span></div><svg class="candidate-mark" viewBox="0 0 250 110" aria-hidden="true"><use href="#circuit-frames"/></svg><h3 id="candidate-title">Inspect the<br>bottleneck.</h3><p id="candidate-copy">More detections could add to a queue the team cannot clear. Find the constraint before choosing an investment.</p><div class="candidate-question"><span>WHAT COULD CHANGE THIS?</span><p id="candidate-question">An urgent blind spot, or credible evidence that capacity is the constraint.</p></div><div class="owner-line"><span>owner decision</span><strong>not recorded</strong></div></section>
+              </div>
+              <div class="record-footer"><span id="case-state" role="status">case / unclear constraint</span><span>recommendation ≠ authorisation</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="application-caption">The same identity, with the evidence taking the lead.</p>
+      </article>
+
+      <article class="application" data-application="pitch" aria-labelledby="pitch-label">
+        <header class="application-label"><h3 id="pitch-label"><span>03</span> INVESTOR PRESENTATION</h3><button type="button" data-open="pitch" aria-label="Open investor presentation application">open ↗</button></header>
+        <div class="application-screen pitch-screen">
+          <div class="deck-controls"><span>FOUNDER PRESENTATION / VISUAL STUDY</span><div role="group" aria-label="Investor slide"><button type="button" data-slide="cover" aria-pressed="true">01 / cover</button><button type="button" data-slide="method" aria-pressed="false">02 / method</button></div></div>
+          <div class="deck-mat">
+            <section class="slide cover-slide" id="slide-cover" aria-label="Investor cover slide"><div class="slide-top"><span class="wordmark">crowbo</span><span>SECURITY DECISION INFRASTRUCTURE</span></div><h2>Security evidence.<br><span>Clear programme<br>direction.</span></h2><div class="deck-circuit" aria-hidden="true"><svg viewBox="0 0 250 110"><use href="#circuit-frames"/></svg><div class="circuit-caption"><span>evidence + context</span><span>→ next move</span></div></div><div class="slide-bottom"><span>Better-grounded decisions.<br>Across the security programme.</span><span>COMPANY VISION / 01</span></div></section>
+            <section class="slide method-slide" id="slide-method" aria-label="Investor method slide" hidden><div class="slide-top"><span class="wordmark">crowbo</span><span>THE PROPOSED METHOD</span></div><h2>Context changes<br><span>the right next move.</span></h2><div class="method-flow"><div><span class="flow-index">01</span><h3>assess evidence</h3><p>Source, scope, freshness,<br>and what it supports.</p></div><span class="flow-connector" aria-hidden="true">→</span><div><span class="flow-index">02</span><h3>add context</h3><p>Objectives, capabilities,<br>constraints and authority.</p></div><span class="flow-connector" aria-hidden="true">→</span><div><span class="flow-index">03</span><h3>guide + revisit</h3><p>Options, consequences,<br>and what changes the answer.</p></div></div><div class="slide-bottom"><span>The accountable owner decides.</span><span>COMPANY VISION / 02</span></div></section>
+          </div>
+          <div class="pitch-note"><svg viewBox="0 0 250 110" aria-hidden="true"><use href="#circuit-frames"/></svg><p>The glasses can become a secondary mark.<br>Same shapes. No mascot needed on every slide.</p></div>
+        </div>
+        <p class="application-caption">A quieter expression for explaining the company.</p>
+      </article>
+    </section>
+
+    <section class="system-notes" aria-labelledby="system-title"><div class="notes-heading"><h2 id="system-title">02 / what makes it crowbo</h2><span>PROPOSED APPLICATION RULES</span></div><div class="notes-grid"><div class="note"><span>01 / CONSTRUCTION</span><h3>Frames become<br>connections.</h3><p>Gate contours, round terminals and right-angle paths repeat in marks, diagrams and interface details.</p></div><div class="note"><span>02 / TYPOGRAPHY</span><h3 class="pixel-note">crowbo</h3><p>Geist Pixel Square carries the name and major statements. Departure Mono carries the working detail.</p></div><div class="note"><span>03 / COLOUR</span><div class="colour-spec"><div><i class="mint"></i><span>mint<small>#A4EDC3</small></span></div><div><i class="lemon"></i><span>lemon<small>#EEF34B</small></span></div><div><i class="ivory"></i><span>ivory<small>#F3E9D5</small></span></div></div><p>Mint connects information. Lemon draws attention. Ivory keeps long explanations readable.</p></div><div class="note"><span>04 / CHARACTER</span><h3>One more<br>question.</h3><p>Curious, precise, a little dry. Bytes respond to interaction. Quiet when you need to read.</p></div></div></section>
+    <footer class="board-footer"><span>LOCAL DESIGN STUDY / 22.09.2026</span><a href="../terminal-prototype/">← current terminal prototype</a><a href="README.md">scope + provenance ↗</a></footer>
+  </main>
+
+  <nav class="review-bar" aria-label="Brand board views"><button id="previous-view" type="button" aria-label="Previous application">←</button><div class="view-buttons"><button type="button" data-view="overview" aria-pressed="true">overview</button><button type="button" data-view="website" aria-pressed="false">website</button><button type="button" data-view="product" aria-pressed="false">product</button><button type="button" data-view="pitch" aria-pressed="false">pitch</button></div><button id="next-view" type="button" aria-label="Next application">→</button></nav>
+  <noscript><p class="noscript">JavaScript enables focus views, fictional scenario switching and byte effects. The overview remains available below.</p></noscript>
+</body>
+</html>
