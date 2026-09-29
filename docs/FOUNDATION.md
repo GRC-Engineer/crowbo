@@ -247,7 +247,7 @@ The [measurement plan](MEASUREMENT-PLAN.md#workload-study-proposal) owns the pro
 
 ## Positioning and source context
 
-The selected identity is owned by [the Crowbo brand guide](../design/BRAND.md): the pixel corvid, the lowercase wordmark and the specified palette. Preserve its serious engineering presentation and do not copy existing game character art. The founder confirmed purchasing crowbo.ai. Its public Command Room prototype was verified live on 29 September 2026 and replaced the same day by the Decision Studio build, which is now the whole public website; no sign-in exists yet. Trademark clearance, incorporation and handle reservations are not established by that deployment.
+The selected identity is owned by [the Crowbo brand guide](../design/BRAND.md): the pixel corvid, the lowercase wordmark and the specified palette. Preserve its serious engineering presentation and do not copy existing game character art. The founder confirmed purchasing crowbo.ai. Its public Command Room prototype was verified live on 29 September 2026 and replaced the same day by the Decision Studio build, which now lives at `/demo/` alongside the approved company landing page at `/`; no sign-in exists yet. Trademark clearance, incorporation and handle reservations are not established by that deployment.
 
 Founder relationships, practitioner standing and audience are starting advantages. They do not establish paid demand, organisational endorsement, customer acceptance or viable economics. Founder observations about incumbent quality and CRQ adoption remain market judgments to test.
 

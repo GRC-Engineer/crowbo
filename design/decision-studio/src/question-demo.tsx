@@ -92,11 +92,7 @@ export default function QuestionDemo() {
         Skip to question
       </a>
       <header className="ask-header">
-        <a
-          href="./"
-          className="ask-wordmark"
-          aria-label="Crowbo question demo home"
-        >
+        <a href="../" className="ask-wordmark" aria-label="Crowbo home">
           crowbo
         </a>
         <span className="ask-demo-label">

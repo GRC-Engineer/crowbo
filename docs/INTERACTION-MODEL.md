@@ -96,7 +96,7 @@ This diagram proposes navigation and explicit user actions. It does not imply au
 
 ### Question-first walkthrough, 29 September
 
-The founder selected a synthetic walkthrough before a live connection. The walkthrough now opens at the website root, with `?view=ask` retained as an alias. The existing decision workspace stays available through Open workspace at `?view=workspace`. This avoids making the production root look like a different version of the local question-first preview. The organising object remains a decision case. The entry becomes one expanding card, with detail appearing only when useful.
+The founder selected a synthetic walkthrough before a live connection. The company landing page opens at `/`. The walkthrough opens at `/demo/`, with `/demo/?view=ask` retained as an alias. The existing decision workspace stays available through Open workspace at `/demo/?view=workspace`. The demo wordmark returns to the company homepage. The organising object remains a decision case. The entry becomes one expanding card, with detail appearing only when useful.
 
 PStack Experience First, Exhaust the Design Space and Model the Domain guide this comparison:
 
