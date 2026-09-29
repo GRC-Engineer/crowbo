@@ -36,13 +36,15 @@ export function PendingContextCard({
 }) {
   const source = pendingSource(context);
   const explanation =
-    context.kind === "annual-task"
-      ? "Ninety quiet days missed work that happens once a year. The owner's new statement challenges the original view."
-      : context.status === "tested"
-        ? "The fictional record includes successful recovery, timed expiry and denied cross-queue exports. The daily role and rollout approval still need checking."
-        : context.status === "unverified"
-          ? "This alternative contains a runbook, with no successful test or expiry record. It cannot establish that temporary access works."
-          : "This alternative says the required temporary-access mechanism is unavailable. We need a different supported path.";
+    context.kind === "check"
+      ? source.why
+      : context.kind === "annual-task"
+        ? "Ninety quiet days missed work that happens once a year. The owner's new statement challenges the original view."
+        : context.status === "tested"
+          ? "The fictional record includes successful recovery, timed expiry and denied cross-queue exports. The daily role and rollout approval still need checking."
+          : context.status === "unverified"
+            ? "This alternative contains a runbook, with no successful test or expiry record. It cannot establish that temporary access works."
+            : "This alternative says the required temporary-access mechanism is unavailable. We need a different supported path.";
   return (
     <div className="access-pending">
       <div className="access-section-label">

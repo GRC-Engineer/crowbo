@@ -23,9 +23,10 @@ import {
 import { demoCases, type DemoSource } from "./question-demo-model";
 import {
   accessAdvice,
+  availableFollowups,
+  isAccessCheck,
   accessInitialState,
   accessReducer,
-  annualTask,
   basisLabels,
   pendingSource,
   recoveryPaths,
@@ -41,6 +42,7 @@ import {
 } from "./access-review-actions";
 import { AccessAssistant } from "./access-assistant";
 import "./access-review.css";
+import "./workflow-review.css";
 
 type Inspect = (record: DemoSource, trigger: HTMLButtonElement) => void;
 
@@ -54,13 +56,22 @@ function ChangedSources({
   const reducedMotion = useReducedMotion();
   const [paused, setPaused] = useState(false);
   if (version.basis === "daily") return null;
-  const records = [
-    ...demoCases.access.sources.filter((record) => record.id === "activity"),
-    annualTask,
-    ...(version.basis === "recovery-known"
-      ? []
-      : [recoveryPaths[version.basis]]),
-  ];
+  if (isAccessCheck(version.basis))
+    return (
+      <section className="workflow-change">
+        <span className="ask-small">Why the advice changed</span>
+        <p>{revisionReasons[version.basis]}</p>
+      </section>
+    );
+  const records = versionSources(version).filter(
+    (record) =>
+      record.id === "activity" ||
+      record.id === "annual-task" ||
+      !demoCases.access.sources.some(
+        (original) =>
+          original.id === record.id && original.revision === record.revision,
+      ),
+  );
   return (
     <section
       className="access-relationship"
@@ -101,17 +112,7 @@ function ChangedSources({
               <FeatherGlyph kind={record.feather} />
               <span>
                 <small>{record.label}</small>
-                <strong>
-                  {record.id === "activity"
-                    ? "90 days cannot cover annual work"
-                    : record.id === "annual-task"
-                      ? "Recovery needs an extra capability"
-                      : version.basis === "tested"
-                        ? "A tested way to provide it"
-                        : version.basis === "unverified"
-                          ? "A runbook is not a working path"
-                          : "This path is unavailable"}
-                </strong>
+                <strong>{record.claim}</strong>
               </span>
               <ArrowUpRight size={13} />
             </button>
@@ -132,6 +133,10 @@ export function AccessReview({
   const [view, setView] = useState<"decision" | "assistant">("decision");
   const previousView = useRef(view);
   const [source, setSource] = useState<DemoSource | null>(null);
+  const [inspectionBasis, setInspectionBasis] = useState<{
+    sources: DemoSource[];
+    context: string;
+  }>({ sources: [], context: "" });
   const sourceTrigger = useRef<HTMLElement | null>(null);
   const pendingHeading = useRef<HTMLHeadingElement>(null);
   const answerHeading = useRef<HTMLHeadingElement>(null);
@@ -141,13 +146,26 @@ export function AccessReview({
   const sources = versionSources(state.current);
   const pending = state.pending ? pendingSource(state.pending) : null;
   const recorded = state.recordedVersions.includes(state.current.number);
-  const hasRecovery = state.current.basis !== "daily";
+  const hasRecovery = sources.some((record) => record.id === "annual-task");
   const decidingSources = sources.filter((record) =>
-    hasRecovery
-      ? record.id === "policy" ||
-        record.id === "annual-task" ||
-        record.id.startsWith("recovery-")
-      : ["roles", "owner", "policy"].includes(record.id),
+    isAccessCheck(state.current.basis)
+      ? [
+          "policy",
+          state.current.basis === "identity-unknown"
+            ? "directory"
+            : state.current.basis === "observed"
+              ? "access-outcome"
+              : state.current.basis === "irrelevant"
+                ? "roles"
+                : "daily-test",
+        ].includes(record.id)
+      : hasRecovery
+        ? record.id === "policy" ||
+          record.id === "annual-task" ||
+          record.id.startsWith("recovery-") ||
+          record.id === "daily-test" ||
+          record.id === "access-outcome"
+        : ["roles", "owner", "policy"].includes(record.id),
   );
 
   useEffect(() => {
@@ -189,8 +207,31 @@ export function AccessReview({
     });
   }
 
-  function inspect(record: DemoSource, trigger: HTMLButtonElement) {
+  function inspect(
+    record: DemoSource,
+    trigger: HTMLButtonElement,
+    version: AccessVersion = state.current,
+  ) {
     sourceTrigger.current = trigger;
+    const isStaged =
+      state.pending &&
+      pending &&
+      record.id === pending.id &&
+      record.revision === pending.revision;
+    const selectedVersion =
+      isStaged && state.pending
+        ? ({
+            number: state.current.number + 1,
+            basis:
+              state.pending.kind === "annual-task"
+                ? "recovery-known"
+                : state.pending.status,
+          } satisfies AccessVersion)
+        : version;
+    setInspectionBasis({
+      sources: versionSources(selectedVersion),
+      context: `access · advice v${selectedVersion.number}${isStaged ? " · staged basis, not applied" : ""}`,
+    });
     setSource(record);
   }
 
@@ -198,7 +239,7 @@ export function AccessReview({
     <div className={`ask-result access-review access-view-${view}`}>
       <div className="ask-result-question">
         <div>
-          <span className="ask-small">03 / Decide · Support access</span>
+          <span className="ask-small">03 / Decide · Access reviews</span>
           <h1 ref={headingRef} tabIndex={-1}>
             {view === "decision"
               ? demoCases.access.question
@@ -247,7 +288,7 @@ export function AccessReview({
                 <span className="ask-small">Recommended move</span>
                 <span>
                   v{state.current.number} ·{" "}
-                  {hasRecovery ? "Revised" : "Initial view"}
+                  {state.current.number > 1 ? "Revised" : "Initial view"}
                 </span>
               </div>
               <h2 ref={answerHeading} tabIndex={-1}>
@@ -263,7 +304,7 @@ export function AccessReview({
                 </span>
               </div>
               <span className="access-field-label">Next action</span>
-              <p className="access-next-description">{advice.next}.</p>
+              <p className="access-next-description">{advice.next}</p>
               <NextStep
                 version={state.current}
                 recorded={recorded}
@@ -279,21 +320,28 @@ export function AccessReview({
             <aside className="ask-basis">
               <div className="access-answer-tools">
                 <CompareOptions basis={state.current.basis} />
-                <button
-                  className="access-secondary access-challenge-button"
-                  onClick={() => {
-                    if (!hasRecovery) dispatch({ type: "challenge" });
-                    else {
-                      challengePanel.current?.scrollIntoView({
-                        block: "center",
-                        behavior: "instant",
-                      });
-                      challengePanel.current?.focus({ preventScroll: true });
-                    }
-                  }}
-                >
-                  <MessageCircle size={16} /> Challenge this
-                </button>
+                {(!isAccessCheck(state.current.basis) ||
+                  state.current.basis === "irrelevant") && (
+                  <button
+                    className="access-secondary access-challenge-button"
+                    onClick={() => {
+                      if (
+                        state.current.basis === "daily" ||
+                        state.current.basis === "irrelevant"
+                      )
+                        dispatch({ type: "challenge" });
+                      else {
+                        challengePanel.current?.scrollIntoView({
+                          block: "center",
+                          behavior: "instant",
+                        });
+                        challengePanel.current?.focus({ preventScroll: true });
+                      }
+                    }}
+                  >
+                    <MessageCircle size={16} /> Challenge this
+                  </button>
+                )}
               </div>
               <span className="ask-small">The deciding inputs</span>
               {decidingSources.map((record) => (
@@ -323,7 +371,8 @@ export function AccessReview({
 
           <ChangedSources version={state.current} onInspect={inspect} />
 
-          {(hasRecovery || pending) && (
+          {((hasRecovery && !isAccessCheck(state.current.basis)) ||
+            pending) && (
             <section
               className="access-conversation"
               ref={challengePanel}
@@ -337,8 +386,12 @@ export function AccessReview({
                 </span>
                 <span>Prepared example</span>
               </div>
-              <blockquote>“What about the annual recovery task?”</blockquote>
-              {hasRecovery && (
+              <blockquote>
+                {state.pending?.kind === "check"
+                  ? "Does the selected basis still support this choice?"
+                  : "What about the annual recovery task?"}
+              </blockquote>
+              {hasRecovery && !isAccessCheck(state.current.basis) && (
                 <p>
                   The task needs more than the daily role. Is there a working
                   way to provide that capability only when it’s needed?
@@ -356,59 +409,90 @@ export function AccessReview({
                 />
               )}
 
-              {hasRecovery && !pending && (
-                <div className="access-prepared-paths">
-                  <span className="access-field-label">
-                    Explore a prepared evidence outcome
-                  </span>
-                  <div>
-                    {(["tested", "unverified", "unavailable"] as const).map(
-                      (status: RecoveryPath) => (
-                        <button
-                          key={status}
-                          className="access-path-choice"
-                          aria-disabled={state.current.basis === status}
-                          onClick={() => {
-                            if (state.current.basis !== status)
-                              dispatch({ type: "prepare-path", status });
-                          }}
-                        >
-                          <FeatherGlyph kind={recoveryPaths[status].feather} />
-                          <strong>
-                            {status === "tested"
-                              ? "Tested path"
-                              : status === "unverified"
-                                ? "Runbook only"
-                                : "No path available"}
-                          </strong>
-                          <small>
-                            {state.current.basis === status
-                              ? "Current example"
-                              : status === "tested"
-                                ? "A recorded rehearsal"
+              {hasRecovery &&
+                !pending &&
+                !isAccessCheck(state.current.basis) && (
+                  <div className="access-prepared-paths">
+                    <span className="access-field-label">
+                      Explore a prepared evidence outcome
+                    </span>
+                    <div>
+                      {(["tested", "unverified", "unavailable"] as const).map(
+                        (status: RecoveryPath) => (
+                          <button
+                            key={status}
+                            className="access-path-choice"
+                            aria-disabled={state.current.basis === status}
+                            onClick={() => {
+                              if (state.current.basis !== status)
+                                dispatch({ type: "prepare-path", status });
+                            }}
+                          >
+                            <FeatherGlyph
+                              kind={recoveryPaths[status].feather}
+                            />
+                            <strong>
+                              {status === "tested"
+                                ? "Tested path"
                                 : status === "unverified"
-                                  ? "A process on paper"
-                                  : "A platform constraint"}
-                          </small>
-                          {state.current.basis === status ? (
-                            <Check size={14} />
-                          ) : (
-                            <ArrowRight size={14} />
-                          )}
-                        </button>
-                      ),
-                    )}
+                                  ? "Runbook only"
+                                  : "No path available"}
+                            </strong>
+                            <small>
+                              {state.current.basis === status
+                                ? "Current example"
+                                : status === "tested"
+                                  ? "A recorded rehearsal"
+                                  : status === "unverified"
+                                    ? "A process on paper"
+                                    : "A platform constraint"}
+                            </small>
+                            {state.current.basis === status ? (
+                              <Check size={14} />
+                            ) : (
+                              <ArrowRight size={14} />
+                            )}
+                          </button>
+                        ),
+                      )}
+                    </div>
+                    <p className="ask-fine">
+                      Fictional alternatives. Selecting one previews a record;
+                      reassessment applies it.
+                    </p>
                   </div>
-                  <p className="ask-fine">
-                    Fictional alternatives. Selecting one previews a record;
-                    reassessment applies it.
-                  </p>
-                </div>
-              )}
+                )}
             </section>
           )}
 
           <div className="ask-result-details">
+            {availableFollowups(state.current.basis).some(
+              (prompt) => prompt.action.type === "prepare-check",
+            ) && (
+              <details className="ask-disclosure">
+                <summary>
+                  Test the deciding facts <ChevronDown size={16} />
+                </summary>
+                <div className="workflow-update-options">
+                  {availableFollowups(state.current.basis)
+                    .filter((prompt) => prompt.action.type === "prepare-check")
+                    .map((prompt) => (
+                      <button
+                        disabled={state.pending !== null}
+                        key={prompt.label}
+                        onClick={() => dispatch(prompt.action)}
+                      >
+                        {prompt.label}
+                        <ArrowRight size={16} />
+                      </button>
+                    ))}
+                </div>
+                <p className="ask-fine">
+                  Prepared alternative records. Each update needs explicit
+                  reassessment.
+                </p>
+              </details>
+            )}
             {state.previous.length > 0 && (
               <details className="ask-disclosure access-history">
                 <summary>
@@ -446,7 +530,7 @@ export function AccessReview({
                             <li key={record.id}>
                               <button
                                 onClick={(event) =>
-                                  inspect(record, event.currentTarget)
+                                  inspect(record, event.currentTarget, version)
                                 }
                               >
                                 {record.label}
@@ -473,33 +557,7 @@ export function AccessReview({
                 </span>
               </summary>
               <div className="ask-disclosure-body ask-source-body">
-                <p className="ask-fine access-source-caption">
-                  Original six records. Added context is listed below when it is
-                  applied.
-                </p>
-                <SourceNetwork
-                  sources={demoCases.access.sources}
-                  onInspect={inspect}
-                />
-                {hasRecovery && (
-                  <div className="access-added-sources">
-                    {sources.slice(6).map((record) => (
-                      <button
-                        key={record.id}
-                        onClick={(event) =>
-                          inspect(record, event.currentTarget)
-                        }
-                      >
-                        <FeatherGlyph kind={record.feather} />
-                        <span>
-                          <small>Added context · {record.revision}</small>
-                          <strong>{record.label}</strong>
-                        </span>
-                        <ArrowUpRight size={14} />
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <SourceNetwork sources={sources} onInspect={inspect} />
               </div>
             </details>
             <ContextNote
@@ -512,7 +570,9 @@ export function AccessReview({
       {source && (
         <SourceInspector
           source={source}
-          scope="Acme · fictional support-access review"
+          scope={demoCases.access.scope}
+          sources={inspectionBasis.sources}
+          context={inspectionBasis.context}
           onClose={() => setSource(null)}
           returnFocus={sourceTrigger}
         />

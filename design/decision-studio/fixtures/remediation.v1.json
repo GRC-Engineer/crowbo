@@ -1,0 +1,643 @@
+{
+  "schemaVersion": "crowbo.synthetic-workflow.v1",
+  "provenance": {
+    "author": "Codex synthetic development fixture",
+    "humanReview": "Not yet qualified",
+    "status": "Candidate authored advice; not a backend run or evaluation answer key",
+    "data": "Fictional Acme records. No customer material.",
+    "influence": "Authored categories only; no measured weights or confidence."
+  },
+  "id": "remediation",
+  "specVersion": "1.0.0",
+  "question": "The gateway security fix is merged. What should happen next, and can we close the finding?",
+  "scope": "Acme gateway · gw-prod-eu · customer sign-in",
+  "initialStage": "open",
+  "alternatives": [
+    {
+      "title": "Close at merge",
+      "tradeoff": "The completed ticket cannot establish production treatment. The affected version is still serving."
+    },
+    {
+      "title": "Defer until after launch",
+      "tradeoff": "Avoids rollout disruption now but leaves the observed exposure. No interim treatment or acceptance is established."
+    }
+  ],
+  "challenge": {
+    "title": "Are we mistaking completion for an outcome?",
+    "body": "A ticket, a merge and a deployment answer different questions. The customer configuration also needs to keep working.",
+    "check": "Bind the scoped security and sign-in checks to the deployed artifact.",
+    "sourceId": "treatment"
+  },
+  "stages": [
+    {
+      "id": "open",
+      "focus": [
+        "finding",
+        "inventory",
+        "change-policy"
+      ],
+      "label": "Merged fix",
+      "advice": {
+        "title": "Merge is a start. Verify the fix in production.",
+        "reason": "The ticket is done, but the affected gateway is still serving traffic. Plan the approved rollout and test the actual customer sign-in path.",
+        "condition": "Nora must resolve the change window and rollback check. Closure is unsupported until the scoped security check passes on every serving replica.",
+        "next": "Nora: confirm the window, rollout and verification owner.",
+        "support": "The production version decides this next step. A completed ticket repeats the patch review and adds no independent confirmation."
+      },
+      "change": "Initial selected basis.",
+      "status": "Merged · deployment missing · verification missing",
+      "options": [
+        "deployed",
+        "irrelevant"
+      ],
+      "sourceRefs": [
+        "finding@finding / r1",
+        "treatment@treatment / r1",
+        "patch@patch / r1",
+        "inventory@inventory / r1",
+        "incident@incident / r1",
+        "change-policy@change-policy / v2",
+        "capacity@capacity / r1"
+      ]
+    },
+    {
+      "id": "deployed",
+      "focus": [
+        "finding",
+        "deployment",
+        "change-policy"
+      ],
+      "label": "Add deployment receipt",
+      "advice": {
+        "title": "Deployed. Keep the finding open.",
+        "reason": "The build identity now matches the fix on all three replicas. We still need the security check and the customer sign-in check on this deployment.",
+        "condition": "Suri must verify SEC-142 against D-281. Missing change-approval evidence remains a separate follow-up.",
+        "next": "Suri: run the scoped security and sign-in checks.",
+        "support": "Deployment answers where the code runs. It does not answer whether the treatment worked."
+      },
+      "change": "D-281 establishes deployment of B-281; it does not establish verification.",
+      "status": "Merged · deployed · verification missing",
+      "options": [
+        "verified",
+        "failed",
+        "irrelevant"
+      ],
+      "sourceRefs": [
+        "finding@finding / r1",
+        "treatment@treatment / r1",
+        "patch@patch / r1",
+        "inventory@inventory / r1",
+        "incident@incident / r1",
+        "change-policy@change-policy / v2",
+        "capacity@capacity / r1",
+        "deployment@deployment / r1"
+      ]
+    },
+    {
+      "id": "verified",
+      "focus": [
+        "deployment",
+        "verification",
+        "change-policy"
+      ],
+      "label": "Add successful verification",
+      "advice": {
+        "title": "Propose closure for this finding.",
+        "reason": "The fixed artifact is deployed and the scoped security and sign-in checks pass. Suri can review closure of SEC-142 for gw-prod-eu.",
+        "condition": "Closure is a proposal for this finding only. Resolve the missing CHG-87 approval record separately; future drift is not monitored by this demo.",
+        "next": "Suri: review V-281 and record the scoped closure decision.",
+        "support": "The observed deployment and independent check support this proposal; they do not prove security outside the tested scope."
+      },
+      "change": "V-281 supplies the missing outcome check. The earlier completed ticket was insufficient.",
+      "status": "Merged · deployed · verified · closure proposed",
+      "options": [
+        "rollback",
+        "irrelevant"
+      ],
+      "sourceRefs": [
+        "finding@finding / r1",
+        "treatment@treatment / r1",
+        "patch@patch / r1",
+        "inventory@inventory / r1",
+        "incident@incident / r1",
+        "change-policy@change-policy / v2",
+        "capacity@capacity / r1",
+        "deployment@deployment / r1",
+        "verification@verification / r1"
+      ]
+    },
+    {
+      "id": "failed",
+      "focus": [
+        "verification-failed",
+        "deployment",
+        "change-policy"
+      ],
+      "label": "Try failed verification",
+      "advice": {
+        "title": "The treatment broke required work.",
+        "reason": "Valid customer sign-in fails. Keep SEC-142 open and ask Nora to resolve the regression under the release process.",
+        "condition": "Rollback is only requested. Reverting restores the vulnerable version, so a revised treatment or authorised interim arrangement is needed.",
+        "next": "Nora and Suri: review rollback and the remaining exposure.",
+        "support": "A passed signature check cannot compensate for a failed required workflow."
+      },
+      "change": "The relevant sign-in test failed; the next step changes even though the patch is deployed.",
+      "status": "Deployed · required workflow failed · finding open",
+      "options": [
+        "rollback",
+        "verified",
+        "irrelevant"
+      ],
+      "sourceRefs": [
+        "finding@finding / r1",
+        "treatment@treatment / r1",
+        "patch@patch / r1",
+        "inventory@inventory / r1",
+        "incident@incident / r1",
+        "change-policy@change-policy / v2",
+        "capacity@capacity / r1",
+        "deployment@deployment / r1",
+        "verification-failed@verification-failed / r1"
+      ]
+    },
+    {
+      "id": "rollback",
+      "focus": [
+        "rollback",
+        "finding",
+        "change-policy"
+      ],
+      "label": "Add rollback receipt",
+      "advice": {
+        "title": "Recovered service. Unresolved exposure.",
+        "reason": "The rollback restores sign-in and the affected artifact. Re-plan treatment of SEC-142 with the service and security owners.",
+        "condition": "No safeguard, accepted exception or successful security retest is established for 2.8.0.",
+        "next": "Nora and Suri: agree a revised fix and scoped verification.",
+        "support": "The later artifact observation supersedes the earlier deployment for current state."
+      },
+      "change": "D-280-R shows the affected version serving again. Prior verification cannot close a reverted deployment.",
+      "status": "Rollback observed · vulnerable version serving",
+      "options": [
+        "deployed",
+        "irrelevant"
+      ],
+      "sourceRefs": [
+        "finding@finding / r1",
+        "treatment@treatment / r1",
+        "patch@patch / r1",
+        "inventory@inventory / r1",
+        "incident@incident / r1",
+        "change-policy@change-policy / v2",
+        "capacity@capacity / r1",
+        "deployment@deployment / r1",
+        "rollback@rollback / r1"
+      ]
+    }
+  ],
+  "irrelevantOverlay": {
+    "sourceRef": "launch-room@launch-room / r1",
+    "behavior": "Append this source to the selected stage; preserve its advice and all conditions. Explicit reassessment only. Do not append twice."
+  },
+  "sourceRecords": {
+    "finding@finding / r1": {
+      "id": "finding",
+      "label": "Authentication finding",
+      "provider": "linear",
+      "feather": "mesh",
+      "influence": "deciding",
+      "claim": "The production gateway accepts an invalid session.",
+      "quote": "SEC-142: A controlled check on gateway 2.8.0 accepted a session without the required signature check on /session/restore. Treatment: deploy 2.8.1 and repeat that check on all serving replicas.",
+      "why": "Establishes a specific exposure and a verifiable treatment.",
+      "limit": "Fictional finding, not a real advisory. Other endpoints and environments were not tested.",
+      "period": "28 September 2026",
+      "revision": "finding / r1",
+      "record": {
+        "subject": "SEC-142 · gateway 2.8.0",
+        "scope": "Acme gateway · gw-prod-eu · customer sign-in",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "security-check-142",
+        "links": [
+          {
+            "label": "Affected production artifact",
+            "targetId": "inventory",
+            "identity": "gw-prod-eu → artifact gw:2.8.0"
+          },
+          {
+            "label": "Treatment issue",
+            "targetId": "treatment",
+            "identity": "SEC-142 → REM-142"
+          }
+        ]
+      }
+    },
+    "treatment@treatment / r1": {
+      "id": "treatment",
+      "label": "Completed ticket",
+      "provider": "linear",
+      "feather": "column",
+      "influence": "deciding",
+      "claim": "The ticket says done; production is still affected.",
+      "quote": "REM-142 is marked Done because PR-87 merged. Closure note: \"fixed in main\". No deployment or retest receipt is attached.",
+      "why": "Conflicts with the production artifact record. Workflow status does not close the exposure.",
+      "limit": "The closure note repeats PR-87; it is not independent verification.",
+      "period": "28 September 2026",
+      "revision": "treatment / r1",
+      "record": {
+        "subject": "REM-142 → SEC-142",
+        "scope": "Acme gateway · gw-prod-eu · customer sign-in",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "github-pr-87",
+        "links": [
+          {
+            "label": "Original merged patch",
+            "targetId": "patch",
+            "identity": "REM-142 → PR-87"
+          },
+          {
+            "label": "Affected artifact",
+            "targetId": "inventory",
+            "identity": "gw-prod-eu"
+          }
+        ]
+      }
+    },
+    "patch@patch / r1": {
+      "id": "patch",
+      "label": "Merged patch",
+      "provider": "github",
+      "feather": "merge",
+      "influence": "supporting",
+      "claim": "The fix exists in the release artifact.",
+      "quote": "PR-87 merged as commit c87a. Build B-281 maps c87a to artifact gw:2.8.1. Unit signature checks pass. The customer sign-in configuration is not covered.",
+      "why": "Connects the intended fix to an identifiable build.",
+      "limit": "Merge and unit tests establish neither deployment nor relevant end-to-end verification.",
+      "period": "28 September 2026",
+      "revision": "patch / r1",
+      "record": {
+        "subject": "PR-87 · c87a · B-281",
+        "scope": "Acme gateway · gw-prod-eu · customer sign-in",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "github-pr-87",
+        "links": [
+          {
+            "label": "Production artifact",
+            "targetId": "inventory",
+            "identity": "B-281 → gw:2.8.1; compare gw-prod-eu"
+          },
+          {
+            "label": "Relevant regression",
+            "targetId": "incident",
+            "identity": "customer configuration acme-eu"
+          }
+        ]
+      }
+    },
+    "inventory@inventory / r1": {
+      "id": "inventory",
+      "label": "Production artifact",
+      "provider": "aws",
+      "feather": "object",
+      "influence": "deciding",
+      "claim": "All three serving replicas still run 2.8.0.",
+      "quote": "Deployment inventory: gw-prod-eu replicas a, b and c serve gw:2.8.0. The release catalogue contains gw:2.8.1 but no production receipt.",
+      "why": "The affected version is still serving traffic despite the completed ticket.",
+      "limit": "Snapshot of one environment; not a full organisation inventory.",
+      "period": "28 September 2026",
+      "revision": "inventory / r1",
+      "record": {
+        "subject": "gw-prod-eu / replicas a,b,c",
+        "scope": "Acme gateway · gw-prod-eu · customer sign-in",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "deployment-inventory",
+        "links": [
+          {
+            "label": "Finding for this version",
+            "targetId": "finding",
+            "identity": "gw:2.8.0 → SEC-142"
+          },
+          {
+            "label": "Expected build",
+            "targetId": "patch",
+            "identity": "gw:2.8.1 → B-281"
+          },
+          {
+            "label": "Production deployment receipt",
+            "targetId": null,
+            "identity": "gw-prod-eu / B-281 / not supplied"
+          }
+        ]
+      }
+    },
+    "incident@incident / r1": {
+      "id": "incident",
+      "label": "Earlier sign-in incident",
+      "provider": "linear",
+      "feather": "loop",
+      "influence": "supporting",
+      "claim": "The prior rollout broke one customer configuration.",
+      "quote": "INC-38: A previous session parser change rejected acme-eu sign-in. Rollback restored service. The launch uses this same configuration.",
+      "why": "Defines a relevant regression check before rollout.",
+      "limit": "Similarity warrants testing; it does not predict this patch will fail.",
+      "period": "12 August 2026",
+      "revision": "incident / r1",
+      "record": {
+        "subject": "INC-38 · acme-eu",
+        "scope": "Acme gateway · gw-prod-eu · customer sign-in",
+        "checked": "Prepared observation: 12 August 2026. No current refresh.",
+        "origin": "incident-38",
+        "links": [
+          {
+            "label": "Patch to test",
+            "targetId": "patch",
+            "identity": "acme-eu configuration"
+          }
+        ]
+      }
+    },
+    "change-policy@change-policy / v2": {
+      "id": "change-policy",
+      "label": "Release conditions",
+      "provider": "notion",
+      "feather": "spine",
+      "influence": "constraint",
+      "claim": "Deployment needs an approved window and a rollback path.",
+      "quote": "CHG-4: Gateway releases need the service owner’s approval, a demonstrated rollback path and post-deployment verification bound to the release artifact.",
+      "why": "These are conditions, not weights other inputs can outweigh.",
+      "limit": "This policy is not approval for PR-87. The approval record is absent.",
+      "period": "28 September 2026",
+      "revision": "change-policy / v2",
+      "record": {
+        "subject": "CHG-4 v2",
+        "scope": "Acme gateway · gw-prod-eu · customer sign-in",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "policy-change-4",
+        "links": [
+          {
+            "label": "Change approval",
+            "targetId": null,
+            "identity": "CHG-87 / no approval record"
+          }
+        ]
+      }
+    },
+    "capacity@capacity / r1": {
+      "id": "capacity",
+      "label": "Launch context",
+      "provider": "slack",
+      "feather": "braid",
+      "influence": "context",
+      "claim": "There is time for a controlled check before Friday.",
+      "quote": "Nora, service owner: I can test on Wednesday. Friday’s customer launch uses acme-eu. Keep rollback available.",
+      "why": "Makes a controlled rollout feasible without treating the deadline as permission.",
+      "limit": "Attributed availability is not an approved change window or accepted risk.",
+      "period": "28 September 2026",
+      "revision": "capacity / r1",
+      "record": {
+        "subject": "Nora · gw-prod-eu",
+        "scope": "Acme gateway · gw-prod-eu · customer sign-in",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "owner-statement-nora",
+        "links": [
+          {
+            "label": "Regression to exercise",
+            "targetId": "incident",
+            "identity": "acme-eu"
+          },
+          {
+            "label": "Delivery work",
+            "targetId": "treatment",
+            "identity": "REM-142"
+          }
+        ]
+      }
+    },
+    "deployment@deployment / r1": {
+      "id": "deployment",
+      "label": "Deployment receipt",
+      "provider": "aws",
+      "feather": "object",
+      "influence": "deciding",
+      "claim": "The patched artifact is now on all serving replicas.",
+      "quote": "D-281: At 10:10, gw-prod-eu a,b,c changed to gw:2.8.1 / B-281 / c87a. The receipt names CHG-87, but its approval record is not supplied. No post-deployment security check is attached.",
+      "why": "Resolves deployment identity. Verification and change-authority evidence remain separate.",
+      "limit": "A receipt proves the observed deployment, not approval, correctness or closure.",
+      "period": "30 September 2026 · 10:10",
+      "revision": "deployment / r1",
+      "record": {
+        "subject": "D-281 · B-281",
+        "scope": "Acme gateway · gw-prod-eu · customer sign-in",
+        "checked": "Prepared observation: 30 September 2026 · 10:10. No current refresh.",
+        "origin": "deployment-281",
+        "links": [
+          {
+            "label": "Release build",
+            "targetId": "patch",
+            "identity": "B-281 → c87a"
+          },
+          {
+            "label": "Security finding",
+            "targetId": "finding",
+            "identity": "SEC-142"
+          },
+          {
+            "label": "Referenced approval",
+            "targetId": null,
+            "identity": "CHG-87 / not supplied"
+          }
+        ]
+      }
+    },
+    "verification@verification / r1": {
+      "id": "verification",
+      "label": "Scoped security check",
+      "provider": "datadog",
+      "feather": "loop",
+      "influence": "deciding",
+      "claim": "The signature check passes on the deployed artifact.",
+      "quote": "V-281: At 10:25, replicas a,b,c reported gw:2.8.1. Invalid signatures were denied on /session/restore; valid acme-eu sign-in succeeded. Suri, security reviewer, recorded the probes and responses.",
+      "why": "Supports proposed closure for SEC-142 in this exact scope.",
+      "limit": "Does not cover other endpoints or future rollbacks. Closure still needs the accountable reviewer; this test cannot supply missing change approval.",
+      "period": "30 September 2026 · 10:25",
+      "revision": "verification / r1",
+      "record": {
+        "subject": "V-281 → D-281",
+        "scope": "Acme gateway · gw-prod-eu · customer sign-in",
+        "checked": "Prepared observation: 30 September 2026 · 10:25. No current refresh.",
+        "origin": "security-retest-281",
+        "links": [
+          {
+            "label": "Observed deployment",
+            "targetId": "deployment",
+            "identity": "V-281 → D-281 / B-281"
+          },
+          {
+            "label": "Closure scope",
+            "targetId": "finding",
+            "identity": "SEC-142 /session/restore"
+          }
+        ]
+      }
+    },
+    "verification-failed@verification-failed / r1": {
+      "id": "verification-failed",
+      "label": "Failed sign-in check",
+      "provider": "datadog",
+      "feather": "loop",
+      "influence": "deciding",
+      "claim": "The security check passes, but customer sign-in fails.",
+      "quote": "Alternative V-281-F: On B-281 in gw-prod-eu, invalid signatures are denied; valid acme-eu sessions fail. Rollback has been requested, not observed.",
+      "why": "The treatment breaks required work. Resolve or roll back under the release process and retain the security exposure if reverting.",
+      "limit": "A rollback request is not a rollback receipt. The old artifact would remain affected.",
+      "period": "30 September 2026 · 10:25",
+      "revision": "verification-failed / r1",
+      "record": {
+        "subject": "V-281-F → D-281",
+        "scope": "Acme gateway · gw-prod-eu · customer sign-in",
+        "checked": "Prepared observation: 30 September 2026 · 10:25. No current refresh.",
+        "origin": "security-retest-281-f",
+        "links": [
+          {
+            "label": "Deployed artifact",
+            "targetId": "deployment",
+            "identity": "B-281"
+          },
+          {
+            "label": "Earlier matching symptom",
+            "targetId": "incident",
+            "identity": "acme-eu"
+          }
+        ]
+      }
+    },
+    "rollback@rollback / r1": {
+      "id": "rollback",
+      "label": "Rollback observed",
+      "provider": "aws",
+      "feather": "object",
+      "influence": "deciding",
+      "claim": "Service recovered; the affected version is back.",
+      "quote": "D-280-R: All gw-prod-eu replicas again serve gw:2.8.0. Valid sign-in succeeds. The signature-bypass finding still applies; no successful security retest is supplied.",
+      "why": "Reopens the treatment question instead of treating service recovery as security closure.",
+      "limit": "Operational recovery is not mitigation of SEC-142.",
+      "period": "30 September 2026 · 11:00",
+      "revision": "rollback / r1",
+      "record": {
+        "subject": "D-280-R · gw:2.8.0",
+        "scope": "Acme gateway · gw-prod-eu · customer sign-in",
+        "checked": "Prepared observation: 30 September 2026 · 11:00. No current refresh.",
+        "origin": "rollback-280",
+        "links": [
+          {
+            "label": "Original exposure",
+            "targetId": "finding",
+            "identity": "gw:2.8.0 → SEC-142"
+          }
+        ]
+      }
+    },
+    "launch-room@launch-room / r1": {
+      "id": "launch-room",
+      "label": "Irrelevant context",
+      "provider": "slack",
+      "feather": "braid",
+      "influence": "context",
+      "claim": "The launch meeting moved rooms.",
+      "quote": "Nora: Friday’s launch briefing is now in Room C. The service, window, test capacity and customer configuration are unchanged.",
+      "why": "Does not alter the treatment, authority, scope or deciding checks.",
+      "limit": "This is an irrelevant-context variation, not new security evidence.",
+      "period": "30 September 2026",
+      "revision": "launch-room / r1",
+      "record": {
+        "subject": "Launch briefing",
+        "scope": "Acme gateway · gw-prod-eu · customer sign-in",
+        "checked": "Prepared observation: 30 September 2026. No current refresh.",
+        "origin": "meeting-room-update",
+        "links": []
+      }
+    }
+  },
+  "sourceFamilies": [
+    {
+      "id": "finding-review",
+      "question": "What finding or review actually needs a decision?",
+      "limit": "Workflow status is not verified treatment or approval.",
+      "coverage": [
+        "finding"
+      ]
+    },
+    {
+      "id": "people-identity",
+      "question": "Which immutable account belongs to which custodian?",
+      "limit": "Names and employment do not establish permissions.",
+      "coverage": "Not used: service/artifact case, no person-account join needed."
+    },
+    {
+      "id": "effective-permissions",
+      "question": "What can the exact account or service do, including inherited grants?",
+      "limit": "A role catalogue is not a test of effective rights.",
+      "coverage": "Not used: no access change evaluated."
+    },
+    {
+      "id": "activity-monitoring",
+      "question": "What happened in the observed window and what coverage is missing?",
+      "limit": "No observed event is not proof of no activity or no need.",
+      "coverage": [
+        "verification",
+        "verification-failed"
+      ]
+    },
+    {
+      "id": "code-build-inventory",
+      "question": "Which change produced which artifact?",
+      "limit": "A merge or component match is not production treatment.",
+      "coverage": [
+        "patch",
+        "inventory"
+      ]
+    },
+    {
+      "id": "deployment-verification",
+      "question": "What ran, and what exact outcome was independently checked?",
+      "limit": "Implementation does not establish effective treatment or authority.",
+      "coverage": [
+        "deployment",
+        "verification",
+        "rollback"
+      ]
+    },
+    {
+      "id": "policy-runbook-exception",
+      "question": "What requirement, boundary, approval and validity apply?",
+      "limit": "A request or runbook does not implement or authorise a safeguard.",
+      "coverage": [
+        "change-policy"
+      ]
+    },
+    {
+      "id": "work-tracking",
+      "question": "Who owns the treatment and which dependencies remain?",
+      "limit": "A done ticket does not prove verification or delivery authority.",
+      "coverage": [
+        "treatment"
+      ]
+    },
+    {
+      "id": "prior-records",
+      "question": "Which earlier incident or review makes a check relevant?",
+      "limit": "Past similarity does not predict the new outcome.",
+      "coverage": [
+        "incident"
+      ]
+    },
+    {
+      "id": "owner-context",
+      "question": "Which attributed work or delivery constraint affects the choice?",
+      "limit": "A date or statement does not grant approval or make an obligation mandatory.",
+      "coverage": [
+        "capacity",
+        "launch-room"
+      ]
+    }
+  ],
+  "replayBoundary": "Use this packet for development replay only. Backend run receipts and differences must be retained separately; the frontend does not call backend tools."
+}
