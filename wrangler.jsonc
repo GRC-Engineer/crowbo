@@ -1,0 +1,18 @@
+// Cloudflare Workers configuration for the public crowbo.ai website.
+// Static files only: everything in ./site is served as-is and no Worker code runs.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "crowbo-site",
+  "compatibility_date": "2026-09-29",
+  "assets": {
+    "directory": "./site",
+    "not_found_handling": "404-page"
+  },
+  // Cloudflare creates the DNS record and certificate for this hostname on deploy.
+  "routes": [
+    { "pattern": "crowbo.ai", "custom_domain": true }
+  ],
+  // Branch preview URLs on *.workers.dev; the production site stays on crowbo.ai.
+  "workers_dev": false,
+  "preview_urls": true
+}

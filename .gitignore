@@ -14,3 +14,5 @@ build/
 *.sqlite3-wal
 *.sqlite3-shm
 proof/runs/
+.wrangler/
+node_modules/

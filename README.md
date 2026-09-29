@@ -17,6 +17,12 @@ The name combines the English crow with a nod to the French corbeau. It is prono
 
 Crowbo should connect permitted security and company context to a decision question, assemble the deciding evidence, compare feasible options and retain the basis for reassessment. The initial portfolio is remediation tracking, access reviews, and issues and exceptions management. The access experiment is the implemented starting point; the other workflow extensions remain proposed.
 
+## Website
+
+`site/` holds the public crowbo.ai page: the terminal Command Room prototype from `design/`, its mascot, the two fonts it uses and their licences. Only that folder is published. `wrangler.jsonc` configures it as static assets on Cloudflare Workers with `crowbo.ai` as a custom domain, and `site/_headers` sets the security headers.
+
+Preview locally with `npx wrangler dev` (serves on 127.0.0.1). Publishing becomes automatic once the repository is connected in the Cloudflare dashboard (Workers & Pages → Create → Import a repository; no build command; deploy command `npx wrangler deploy`). Merges to `main` then deploy to crowbo.ai and other branches get preview URLs.
+
 ## Current state
 
 The first connected Python CLI is implemented: import a permitted private source bundle, store source revisions in turbopuffer London, prepare independent Jev assessments and native Voyage embeddings, and retrieve evidence with its matching assessment. The first hosted run used five real, privately held records. Exact listing, keyword search, semantic search and repeat-import reuse succeeded. See the [pilot guide and run record](docs/PILOT.md).
