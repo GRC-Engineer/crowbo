@@ -93,7 +93,7 @@ export default function QuestionDemo() {
       </a>
       <header className="ask-header">
         <a
-          href="?view=ask"
+          href="./"
           className="ask-wordmark"
           aria-label="Crowbo question demo home"
         >
@@ -103,7 +103,7 @@ export default function QuestionDemo() {
           <i />
           Synthetic walkthrough
         </span>
-        <a className="ask-workspace-link" href="./">
+        <a className="ask-workspace-link" href="?view=workspace">
           Open workspace <ArrowUpRight size={14} />
         </a>
       </header>

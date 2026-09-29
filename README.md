@@ -40,7 +40,7 @@ npm run build
 npm run dev
 ```
 
-`npm run build` regenerates `site/` at the repository root. Commit the regenerated `site/` together with the source change.
+`npm run build` regenerates `site/` at the repository root. Commit the regenerated `site/` together with the source change. The root URL opens the question-first experience; `?view=ask` remains an alias, and `?view=workspace` opens the full workspace. The same entry rules apply locally and on crowbo.ai.
 
 Credentials, authorised source inputs and runtime outputs stay outside Git. Follow [the pilot guide](docs/PILOT.md#running-it) before connecting any provider. The synthetic tests need no provider credentials.
 

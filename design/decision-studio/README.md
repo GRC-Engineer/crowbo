@@ -18,7 +18,7 @@ The [next bounded UI delta](../../docs/INTERACTION-MODEL.md#smallest-next-ui-del
 
 ## Question-first walkthrough — 29 September
 
-Open [Ask Crowbo](http://127.0.0.1:8799/?view=ask) after serving `site/` as described under [Run](#run). This separate route implements the [question-first interaction map](../../docs/INTERACTION-MODEL.md#question-first-walkthrough-29-september), using PStack Experience First, Exhaust the Design Space and Model the Domain. The ordinary workspace remains at the URL without the query string.
+Open [Ask Crowbo](http://127.0.0.1:8799/) after serving `site/` as described under [Run](#run). The root URL opens the [question-first interaction](../../docs/INTERACTION-MODEL.md#question-first-walkthrough-29-september), matching production. `?view=ask` remains a supported alias. Open workspace links to `?view=workspace`; absent or unrecognised view values open the question card. This uses PStack Experience First, Exhaust the Design Space and Model the Domain.
 
 One opening card expands into a question composer, a finite source-network illustration, and a recommendation. Prepared support-access and gateway-upgrade questions each have six fictional records. Feather shapes use the existing topology family; provider marks are examples. Larger cards mean greater influence on this choice. Constraints have a separate Must hold marker. The graph uses two columns on phones, without sideways scrolling.
 
