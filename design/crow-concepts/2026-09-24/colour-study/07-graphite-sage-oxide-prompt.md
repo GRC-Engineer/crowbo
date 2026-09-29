@@ -24,4 +24,3 @@ Matching feather: almost-black graphite planes with thin smoky-sage mesh/quill p
 Background: uniform neutral near-black #0C1010. Separate the dark silhouette through stepped charcoal values, not a glow or reduced opacity. Retain crisp square pixel edges, a limited palette, and the same scale and placement as the reference. No gradients, bloom, halos, shadows, framing boxes, props, added birds or circuitry outside the feather and glasses. No fine noisy feather texture or smooth illustration.
 Replace the bottom caption with small warm-ivory pixel monospace text, exactly: "07 / GRAPHITE + SAGE + OXIDE".
 This should feel calm, dark, intelligent and restrained. Do not brighten or saturate the muted accents to make them more dramatic.
-

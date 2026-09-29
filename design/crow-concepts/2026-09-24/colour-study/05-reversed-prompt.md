@@ -18,4 +18,3 @@ Colour changes:
 
 Invariants: same Curious expression, identical eye sizes and pupils, head tilt, crest silhouette, long beak, shoulders, mature crow proportions, wearable AND/OR gate spectacles and round terminals. Same chunky crisp pixel clusters, same crow and feather positions and scale, same Mesh feather silhouette and topology. Do not redesign, add glow, gradients, blur, purple, lighting effects, new objects, or change the background. This is a colour swap, not a new character.
 Replace only the caption wording with the exact small pixel-monospace text: "05R / VERMILION + CHALK". Keep its existing placement and style.
-
