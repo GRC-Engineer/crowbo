@@ -30,6 +30,10 @@ The terminal study defaults to a sprite, reveals bytes on hover, restores the sp
 
 The earlier [Circuit Frames V3 head icon](crow-concepts/2026-09-22/circuit-frames/archivist-circuit-favicon-v3.png) retains lemon gate-shaped spectacles and mint eyes on midnight. Its [generation prompt](crow-concepts/2026-09-22/circuit-frames/archivist-circuit-favicon-v3-prompt.md), [actual-size preview](homepage-mockups/2026-09-21/terminal-prototype/favicon-preview.html), [homepage/terminal copy](homepage-mockups/2026-09-21/assets/crowbo-circuit-favicon-v3.png) and [typography copy](typography/2026-09-21/assets/crowbo-circuit-favicon-v3.png) remain implementation references. The current homepage uses the [Modular Crow head icon](crow-concepts/2026-09-24/modular-crow/website/crowbo-modular-favicon-v1.png); historical previews retain their earlier icons.
 
+### State pose candidates
+
+On 29 September 2026, eleven [state poses](crow-concepts/2026-09-29/state-poses/README.md) were generated from the approved Modular Crow and Packet Runner: inspecting, weighing, challenging, unresolved, resting, pointing, carrying a feather, a pair, a runner with a record, an expression sheet and a size ladder. They are candidates awaiting selection. The product uses none of them. Their pixel grid is approximate, so a selected pose needs a redraw on a native grid before it becomes a sprite.
+
 ## Wordmark and palette
 
 The selected wordmark remains lowercase **crowbo** in Geist Pixel Square, weight 400, letter spacing -0.04em, with plain light lettering and no glow or shadow. The [typography study](typography/2026-09-21/README.md) owns the type selection record and font licensing notes.
@@ -50,6 +54,25 @@ The [four-colour Modular Crow and Packet Runner specimen](crow-concepts/2026-09-
 ### Presentation backgrounds
 
 The earlier presentation direction, selected on 22 September, used crow purple `#28243E` or mint green `#A4EDC3` backgrounds, with warm ivory `#F3E9D5` or mint text on purple and crow purple text on mint. Lemon `#EEF34B` was an accent; midnight was `#10101B`. Those are historical tokens. The selected deck uses black, chalk, sage and oxide. Use dark text on sage or oxide surfaces and chalk or oxide text on the dark background; choose each pairing for readable contrast in its composition.
+
+## Interface rules
+
+Added 29 September 2026 by the [unslop pass](decision-studio/UNSLOP-PASS.md). The four selected colours and the type selection above are unchanged. These rules apply them to the interface and are enforced by `decision-studio/tests/brand-tokens.test.mjs`.
+
+| Rule | Detail |
+| --- | --- |
+| Tokens | Stylesheets take every colour from `decision-studio/src/tokens.css`: a neutral ramp from black to chalk and an oxide ramp, 23 colour tokens in total. Steps between the selected colours are interpolations, not new brand colours. |
+| Corners | Square. Primary buttons and tags take a stepped corner one grid pixel deep. One grid pixel is 4 CSS pixels. |
+| Shadows | Floating layers cast one hard offset shadow. Panels in the page cast none. |
+| Overlays | A flat scrim. No blur. |
+| Marks | Squares. No circles. |
+| Icons | Thirty-one icons drawn on an 8 by 8 grid in `decision-studio/src/pixel-icons.tsx`, rendered at 16, 24 or 32 pixels. |
+| Text size | Nothing below 10 pixels. |
+| Copy | A line says what the thing is or does. |
+
+The [brand system page](decision-studio/brand/index.html) renders all of this from the live tokens, icons and artwork. It builds to `/brand/`, unlisted and marked `noindex`.
+
+Two observations are recorded for a later decision and changed nothing: Space Grotesk and Bricolage Grotesque are common in generated interfaces, and the landing page sets body copy in a system serif that the demo does not use.
 
 ## Website direction
 
