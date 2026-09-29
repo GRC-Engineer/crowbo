@@ -18,6 +18,8 @@ Prioritise fast retrieval. Slower ingestion is acceptable because evidence can b
 
 Stored evidence interpretation supports retrieval. Current priority, feasibility and a new recommendation still depend on the decision context and may require fresh reasoning.
 
+The [permissions model](PERMISSIONS.md) owns audience and processing rules, including reuse of an authorised GRC export. Current single-source Jev answers inherit source user/group grants. The proposed multi-source cascade must check every contributor before exposing an answer or using its score in retrieval. A broadly readable source cannot carry a private-context-derived attribute under its own broader audience. That cascade remains proposed.
+
 ## CRQ meaning
 
 Use classifications to identify evidence relevant to threat activity, loss frequency, loss magnitude, control performance and business context. A record can inform several factors; annual loss expectancy and threat frequency are not mutually exclusive labels.

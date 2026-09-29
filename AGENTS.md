@@ -34,3 +34,9 @@ Prefer the smallest complete decision loop. Avoid broad integrations, multiple s
 Explain code and CLI work at a junior Python developer level when helpful. State what an important command reads or changes, explain unfamiliar terms in context, and connect implementation decisions to the security outcome.
 
 Verify the actual changed behaviour with appropriate checks. For documentation, check the content and links. Report implementation, test results, deployment, user acceptance and commercial evidence separately.
+
+## GitHub checkpoints
+
+GitHub is the shared home for reviewable backend work. At the end of each bounded backend change, inspect the complete diff for scope and private material, run the relevant checks, commit on a named feature branch, push it and verify the remote commit. Open or update a pull request with the behaviour, validation and remaining limitations. Keep checkpoints small instead of accumulating unpublished code across sessions.
+
+Review the pull request before merging. A pushed branch is not a merge, deployment or production approval. Preserve unrelated frontend work and never publish source evidence, credentials or private runtime files. If a checkpoint cannot be pushed, report the exact local state and blocker rather than imply GitHub contains it. This is a per-change workflow, not a scheduled monitor.
