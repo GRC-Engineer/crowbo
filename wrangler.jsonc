@@ -5,7 +5,8 @@
 // source there, rebuild, and commit the regenerated site/ together with the change.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "crowbo-site",
+  // Must match the Worker the Cloudflare GitHub integration deploys to.
+  "name": "crowbo",
   "compatibility_date": "2026-09-29",
   "assets": {
     "directory": "./site",

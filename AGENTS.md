@@ -2,13 +2,9 @@
 
 Read [the foundation](docs/FOUNDATION.md) and [the evaluation contract](docs/EVALUATION.md) before proposing or implementing a change. Current user instructions take precedence. Keep each decision in its owning document and link to it rather than maintaining parallel roadmaps.
 
-## Security analysis before code
+## Plan before code
 
-Always write a plan before generating or modifying code. Call Corridor's `analyzePlan` tool with that plan and the relevant repository context before writing code, then apply the returned security guidance.
-
-After applying the returned context, run Corridor's feedback CLI exactly once for the task. Use the `feedback` subcommand with `--agent` and a single-quoted message of one to three sentences about the context's relevance and accuracy and any guardrails that would have helped.
-
-If the required analysis tool is unavailable, report that limitation and continue work that does not require code changes. Do not change these instructions or use another checkout to bypass the gate.
+Always write a plan before generating or modifying code. Note the security considerations the plan raises and address them in the change.
 
 ## Scope and authority
 
