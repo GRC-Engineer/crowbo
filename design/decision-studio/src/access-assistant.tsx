@@ -9,7 +9,7 @@ import {
   CornerDownRight,
   LockKeyhole,
   MessageCircle,
-} from "lucide-react";
+} from "./pixel-icons";
 import { Crow } from "./components";
 import { FeatherGlyph } from "./identity";
 import { ProviderMark } from "./providers";

@@ -1,6 +1,6 @@
 import { useId, useState, type CSSProperties, type RefObject } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowRight, Check, ChevronDown, LockKeyhole, X } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, LockKeyhole, X } from "./pixel-icons";
 import { Crow } from "./components";
 import { FeatherGlyph } from "./identity";
 import { ProviderMark, providers } from "./providers";

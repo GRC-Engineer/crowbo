@@ -15,7 +15,7 @@ import {
   Search,
   Sparkles,
   X,
-} from "lucide-react";
+} from "./pixel-icons";
 import { Crow } from "./components";
 import { FeatherGlyph } from "./identity";
 import {
@@ -144,8 +144,7 @@ export default function QuestionDemo() {
               </div>
               <span className="ask-small">Decisions, with context.</span>
               <h1 ref={heading} tabIndex={-1}>
-                What needs
-                <br />a decision?
+                What needs <br />a decision?
               </h1>
               <p>
                 Start with a question.
@@ -213,8 +212,10 @@ export default function QuestionDemo() {
                     key={entry.id}
                     aria-pressed={state.draft === entry.question}
                     onClick={() => {
+                      // Choosing a prepared question starts its journey
+                      // directly; the composer stays for typed questions.
                       dispatch({ type: "edit", value: entry.question });
-                      input.current?.focus();
+                      dispatch({ type: "submit" });
                     }}
                   >
                     <span>
@@ -234,7 +235,7 @@ export default function QuestionDemo() {
                 <p id="ask-prepared-note">
                   A scripted demo with fictional sources.
                   <br />
-                  Choose an example to see the full journey.
+                  Choose an example to start its journey.
                 </p>
                 <button
                   className="ask-primary"

@@ -5,7 +5,7 @@ import {
   ArrowUpRight,
   LockKeyhole,
   MessageSquare,
-} from "lucide-react";
+} from "./pixel-icons";
 import { Badge, Crow, EvidenceMap, Eyebrow } from "./components";
 import { advice, feathers, type DecisionState, type Feather } from "./domain";
 import type { Panel } from "./dialogs";

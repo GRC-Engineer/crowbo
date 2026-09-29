@@ -11,7 +11,7 @@ import {
   Pause,
   Play,
   Search,
-} from "lucide-react";
+} from "./pixel-icons";
 import { Crow } from "./components";
 import { FeatherGlyph } from "./identity";
 import { ProviderMark } from "./providers";
