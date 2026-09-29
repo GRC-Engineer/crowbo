@@ -1,8 +1,6 @@
-import { useState } from "react";
-import { ArrowUpRight, BookOpen, ChevronDown } from "./pixel-icons";
 import type { CaseId } from "./question-demo-model";
 
-const frameworks = {
+export const frameworks = {
   soc2: {
     label: "SOC 2",
     edition: "Trust Services Criteria · 2017, points of focus revised 2022",
@@ -19,7 +17,7 @@ const frameworks = {
     url: "https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf#page=23",
   },
 };
-type Framework = keyof typeof frameworks;
+export type Framework = keyof typeof frameworks;
 type CaseGuide = {
   title: string;
   invitation: string;
@@ -148,75 +146,3 @@ export const caseGuides: Record<CaseId, CaseGuide> = {
     },
   },
 };
-
-export function CaseGuidance({ caseId }: { caseId: CaseId }) {
-  const [framework, setFramework] = useState<Framework>("soc2");
-  const guide = caseGuides[caseId];
-  const mapping = guide.mappings[framework];
-  return (
-    <details className="ask-disclosure case-guidance">
-      <summary>
-        <span>
-          <BookOpen size={17} /> Controls, risk & compliance
-        </span>
-        <ChevronDown size={16} />
-      </summary>
-      <div className="ask-disclosure-body">
-        <dl className="case-explanation">
-          <div>
-            <dt>The control</dt>
-            <dd>{guide.control}</dd>
-          </div>
-          <div>
-            <dt>The risk</dt>
-            <dd>{guide.risk}</dd>
-          </div>
-          <div>
-            <dt>The compliance record</dt>
-            <dd>{guide.compliance}</dd>
-          </div>
-        </dl>
-        <div
-          className="framework-picker"
-          role="group"
-          aria-label="Choose a framework"
-        >
-          {(["soc2", "iso", "nist"] as const).map((id) => (
-            <button
-              type="button"
-              key={id}
-              aria-pressed={framework === id}
-              onClick={() => setFramework(id)}
-            >
-              {frameworks[id].label}
-            </button>
-          ))}
-        </div>
-        <section
-          className="framework-mapping"
-          aria-label={`${frameworks[framework].label} connection`}
-          aria-live="polite"
-        >
-          <span className="ask-small">{frameworks[framework].edition}</span>
-          <h3>{mapping.reference}</h3>
-          <p>{mapping.meaning}</p>
-          <p>
-            <strong>Ask your control owner:</strong> {mapping.check}
-          </p>
-          <a
-            href={frameworks[framework].url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read the reference <ArrowUpRight size={13} />
-          </a>
-        </section>
-        <p className="case-mapping-note">
-          Illustrative connections for this example. Confirm applicability
-          against your own controls and scope. A mapping is not a compliance
-          assessment or a measure of risk reduction.
-        </p>
-      </div>
-    </details>
-  );
-}

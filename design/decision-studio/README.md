@@ -2,6 +2,43 @@
 
 React design study, updated 29 September 2026 in the main checkout. Since 29 September 2026 its production build supplies the company landing page and `/demo/` at [crowbo.ai](https://crowbo.ai); see [Publication as the website](#publication-as-the-website--29-september). The [earlier identity pass](DESIGN-PASS.md) records the Clay research, twelve-feather system, provider marks and three new review loops. Synthetic Acme evidence only. This study preserves the earlier [three-layout prototype](../decision-prototype/2026-09-28/README.md).
 
+## Terminal redesign, 29 September
+
+The demo at `/demo/` was rebuilt from the redesign canvas reviewed on 29 September. The sections below this one describe earlier passes. The component files they name were replaced by the files in this table.
+
+| File | Contents |
+| --- | --- |
+| `src/demo.tsx` | The whole demo: the question flow and four workspace pages over one set of decisions |
+| `src/terminal-parts.tsx` | The shell with its command line, the decision record, feathers with provider marks, Packet Runner |
+| `src/flow-screens.tsx` | Start, Home, how the question was read, and the reading step with one lane per source family |
+| `src/decide-screen.tsx` | The decision record with panes beside it, and the staged update with its line-by-line difference |
+| `src/source-pane.tsx` | A source opened beside the decision, with connected records |
+| `src/handoff-screen.tsx` | The next step: a brief for an agent, or a step recorded for yourself |
+| `src/workspace-screens.tsx` | Decisions, Sources, History, and the same decision in a command line and an assistant |
+| `src/decision-view.ts` | Reads the access reducer and the workflow reducer into one shape for the screens |
+| `src/present.ts` | What the interface shows of a record: influence squares, freshness, the five-step track |
+| `src/source-families.ts` | The ten source families and each case's coverage, shared with `scripts/export-cases.mjs` |
+| `src/terminal.css`, `src/base.css` | Styles, from `src/tokens.css` only |
+
+What changed in behaviour:
+
+- One step was added to the flow. After a question is chosen, the demo shows how it was read and which records it will open, before reading starts. `tests/question-demo.test.mjs` covers it.
+- Every command has a key, shown on the command line. Keys act only while the command line has focus and is empty, and each key is also a button.
+- A source, the frameworks, the prepared updates, the options and the history open beside the decision. Nothing opens over it.
+- The workspace at `/demo/?view=workspace` shows the same three decisions as the flow. A reassessment made in the flow appears in the queue and in history.
+
+Removed with the old interface: the earlier workspace (`App.tsx`, `domain.ts` and its five tests), the dialogs, and ten stylesheets. The reducers for access, workflows and the hand-off are unchanged, apart from the first line of the copied brief.
+
+Decisions by the repository owner on 29 September 2026, recorded so they are not reversed by accident:
+
+- The demo carries no "synthetic" or "example" label and no statement about what is not connected. The address already says `/demo/`.
+- Influence is drawn as five squares and freshness as seven. The case packets still record influence as four categories; the squares are a fixed drawing of each category.
+- The interface shows what a record supports. It does not show a record's limits, records that were not supplied, or unused source families.
+
+The authored records and the case packets in `fixtures/` keep their full text, including limits. The helpers in `src/present.ts` choose what is shown.
+
+Validation: type check, production build and 38 tests pass. Checked in a browser at 1440 by 900 and 375 by 812: every screen in the flow for all three cases, a staged update and reassessment, each pane, the hand-off, and the four workspace pages. The console reported no errors. This is a local interface check. It is not an accessibility audit or a user study.
+
 ## Publication as the website — 29 September
 
 The public root is the approved two-paragraph company homepage, with Modular Crow, the boxed feather network, contact information. There is no public homepage link to the demo. The existing React walkthrough lives at `/demo/`; its full workspace is at `/demo/?view=workspace`. The demo wordmark returns to the company homepage. The earlier Command Room is retained as design history.

@@ -379,7 +379,7 @@ export function createNetwork(container) {
           ? "Records a decision draws on"
           : "Each mark, one item.";
       detail.textContent = website
-        ? "Illustrative network · explore a feather"
+        ? "Explore a feather"
         : motif === "original"
           ? "Explore a crow to follow its connections"
           : "Sources · context · assessments";
@@ -519,7 +519,7 @@ export function createNetwork(container) {
     container.setAttribute(
       "aria-label",
       website
-        ? "Explore an illustrative network of security evidence and context"
+        ? "Explore a network of security evidence and context"
         : motif === "original"
           ? "Explore the crow network"
           : `Compare evidence items represented by ${motifs[motif].toLowerCase()}`,
@@ -527,7 +527,7 @@ export function createNetwork(container) {
     questionLabel.hidden = website || motif === "original";
     questionLabel.textContent = questions[question].label;
     document.querySelector("#network-note").textContent =
-      motif === "original" ? "Illustrative importance" : "Illustrative example";
+      motif === "original" ? "Importance" : "Example";
     questionControl.hidden = motif === "original";
     if (changeWeights) weightsStarted = time;
     for (let index = 0; index < birds.length; index += 1) {
