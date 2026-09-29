@@ -1,3 +1,4 @@
+import { accessChecks, type AccessCheck } from "./access-checks.ts";
 import {
   demoCases,
   type DemoSource,
@@ -5,10 +6,13 @@ import {
 } from "./question-demo-model.ts";
 
 export type RecoveryPath = "tested" | "unverified" | "unavailable";
-export type AccessBasis = "daily" | "recovery-known" | RecoveryPath;
+export type AccessBasis =
+  "daily" | "recovery-known" | RecoveryPath | AccessCheck;
 export type AccessVersion = { number: number; basis: AccessBasis };
 export type PendingContext =
-  { kind: "annual-task" } | { kind: "recovery-path"; status: RecoveryPath };
+  | { kind: "check"; status: AccessCheck }
+  | { kind: "annual-task" }
+  | { kind: "recovery-path"; status: RecoveryPath };
 export type AccessState = {
   current: AccessVersion;
   previous: AccessVersion[];
@@ -18,6 +22,7 @@ export type AccessState = {
   followup: { draft: string; error: string | null };
 };
 export type AccessAction =
+  | { type: "prepare-check"; status: AccessCheck }
   | { type: "challenge" }
   | { type: "prepare-path"; status: RecoveryPath }
   | { type: "reassess" }
@@ -28,6 +33,12 @@ export type AccessAction =
   | { type: "send-followup" };
 
 export const conversationPrompts: Record<AccessBasis, string> = {
+  "identity-unknown": "Try an unresolved identity.",
+  "daily-failed": "Try a failed daily-role test.",
+  "daily-tested": "Add the successful daily-role test.",
+  observed: "Add permission change and outcome checks.",
+  irrelevant: "Try irrelevant meeting context.",
+
   daily: demoCases.access.question,
   "recovery-known": "What about the annual recovery task?",
   tested: "Use the tested recovery rehearsal.",
@@ -38,12 +49,28 @@ export const conversationPrompts: Record<AccessBasis, string> = {
 type PreparedFollowup = {
   label: string;
   question: string;
-  action: Extract<AccessAction, { type: "challenge" | "prepare-path" }>;
+  action: Extract<
+    AccessAction,
+    { type: "challenge" | "prepare-path" | "prepare-check" }
+  >;
 };
 
 export function availableFollowups(basis: AccessBasis): PreparedFollowup[] {
-  if (basis === "daily")
+  const checks: PreparedFollowup[] = Object.entries(accessChecks).flatMap(
+    ([status, check]) =>
+      isAccessCheck(status) && check.fromBasis.some((from) => from === basis)
+        ? [
+            {
+              label: check.label,
+              question: conversationPrompts[status],
+              action: { type: "prepare-check", status },
+            },
+          ]
+        : [],
+  );
+  if (basis === "daily" || basis === "irrelevant")
     return [
+      ...checks,
       {
         label: "Annual recovery task",
         question: conversationPrompts["recovery-known"],
@@ -55,13 +82,17 @@ export function availableFollowups(basis: AccessBasis): PreparedFollowup[] {
     { status: "unverified", label: "Runbook only" },
     { status: "unavailable", label: "No path available" },
   ];
-  return paths
-    .filter(({ status }) => status !== basis)
-    .map(({ status, label }) => ({
-      label,
-      question: conversationPrompts[status],
-      action: { type: "prepare-path", status },
-    }));
+  if (isAccessCheck(basis)) return checks;
+  return [
+    ...checks,
+    ...paths
+      .filter(({ status }) => status !== basis)
+      .map(({ status, label }) => ({
+        label,
+        question: conversationPrompts[status],
+        action: { type: "prepare-path" as const, status },
+      })),
+  ];
 }
 
 export const annualTask: DemoSource = {
@@ -72,12 +103,30 @@ export const annualTask: DemoSource = {
   influence: "deciding",
   claim: "Annual recovery needs administrative capability.",
   quote:
-    "Maya, support owner: Once a year we rehearse recovery of the support queue. That task needs administrative capability that the proposed everyday role does not include. It was outside the 90-day activity window.",
+    "Maya, support owner: Once a year Alex uses usr-042 to rehearse recovery of the support queue. That task needs administrative capability that the proposed everyday role does not include. It was outside the 90-day activity window.",
   why: "The daily role alone does not cover all confirmed work. The quiet activity log cannot justify removing the ability to perform recovery.",
   limit:
     "An attributed fictional statement, not a permissions test or approval. It establishes neither a working temporary-access process nor a need for permanent Administrator access.",
   period: "Owner statement, 29 September 2026 · annual support-queue recovery",
   revision: "annual-recovery / r1 · synthetic",
+  record: {
+    subject: "usr-042 / annual queue recovery",
+    scope: "acme-support / q-7",
+    checked: "Owner statement, 29 September 2026. No live refresh.",
+    origin: "annual-owner-statement",
+    links: [
+      {
+        label: "Account mapping",
+        identity: "usr-042 → MAP-042",
+        targetId: "directory",
+      },
+      {
+        label: "Limited activity window",
+        identity: "usr-042 / 90 days",
+        targetId: "activity",
+      },
+    ],
+  },
 };
 
 export const recoveryPaths: Record<RecoveryPath, DemoSource> = {
@@ -95,6 +144,24 @@ export const recoveryPaths: Record<RecoveryPath, DemoSource> = {
       "One synthetic tenant and rehearsal on 29 September. No claim about a vendor's real capabilities. The everyday role still needs its own effective-permission test. Test approval is not approval to change anyone's access.",
     period: "Controlled staging rehearsal, 29 September 2026 · 45-minute grant",
     revision: "recovery-rehearsal / r1 · synthetic",
+    record: {
+      subject: "usr-042 / annual recovery",
+      scope: "acme-support staging / q-7",
+      checked: "29 September 2026. Prepared record, no refresh.",
+      origin: "recovery-rehearsal",
+      links: [
+        {
+          label: "Required annual work",
+          identity: "usr-042 / annual task",
+          targetId: "annual-task",
+        },
+        {
+          label: "Everyday role",
+          identity: "support-operator-v1",
+          targetId: "roles",
+        },
+      ],
+    },
   },
   unverified: {
     id: "recovery-unverified",
@@ -110,6 +177,24 @@ export const recoveryPaths: Record<RecoveryPath, DemoSource> = {
       "This alternative replaces the tested-path fixture. It cannot support a claim of a working temporary-access mechanism or permission to remove existing access.",
     period: "Runbook reviewed, 29 September 2026 · support-queue recovery",
     revision: "recovery-runbook / r1 · synthetic alternative",
+    record: {
+      subject: "usr-042 / annual recovery",
+      scope: "acme-support staging / q-7",
+      checked: "29 September 2026. Prepared record, no refresh.",
+      origin: "recovery-runbook",
+      links: [
+        {
+          label: "Required annual work",
+          identity: "usr-042 / annual task",
+          targetId: "annual-task",
+        },
+        {
+          label: "Everyday role",
+          identity: "support-operator-v1",
+          targetId: "roles",
+        },
+      ],
+    },
   },
   unavailable: {
     id: "recovery-unavailable",
@@ -126,10 +211,34 @@ export const recoveryPaths: Record<RecoveryPath, DemoSource> = {
     period:
       "Platform statement, 29 September 2026 · current support environment",
     revision: "recovery-constraint / r1 · synthetic alternative",
+    record: {
+      subject: "usr-042 / annual recovery",
+      scope: "acme-support / q-7",
+      checked: "29 September 2026. Prepared record, no refresh.",
+      origin: "platform-constraint",
+      links: [
+        {
+          label: "Required annual work",
+          identity: "usr-042 / annual task",
+          targetId: "annual-task",
+        },
+        {
+          label: "Everyday role",
+          identity: "support-operator-v1",
+          targetId: "roles",
+        },
+      ],
+    },
   },
 };
 
 export const accessAdvice: Record<AccessBasis, Recommendation> = {
+  "identity-unknown": accessChecks["identity-unknown"].advice,
+  "daily-failed": accessChecks["daily-failed"].advice,
+  "daily-tested": accessChecks["daily-tested"].advice,
+  observed: accessChecks["observed"].advice,
+  irrelevant: accessChecks["irrelevant"].advice,
+
   daily: demoCases.access.baseline,
   "recovery-known": {
     title: "Resolve the recovery path first.",
@@ -174,6 +283,12 @@ export const accessAdvice: Record<AccessBasis, Recommendation> = {
 };
 
 export const basisLabels: Record<AccessBasis, string> = {
+  "identity-unknown": accessChecks["identity-unknown"].label,
+  "daily-failed": accessChecks["daily-failed"].label,
+  "daily-tested": accessChecks["daily-tested"].label,
+  observed: accessChecks["observed"].label,
+  irrelevant: accessChecks["irrelevant"].label,
+
   daily: "Daily work",
   "recovery-known": "Annual task added",
   tested: "Tested recovery path",
@@ -182,6 +297,12 @@ export const basisLabels: Record<AccessBasis, string> = {
 };
 
 export const revisionReasons: Record<Exclude<AccessBasis, "daily">, string> = {
+  "identity-unknown": accessChecks["identity-unknown"].change,
+  "daily-failed": accessChecks["daily-failed"].change,
+  "daily-tested": accessChecks["daily-tested"].change,
+  observed: accessChecks["observed"].change,
+  irrelevant: accessChecks["irrelevant"].change,
+
   "recovery-known":
     "Annual recovery falls outside the activity window. A narrower daily role alone no longer covers the confirmed work.",
   tested:
@@ -202,6 +323,7 @@ export const accessInitialState: AccessState = {
 };
 
 export function pendingSource(context: PendingContext): DemoSource {
+  if (context.kind === "check") return accessChecks[context.status].source;
   return context.kind === "annual-task"
     ? annualTask
     : recoveryPaths[context.status];
@@ -210,6 +332,28 @@ export function pendingSource(context: PendingContext): DemoSource {
 export function versionSources(version: AccessVersion): DemoSource[] {
   const original = demoCases.access.sources;
   if (version.basis === "daily") return [...original];
+  if (version.basis === "identity-unknown")
+    return [
+      ...original.filter((source) => source.id !== "directory"),
+      accessChecks["identity-unknown"].source,
+    ];
+  if (version.basis === "irrelevant")
+    return [...original, accessChecks.irrelevant.source];
+  if (version.basis === "daily-failed" || version.basis === "daily-tested")
+    return [
+      ...original,
+      annualTask,
+      recoveryPaths.tested,
+      accessChecks[version.basis].source,
+    ];
+  if (version.basis === "observed")
+    return [
+      ...original,
+      annualTask,
+      recoveryPaths.tested,
+      accessChecks["daily-tested"].source,
+      accessChecks.observed.source,
+    ];
   if (version.basis === "recovery-known") return [...original, annualTask];
   return [...original, annualTask, recoveryPaths[version.basis]];
 }
@@ -253,11 +397,22 @@ export function accessReducer(
       };
     }
     case "challenge":
-      return state.current.basis === "daily"
+      return !state.pending &&
+        (state.current.basis === "daily" ||
+          state.current.basis === "irrelevant")
         ? { ...state, pending: { kind: "annual-task" } }
         : state;
+    case "prepare-check":
+      return !state.pending &&
+        accessChecks[action.status].fromBasis.some(
+          (from) => from === state.current.basis,
+        )
+        ? { ...state, pending: { kind: "check", status: action.status } }
+        : state;
     case "prepare-path":
-      return state.current.basis !== "daily" &&
+      return !state.pending &&
+        !isAccessCheck(state.current.basis) &&
+        state.current.basis !== "daily" &&
         state.current.basis !== action.status
         ? {
             ...state,
@@ -272,7 +427,11 @@ export function accessReducer(
         state.pending.kind === "annual-task"
           ? "recovery-known"
           : state.pending.status;
-      if (state.current.basis === "daily" && basis !== "recovery-known")
+      if (
+        state.current.basis === "daily" &&
+        basis !== "recovery-known" &&
+        state.pending.kind !== "check"
+      )
         return state;
       return {
         ...state,
@@ -293,7 +452,33 @@ export function accessReducer(
   }
 }
 
-export function accessOptions(basis: AccessBasis) {
+export function accessOptions(
+  basis: AccessBasis,
+): { name: string; result: string; gap: string; proposed: boolean }[] {
+  if (basis === "irrelevant") return accessOptions("daily");
+  if (isAccessCheck(basis))
+    return [
+      {
+        name: accessChecks[basis].advice.title,
+        result: accessChecks[basis].advice.reason,
+        gap: accessChecks[basis].advice.condition,
+        proposed: true,
+      },
+      {
+        name:
+          basis === "observed"
+            ? "Restore standing Administrator"
+            : "Change access without the deciding check",
+        result:
+          basis === "observed"
+            ? "Would reintroduce broad privileges despite the scoped successful outcome."
+            : basis === "identity-unknown"
+              ? "Could change an account whose custodian is unresolved."
+              : "Could break required work or skip production approval.",
+        gap: "This alternative needs its own supported reason and accountable authorization.",
+        proposed: false,
+      },
+    ];
   const hasRecovery = basis !== "daily";
   const options = [
     {
@@ -335,4 +520,14 @@ export function accessOptions(basis: AccessBasis) {
       proposed: basis === "tested",
     });
   return options;
+}
+
+export function isAccessCheck(value: string): value is AccessCheck {
+  return (
+    value === "identity-unknown" ||
+    value === "daily-failed" ||
+    value === "daily-tested" ||
+    value === "observed" ||
+    value === "irrelevant"
+  );
 }

@@ -27,6 +27,7 @@ import {
   versionSources,
   type AccessAction,
   type AccessState,
+  type AccessVersion,
 } from "./access-review-model";
 import { demoCases, type DemoSource } from "./question-demo-model";
 import "./access-assistant.css";
@@ -44,7 +45,11 @@ export function AccessAssistant({
   dispatch: Dispatch<AccessAction>;
   answerRef: RefObject<HTMLHeadingElement | null>;
   pendingRef: RefObject<HTMLHeadingElement | null>;
-  onInspect: (record: DemoSource, trigger: HTMLButtonElement) => void;
+  onInspect: (
+    record: DemoSource,
+    trigger: HTMLButtonElement,
+    version?: AccessVersion,
+  ) => void;
   onDiscard: () => void;
   onOpenDecision: () => void;
 }) {
@@ -126,7 +131,7 @@ export function AccessAssistant({
                         <button
                           key={record.id}
                           onClick={(event) =>
-                            onInspect(record, event.currentTarget)
+                            onInspect(record, event.currentTarget, version)
                           }
                         >
                           <ProviderMark provider={record.provider} />
@@ -178,7 +183,7 @@ export function AccessAssistant({
                 <p>{advice.support}</p>
               </details>
               <span className="access-field-label">Next action</span>
-              <p className="access-next-description">{advice.next}.</p>
+              <p className="access-next-description">{advice.next}</p>
               <NextStep
                 version={state.current}
                 recorded={recorded}
@@ -302,7 +307,7 @@ export function AccessAssistant({
         <aside className="assistant-context">
           <span className="ask-small">Context for this question</span>
           <h2>Support access</h2>
-          <p>Acme · 12 support staff</p>
+          <p>{demoCases.access.scope}</p>
           <div className="assistant-context-facts">
             <span>
               <FeatherGlyph kind="branch" />

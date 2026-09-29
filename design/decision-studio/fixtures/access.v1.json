@@ -1,0 +1,921 @@
+{
+  "schemaVersion": "crowbo.synthetic-workflow.v1",
+  "provenance": {
+    "author": "Codex synthetic development fixture",
+    "humanReview": "Not yet qualified",
+    "status": "Candidate authored advice; not a backend run or evaluation answer key",
+    "data": "Fictional Acme records. No customer material.",
+    "influence": "Authored categories only; no measured weights or confidence."
+  },
+  "id": "access",
+  "specVersion": "1.0.0",
+  "question": "Can we remove this support account's standing administrator access without breaking its approved work?",
+  "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+  "initialStage": "daily",
+  "alternatives": [
+    {
+      "title": "Keep Administrator",
+      "tradeoff": "Preserves current workflows but leaves broad privileges. Interim exposure needs an accountable decision."
+    },
+    {
+      "title": "Remove all reporting",
+      "tradeoff": "Narrows access, but interrupts a reporting need the owner has confirmed."
+    }
+  ],
+  "challenge": {
+    "title": "What if the quiet log misses rare work?",
+    "body": "Ninety days without admin activity does not rule out a recovery task that happens once a year.",
+    "check": "Ask the owner whether any recovery workflow needs administration, and how that access should be handled.",
+    "sourceId": "activity"
+  },
+  "stages": [
+    {
+      "id": "identity-unknown",
+      "label": "Try an unresolved identity",
+      "advice": {
+        "title": "Resolve the account before changing access.",
+        "reason": "This alternative cannot join the account to its custodian. The earlier required-work statement may concern a different person.",
+        "condition": "Confirm the immutable account mapping and accountable owner. No permission change is supported by a name match.",
+        "next": "Identity owner: reconcile usr-042 with the authoritative people record.",
+        "support": "The failed identity join changes whose work the sources can establish."
+      },
+      "change": "The revised identity source removes the immutable join. The original named-person attribution is no longer supported.",
+      "options": [],
+      "sourceRefs": [
+        "activity@activity / r1",
+        "roles@roles / r1",
+        "calendar@calendar / r1",
+        "owner@owner / r1",
+        "policy@policy / v3",
+        "permissions@permissions / r1",
+        "review@review / r1",
+        "directory@directory / r2 · alternative"
+      ]
+    },
+    {
+      "id": "daily-failed",
+      "label": "Try a failed daily-role test",
+      "advice": {
+        "title": "Fix the daily role before rollout.",
+        "reason": "The export test fails after inherited admin is removed. Recovery access works in its rehearsal, but it cannot replace required everyday reporting.",
+        "condition": "Revise and retest effective permissions, including denied cross-queue exports. Approval is still required.",
+        "next": "Alex and Maya: correct the daily role and repeat the required-work checks.",
+        "support": "The failed required-work check rules out the current candidate. A successful recovery test cannot outweigh it."
+      },
+      "change": "The daily-role test contradicts the catalogue’s claimed fit. The recovery result is retained for its separate task.",
+      "options": [
+        "daily-tested"
+      ],
+      "sourceRefs": [
+        "activity@activity / r1",
+        "directory@directory / r1",
+        "roles@roles / r1",
+        "calendar@calendar / r1",
+        "owner@owner / r1",
+        "policy@policy / v3",
+        "permissions@permissions / r1",
+        "review@review / r1",
+        "annual-task@annual-recovery / r1 · synthetic",
+        "recovery-tested@recovery-rehearsal / r1 · synthetic",
+        "daily-test@daily-test / r1-failed"
+      ]
+    },
+    {
+      "id": "daily-tested",
+      "label": "Add the successful daily-role test",
+      "advice": {
+        "title": "Propose the narrower role and recovery path.",
+        "reason": "The daily-role test preserves tickets and scoped exports. The separate rehearsal supports temporary annual recovery without standing Administrator.",
+        "condition": "The designated approver must authorise the production change. Remove the inherited grant and verify the resulting production permissions and work.",
+        "next": "Maya and platform approver: review the tested plan for usr-042.",
+        "support": "Two scoped tests support different required tasks. Neither is production execution or approval."
+      },
+      "change": "TEST-042-P now supplies daily-work and export-boundary checks. Production implementation remains unobserved.",
+      "options": [
+        "identity-unknown",
+        "daily-failed",
+        "observed"
+      ],
+      "sourceRefs": [
+        "activity@activity / r1",
+        "directory@directory / r1",
+        "roles@roles / r1",
+        "calendar@calendar / r1",
+        "owner@owner / r1",
+        "policy@policy / v3",
+        "permissions@permissions / r1",
+        "review@review / r1",
+        "annual-task@annual-recovery / r1 · synthetic",
+        "recovery-tested@recovery-rehearsal / r1 · synthetic",
+        "daily-test@daily-test / r2-passed"
+      ]
+    },
+    {
+      "id": "observed",
+      "label": "Add permission change and outcome checks",
+      "advice": {
+        "title": "The scoped change is observed. Retain the record.",
+        "reason": "The later record supplies attributed approval, removal of inherited admin, and successful production checks for this account’s daily work.",
+        "condition": "This does not generalise to other accounts. Reassess changed permissions or required work; production annual recovery remains unobserved.",
+        "next": "Maya: retain the checks and review the annual recovery arrangement when due.",
+        "support": "The outcome record is separate from recording a simulated next step. This demo did not make the change."
+      },
+      "change": "OUT-042 adds later attributed authorization, observed implementation and scoped daily-work results. It is not created by the simulated-choice button.",
+      "options": [
+        "identity-unknown",
+        "daily-failed"
+      ],
+      "sourceRefs": [
+        "activity@activity / r1",
+        "directory@directory / r1",
+        "roles@roles / r1",
+        "calendar@calendar / r1",
+        "owner@owner / r1",
+        "policy@policy / v3",
+        "permissions@permissions / r1",
+        "review@review / r1",
+        "annual-task@annual-recovery / r1 · synthetic",
+        "recovery-tested@recovery-rehearsal / r1 · synthetic",
+        "daily-test@daily-test / r2-passed",
+        "access-outcome@access-outcome / r1"
+      ]
+    },
+    {
+      "id": "irrelevant",
+      "label": "Try irrelevant meeting context",
+      "advice": {
+        "title": "Test a role that fits the work.",
+        "reason": "Keep tickets and own-queue exports. Remove broad administration after the owner reviews the role and its permissions are tested.",
+        "condition": "Owner review and a controlled permissions check are still needed.",
+        "next": "Review and test the proposed support role",
+        "support": "The catalogue supports the role. Its effective permissions are untested."
+      },
+      "change": "Only the meeting room changed. The recommendation and its unresolved conditions remain the same.",
+      "options": [
+        "recovery-known"
+      ],
+      "sourceRefs": [
+        "activity@activity / r1",
+        "directory@directory / r1",
+        "roles@roles / r1",
+        "calendar@calendar / r1",
+        "owner@owner / r1",
+        "policy@policy / v3",
+        "permissions@permissions / r1",
+        "review@review / r1",
+        "access-room@access-room / r1"
+      ]
+    },
+    {
+      "id": "daily",
+      "label": "Daily work",
+      "advice": {
+        "title": "Test a role that fits the work.",
+        "reason": "Keep tickets and own-queue exports. Remove broad administration after the owner reviews the role and its permissions are tested.",
+        "condition": "Owner review and a controlled permissions check are still needed.",
+        "next": "Review and test the proposed support role",
+        "support": "The catalogue supports the role. Its effective permissions are untested."
+      },
+      "change": "Initial selected basis.",
+      "options": [
+        "identity-unknown",
+        "irrelevant",
+        "recovery-known"
+      ],
+      "sourceRefs": [
+        "activity@activity / r1",
+        "directory@directory / r1",
+        "roles@roles / r1",
+        "calendar@calendar / r1",
+        "owner@owner / r1",
+        "policy@policy / v3",
+        "permissions@permissions / r1",
+        "review@review / r1"
+      ]
+    },
+    {
+      "id": "recovery-known",
+      "label": "Annual task added",
+      "advice": {
+        "title": "Resolve the recovery path first.",
+        "reason": "The everyday role covers tickets and reporting on paper. Annual recovery needs an additional capability that the quiet activity log missed.",
+        "condition": "Establish a supported recovery path before removing the access it needs. Owner approval and daily-role testing remain open.",
+        "next": "Review a recovery path with the owner",
+        "support": "The annual task is now in scope. No working way to provide temporary recovery access has been demonstrated."
+      },
+      "change": "Annual recovery falls outside the activity window. A narrower daily role alone no longer covers the confirmed work.",
+      "options": [
+        "tested",
+        "unverified",
+        "unavailable"
+      ],
+      "sourceRefs": [
+        "activity@activity / r1",
+        "directory@directory / r1",
+        "roles@roles / r1",
+        "calendar@calendar / r1",
+        "owner@owner / r1",
+        "policy@policy / v3",
+        "permissions@permissions / r1",
+        "review@review / r1",
+        "annual-task@annual-recovery / r1 · synthetic"
+      ]
+    },
+    {
+      "id": "tested",
+      "label": "Tested recovery path",
+      "advice": {
+        "title": "Daily access, with a recovery path.",
+        "reason": "Use a narrower everyday role, plus tested temporary access for annual recovery. The rehearsal supports the extra capability when the work needs it.",
+        "condition": "The owner must approve the change, and the everyday role still needs a permissions test. The recovery rehearsal covers one staging environment.",
+        "next": "Review the combined plan and test the daily role",
+        "support": "The recovery task, time limit and export boundary passed in this fictional rehearsal. That strengthens this option; it does not establish production readiness or a calibrated confidence score."
+      },
+      "change": "A controlled rehearsal demonstrates temporary recovery access. The combined option is now supported within that test’s scope.",
+      "options": [
+        "identity-unknown",
+        "daily-failed",
+        "daily-tested",
+        "unverified",
+        "unavailable"
+      ],
+      "sourceRefs": [
+        "activity@activity / r1",
+        "directory@directory / r1",
+        "roles@roles / r1",
+        "calendar@calendar / r1",
+        "owner@owner / r1",
+        "policy@policy / v3",
+        "permissions@permissions / r1",
+        "review@review / r1",
+        "annual-task@annual-recovery / r1 · synthetic",
+        "recovery-tested@recovery-rehearsal / r1 · synthetic"
+      ]
+    },
+    {
+      "id": "unverified",
+      "label": "Runbook only",
+      "advice": {
+        "title": "Prove the recovery path works.",
+        "reason": "The runbook describes a useful option, but does not show that recovery, expiry or export limits work. Keep that gap visible before choosing the combined plan.",
+        "condition": "A controlled recovery rehearsal, daily-role test and owner approval are still needed. No access change is authorized.",
+        "next": "Ask for a controlled recovery rehearsal",
+        "support": "The process is documented. Its implementation and effective permissions remain unverified."
+      },
+      "change": "In this alternative, only a runbook is available. The combined option needs a successful test before we can rely on it.",
+      "options": [
+        "tested",
+        "unavailable"
+      ],
+      "sourceRefs": [
+        "activity@activity / r1",
+        "directory@directory / r1",
+        "roles@roles / r1",
+        "calendar@calendar / r1",
+        "owner@owner / r1",
+        "policy@policy / v3",
+        "permissions@permissions / r1",
+        "review@review / r1",
+        "annual-task@annual-recovery / r1 · synthetic",
+        "recovery-unverified@recovery-runbook / r1 · synthetic alternative"
+      ]
+    },
+    {
+      "id": "unavailable",
+      "label": "Path unavailable",
+      "advice": {
+        "title": "Find another supported recovery path.",
+        "reason": "The daily role cannot perform recovery, and this environment cannot provide temporary admin access. The proposed combination is not currently feasible.",
+        "condition": "Establish another recovery method with the owner. Neither removing the capability nor retaining permanent admin is approved here.",
+        "next": "Review supported recovery alternatives",
+        "support": "The prepared platform constraint rules out this path. The sources do not establish a safe replacement."
+      },
+      "change": "In this alternative, the environment cannot provide temporary access. This recovery path is ruled out.",
+      "options": [
+        "tested",
+        "unverified"
+      ],
+      "sourceRefs": [
+        "activity@activity / r1",
+        "directory@directory / r1",
+        "roles@roles / r1",
+        "calendar@calendar / r1",
+        "owner@owner / r1",
+        "policy@policy / v3",
+        "permissions@permissions / r1",
+        "review@review / r1",
+        "annual-task@annual-recovery / r1 · synthetic",
+        "recovery-unavailable@recovery-constraint / r1 · synthetic alternative"
+      ]
+    }
+  ],
+  "irrelevantOverlay": null,
+  "sourceRecords": {
+    "activity@activity / r1": {
+      "id": "activity",
+      "label": "App activity",
+      "provider": "zendesk",
+      "feather": "series",
+      "influence": "supporting",
+      "claim": "Daily activity does not establish all required work.",
+      "quote": "For usr-042, the selected 90-day window shows tickets and own-queue exports, with no administration events. Ingestion coverage is 97%; three days are missing.",
+      "why": "Supports investigating narrower daily access. The window cannot cover annual recovery.",
+      "limit": "Missing days and infrequent work rule out treating absence as proof of no need.",
+      "period": "30 June–27 September 2026",
+      "revision": "activity / r1",
+      "record": {
+        "subject": "usr-042",
+        "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+        "checked": "Prepared observation: 30 June–27 September 2026. No current refresh.",
+        "origin": "app-activity-042",
+        "links": [
+          {
+            "label": "Exact account mapping",
+            "targetId": "directory",
+            "identity": "Zendesk usr-042 → Okta ok-042"
+          }
+        ]
+      }
+    },
+    "roles@roles / r1": {
+      "id": "roles",
+      "label": "Role catalogue",
+      "provider": "zendesk",
+      "feather": "branch",
+      "influence": "deciding",
+      "claim": "A narrower role is possible on paper.",
+      "quote": "Role candidate support-operator-v1 allows tickets and q-7 exports without app settings or user management. The tenant supports custom roles.",
+      "why": "Provides a candidate that could preserve the stated daily work.",
+      "limit": "A catalogue is not an effective-permission or required-work test.",
+      "period": "28 September 2026",
+      "revision": "roles / r1",
+      "record": {
+        "subject": "support-operator-v1",
+        "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "role-catalogue-1",
+        "links": [
+          {
+            "label": "Current inherited permissions",
+            "targetId": "permissions",
+            "identity": "usr-042"
+          },
+          {
+            "label": "Required scope",
+            "targetId": "policy",
+            "identity": "q-7 only"
+          },
+          {
+            "label": "Daily-role test",
+            "targetId": null,
+            "identity": "TEST-042 / not supplied"
+          }
+        ]
+      }
+    },
+    "calendar@calendar / r1": {
+      "id": "calendar",
+      "label": "Reporting context",
+      "provider": "calendar",
+      "feather": "column",
+      "influence": "supporting",
+      "claim": "Quarter-end exports are needed tomorrow.",
+      "quote": "Quarter-end reports are planned for 30 September. Alex is assigned to prepare q-7 exports.",
+      "why": "Removing exports now could interrupt required work.",
+      "limit": "The date is business context, not permission to bypass a security boundary.",
+      "period": "28 September 2026",
+      "revision": "calendar / r1",
+      "record": {
+        "subject": "P-042 / quarter-end",
+        "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "reporting-calendar",
+        "links": [
+          {
+            "label": "Owner-confirmed requirement",
+            "targetId": "owner",
+            "identity": "P-042 / q-7 exports"
+          }
+        ]
+      }
+    },
+    "owner@owner / r1": {
+      "id": "owner",
+      "label": "Owner context",
+      "provider": "slack",
+      "feather": "braid",
+      "influence": "deciding",
+      "claim": "Maya confirms the account needs scoped exports.",
+      "quote": "Maya Chen: Alex uses usr-042 for tickets and the q-7 quarter-end export. Low use is not a reason to remove that task. Review exceptional workflows before changing access.",
+      "why": "Contradicts the reviewer’s suggestion that no recent admin activity justifies removing all reporting.",
+      "limit": "An attributed statement, not a role test or approved access change.",
+      "period": "28 September 2026",
+      "revision": "owner / r1",
+      "record": {
+        "subject": "Maya Chen → usr-042",
+        "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "owner-maya-042",
+        "links": [
+          {
+            "label": "Review assertion",
+            "targetId": "review",
+            "identity": "AR-042"
+          },
+          {
+            "label": "Account mapping",
+            "targetId": "directory",
+            "identity": "MAP-042"
+          }
+        ]
+      }
+    },
+    "policy@policy / v3": {
+      "id": "policy",
+      "label": "Access boundary",
+      "provider": "notion",
+      "feather": "spine",
+      "influence": "constraint",
+      "claim": "Exports must stay within the account’s own queue.",
+      "quote": "ACC-3: Support exports must be limited to q-7. Access changes need Maya’s review and the designated platform approver’s authorization, with effective permissions checked.",
+      "why": "Defines a condition every option must satisfy.",
+      "limit": "Policy text cannot establish enforcement or supply approval.",
+      "period": "28 September 2026",
+      "revision": "policy / v3",
+      "record": {
+        "subject": "ACC-3 v3",
+        "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "access-policy-3",
+        "links": [
+          {
+            "label": "Effective scope",
+            "targetId": "permissions",
+            "identity": "usr-042 / q-7"
+          },
+          {
+            "label": "Change approval",
+            "targetId": null,
+            "identity": "AC-042 / not supplied"
+          }
+        ]
+      }
+    },
+    "permissions@permissions / r1": {
+      "id": "permissions",
+      "label": "Effective privileges",
+      "provider": "zendesk",
+      "feather": "branch",
+      "influence": "deciding",
+      "claim": "An inherited group still grants Administrator.",
+      "quote": "PERM-042: usr-042 has Administrator through group support-admins. The tenant resolution includes app settings, user management and cross-queue export. Removing a direct role alone leaves the group grant.",
+      "why": "The treatment must cover inheritance, not merely the visible role assignment.",
+      "limit": "This snapshot establishes current rights, not whether a replacement preserves work.",
+      "period": "28 September 2026",
+      "revision": "permissions / r1",
+      "record": {
+        "subject": "usr-042 / support-admins",
+        "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "effective-permissions-042",
+        "links": [
+          {
+            "label": "Account identity",
+            "targetId": "directory",
+            "identity": "usr-042 → MAP-042"
+          },
+          {
+            "label": "Candidate replacement",
+            "targetId": "roles",
+            "identity": "support-operator-v1"
+          }
+        ]
+      }
+    },
+    "review@review / r1": {
+      "id": "review",
+      "label": "Review assertion",
+      "provider": "linear",
+      "feather": "column",
+      "influence": "supporting",
+      "claim": "The review proposes removing all reporting.",
+      "quote": "AR-042: Reviewer proposed removing admin and reporting because no administration events appeared in the recent window. The proposal cites the same activity extract.",
+      "why": "Shows a conflicting interpretation. Maya’s reporting requirement and the limited window constrain it.",
+      "limit": "Repeating the activity extract adds no independent corroboration or approval.",
+      "period": "28 September 2026",
+      "revision": "review / r1",
+      "record": {
+        "subject": "AR-042 → usr-042",
+        "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "app-activity-042",
+        "links": [
+          {
+            "label": "Original observation",
+            "targetId": "activity",
+            "identity": "AR-042 cites activity r1"
+          },
+          {
+            "label": "Conflicting work requirement",
+            "targetId": "owner",
+            "identity": "usr-042 / q-7"
+          }
+        ]
+      }
+    },
+    "directory@directory / r2 · alternative": {
+      "id": "directory",
+      "label": "Unresolved account identity",
+      "provider": "okta",
+      "feather": "cluster",
+      "influence": "constraint",
+      "claim": "The two account records cannot be reliably joined.",
+      "quote": "Alternative MAP-042 r2: The immutable Zendesk ID is absent from the people mapping. Two records share the name Alex Rivera. Neither record proves who owns usr-042.",
+      "why": "Stops attributing Maya’s work statement to this account without the identity join.",
+      "limit": "A matching display name is not identity evidence. Do not disclose or change another account based on it.",
+      "period": "28 September 2026",
+      "revision": "directory / r2 · alternative",
+      "record": {
+        "subject": "usr-042 / custodian unresolved",
+        "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "identity-map-042-unresolved",
+        "links": [
+          {
+            "label": "App account permissions",
+            "targetId": "permissions",
+            "identity": "usr-042; custodian not established"
+          },
+          {
+            "label": "Authoritative identity join",
+            "targetId": null,
+            "identity": "MAP-042 / immutable join missing"
+          }
+        ]
+      }
+    },
+    "directory@directory / r1": {
+      "id": "directory",
+      "label": "Account identity",
+      "provider": "okta",
+      "feather": "cluster",
+      "influence": "deciding",
+      "claim": "The account is assigned to Alex Rivera.",
+      "quote": "Mapping ID MAP-042 joins Okta immutable ID ok-042 to Zendesk account usr-042. The people record P-042 names Alex Rivera as custodian and Maya Chen as support owner.",
+      "why": "Defines one account and its attributable required work.",
+      "limit": "Names alone cannot join identities. Directory membership is not permission evidence or approval authority.",
+      "period": "28 September 2026",
+      "revision": "directory / r1",
+      "record": {
+        "subject": "ok-042 → usr-042",
+        "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "identity-map-042",
+        "links": [
+          {
+            "label": "Effective account permissions",
+            "targetId": "permissions",
+            "identity": "MAP-042 → usr-042"
+          },
+          {
+            "label": "Approved work statement",
+            "targetId": "owner",
+            "identity": "P-042 / Maya Chen"
+          }
+        ]
+      }
+    },
+    "annual-task@annual-recovery / r1 · synthetic": {
+      "id": "annual-task",
+      "label": "Annual recovery task",
+      "provider": "slack",
+      "feather": "braid",
+      "influence": "deciding",
+      "claim": "Annual recovery needs administrative capability.",
+      "quote": "Maya, support owner: Once a year Alex uses usr-042 to rehearse recovery of the support queue. That task needs administrative capability that the proposed everyday role does not include. It was outside the 90-day activity window.",
+      "why": "The daily role alone does not cover all confirmed work. The quiet activity log cannot justify removing the ability to perform recovery.",
+      "limit": "An attributed fictional statement, not a permissions test or approval. It establishes neither a working temporary-access process nor a need for permanent Administrator access.",
+      "period": "Owner statement, 29 September 2026 · annual support-queue recovery",
+      "revision": "annual-recovery / r1 · synthetic",
+      "record": {
+        "subject": "usr-042 / annual queue recovery",
+        "scope": "acme-support / q-7",
+        "checked": "Owner statement, 29 September 2026. No live refresh.",
+        "origin": "annual-owner-statement",
+        "links": [
+          {
+            "label": "Account mapping",
+            "identity": "usr-042 → MAP-042",
+            "targetId": "directory"
+          },
+          {
+            "label": "Limited activity window",
+            "identity": "usr-042 / 90 days",
+            "targetId": "activity"
+          }
+        ]
+      }
+    },
+    "recovery-tested@recovery-rehearsal / r1 · synthetic": {
+      "id": "recovery-tested",
+      "label": "Recovery rehearsal",
+      "provider": "linear",
+      "feather": "loop",
+      "influence": "deciding",
+      "claim": "Temporary recovery access worked in a controlled test.",
+      "quote": "Fictional test record: In Acme support staging, Alex received an approved 45-minute administrative grant, completed the annual queue-recovery task, and could export only the support team's own queue. Cross-queue export attempts were denied. The grant expired and a subsequent admin action was denied. The record includes test approval, grant, task, expiry and denial logs; Maya reviewed the result.",
+      "why": "Provides a demonstrated recovery path alongside narrower everyday access in this prepared example. The expiry and export checks are observed results, not promises in a runbook.",
+      "limit": "One synthetic tenant and rehearsal on 29 September. No claim about a vendor's real capabilities. The everyday role still needs its own effective-permission test. Test approval is not approval to change anyone's access.",
+      "period": "Controlled staging rehearsal, 29 September 2026 · 45-minute grant",
+      "revision": "recovery-rehearsal / r1 · synthetic",
+      "record": {
+        "subject": "usr-042 / annual recovery",
+        "scope": "acme-support staging / q-7",
+        "checked": "29 September 2026. Prepared record, no refresh.",
+        "origin": "recovery-rehearsal",
+        "links": [
+          {
+            "label": "Required annual work",
+            "identity": "usr-042 / annual task",
+            "targetId": "annual-task"
+          },
+          {
+            "label": "Everyday role",
+            "identity": "support-operator-v1",
+            "targetId": "roles"
+          }
+        ]
+      }
+    },
+    "daily-test@daily-test / r1-failed": {
+      "id": "daily-test",
+      "label": "Failed daily-role test",
+      "provider": "zendesk",
+      "feather": "branch",
+      "influence": "deciding",
+      "claim": "The proposed role cannot export its own queue.",
+      "quote": "Alternative TEST-042-F: With support-operator-v1 and the inherited Administrator grant removed in staging, usr-042 can handle tickets but its q-7 export is denied.",
+      "why": "The candidate role fails confirmed daily work even though the separate recovery rehearsal succeeded.",
+      "limit": "Passing recovery is not proof that the daily role fits. No production change or approval is supplied.",
+      "period": "30 September 2026 · controlled staging test",
+      "revision": "daily-test / r1-failed",
+      "record": {
+        "subject": "TEST-042-F → usr-042",
+        "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+        "checked": "Prepared observation: 30 September 2026 · controlled staging test. No current refresh.",
+        "origin": "daily-role-test-failed",
+        "links": [
+          {
+            "label": "Required exports",
+            "targetId": "owner",
+            "identity": "usr-042 / q-7"
+          },
+          {
+            "label": "Candidate role",
+            "targetId": "roles",
+            "identity": "support-operator-v1"
+          }
+        ]
+      }
+    },
+    "daily-test@daily-test / r2-passed": {
+      "id": "daily-test",
+      "label": "Daily-role test",
+      "provider": "zendesk",
+      "feather": "branch",
+      "influence": "deciding",
+      "claim": "The revised role fits the required daily work.",
+      "quote": "TEST-042-P: support-operator-v2 on staging usr-042, with inherited Administrator removed, handles tickets and q-7 exports. Cross-queue export, app settings and user management are denied. Maya reviewed the recorded task results.",
+      "why": "Supports daily-role fit alongside the separate tested recovery path.",
+      "limit": "Staging test results do not supply production approval or observed production changes.",
+      "period": "30 September 2026 · controlled staging test",
+      "revision": "daily-test / r2-passed",
+      "record": {
+        "subject": "TEST-042-P → usr-042",
+        "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+        "checked": "Prepared observation: 30 September 2026 · controlled staging test. No current refresh.",
+        "origin": "daily-role-test-passed",
+        "links": [
+          {
+            "label": "Account under test",
+            "targetId": "directory",
+            "identity": "usr-042 → MAP-042"
+          },
+          {
+            "label": "Current inheritance to remove",
+            "targetId": "permissions",
+            "identity": "support-admins"
+          },
+          {
+            "label": "Tested recovery path",
+            "targetId": "recovery-tested",
+            "identity": "annual queue recovery"
+          }
+        ]
+      }
+    },
+    "access-outcome@access-outcome / r1": {
+      "id": "access-outcome",
+      "label": "Observed access outcome",
+      "provider": "zendesk",
+      "feather": "loop",
+      "influence": "deciding",
+      "claim": "The account’s production permissions and work were checked.",
+      "quote": "OUT-042: AC-042 records Maya’s review and designated platform approver Leon’s authorization. Alex applied support-operator-v2 to usr-042 and removed support-admins. A separate effective-rights read denies settings, user management and cross-queue exports; ticket handling and q-7 export succeed. Annual recovery remains the separately tested, approved-on-request path.",
+      "why": "Separates the simulated proposal from a later prepared approval, implementation and scoped outcome record.",
+      "limit": "One fictional account at the recorded time. No claim about 12 staff, future grants or live monitoring. Production annual recovery has not been exercised here.",
+      "period": "1 October 2026 · 11:00",
+      "revision": "access-outcome / r1",
+      "record": {
+        "subject": "OUT-042 / AC-042 / usr-042",
+        "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+        "checked": "Prepared observation: 1 October 2026 · 11:00. No current refresh.",
+        "origin": "production-access-check-042",
+        "links": [
+          {
+            "label": "Tested role basis",
+            "targetId": "daily-test",
+            "identity": "TEST-042-P / support-operator-v2"
+          },
+          {
+            "label": "Recovery rehearsal",
+            "targetId": "recovery-tested",
+            "identity": "annual task; staging scope"
+          }
+        ]
+      }
+    },
+    "access-room@access-room / r1": {
+      "id": "access-room",
+      "label": "Meeting context",
+      "provider": "calendar",
+      "feather": "column",
+      "influence": "context",
+      "claim": "The access review moved to a different room.",
+      "quote": "The review moved to Room C. The account, required work, reporting date and policy are unchanged.",
+      "why": "Adds no deciding fact or changed condition.",
+      "limit": "A meeting update cannot justify changing permissions.",
+      "period": "28 September 2026",
+      "revision": "access-room / r1",
+      "record": {
+        "subject": "Access review meeting",
+        "scope": "Acme Support · account usr-042 · tenant acme-support · own queue q-7",
+        "checked": "Prepared observation: 28 September 2026. No current refresh.",
+        "origin": "access-review-room",
+        "links": []
+      }
+    },
+    "recovery-unverified@recovery-runbook / r1 · synthetic alternative": {
+      "id": "recovery-unverified",
+      "label": "Recovery runbook",
+      "provider": "notion",
+      "feather": "spine",
+      "influence": "deciding",
+      "claim": "The process is documented, but has not been demonstrated.",
+      "quote": "Prepared alternative: The runbook describes temporary administrative access for recovery. There is no implementation record, successful rehearsal, expiry check or export-boundary test in the available sources.",
+      "why": "A possible path to investigate. Written instructions cannot establish that recovery or expiry works in this environment.",
+      "limit": "This alternative replaces the tested-path fixture. It cannot support a claim of a working temporary-access mechanism or permission to remove existing access.",
+      "period": "Runbook reviewed, 29 September 2026 · support-queue recovery",
+      "revision": "recovery-runbook / r1 · synthetic alternative",
+      "record": {
+        "subject": "usr-042 / annual recovery",
+        "scope": "acme-support staging / q-7",
+        "checked": "29 September 2026. Prepared record, no refresh.",
+        "origin": "recovery-runbook",
+        "links": [
+          {
+            "label": "Required annual work",
+            "identity": "usr-042 / annual task",
+            "targetId": "annual-task"
+          },
+          {
+            "label": "Everyday role",
+            "identity": "support-operator-v1",
+            "targetId": "roles"
+          }
+        ]
+      }
+    },
+    "recovery-unavailable@recovery-constraint / r1 · synthetic alternative": {
+      "id": "recovery-unavailable",
+      "label": "Platform constraint",
+      "provider": "linear",
+      "feather": "shard",
+      "influence": "constraint",
+      "claim": "This environment has no temporary recovery-access path.",
+      "quote": "Prepared alternative: The platform owner confirms that the current Acme support environment cannot issue the temporary administrative grant needed for this recovery workflow. No supported substitute is established in the available sources.",
+      "why": "Rules out the proposed temporary-access path in this branch. A different supported recovery method must be established before relying on it.",
+      "limit": "A fictional environment constraint, not a general claim about a provider. It neither approves indefinite Administrator access nor authorizes removing recovery capability.",
+      "period": "Platform statement, 29 September 2026 · current support environment",
+      "revision": "recovery-constraint / r1 · synthetic alternative",
+      "record": {
+        "subject": "usr-042 / annual recovery",
+        "scope": "acme-support / q-7",
+        "checked": "29 September 2026. Prepared record, no refresh.",
+        "origin": "platform-constraint",
+        "links": [
+          {
+            "label": "Required annual work",
+            "identity": "usr-042 / annual task",
+            "targetId": "annual-task"
+          },
+          {
+            "label": "Everyday role",
+            "identity": "support-operator-v1",
+            "targetId": "roles"
+          }
+        ]
+      }
+    }
+  },
+  "sourceFamilies": [
+    {
+      "id": "finding-review",
+      "question": "What finding or review actually needs a decision?",
+      "limit": "Workflow status is not verified treatment or approval.",
+      "coverage": [
+        "review"
+      ]
+    },
+    {
+      "id": "people-identity",
+      "question": "Which immutable account belongs to which custodian?",
+      "limit": "Names and employment do not establish permissions.",
+      "coverage": [
+        "directory"
+      ]
+    },
+    {
+      "id": "effective-permissions",
+      "question": "What can the exact account or service do, including inherited grants?",
+      "limit": "A role catalogue is not a test of effective rights.",
+      "coverage": [
+        "permissions",
+        "roles",
+        "daily-test"
+      ]
+    },
+    {
+      "id": "activity-monitoring",
+      "question": "What happened in the observed window and what coverage is missing?",
+      "limit": "No observed event is not proof of no activity or no need.",
+      "coverage": [
+        "activity"
+      ]
+    },
+    {
+      "id": "code-build-inventory",
+      "question": "Which change produced which artifact?",
+      "limit": "A merge or component match is not production treatment.",
+      "coverage": "Not used: no software artifact treatment in this account review."
+    },
+    {
+      "id": "deployment-verification",
+      "question": "What ran, and what exact outcome was independently checked?",
+      "limit": "Implementation does not establish effective treatment or authority.",
+      "coverage": [
+        "recovery-tested",
+        "daily-test",
+        "access-outcome"
+      ]
+    },
+    {
+      "id": "policy-runbook-exception",
+      "question": "What requirement, boundary, approval and validity apply?",
+      "limit": "A request or runbook does not implement or authorise a safeguard.",
+      "coverage": [
+        "policy",
+        "recovery-unverified"
+      ]
+    },
+    {
+      "id": "work-tracking",
+      "question": "Who owns the treatment and which dependencies remain?",
+      "limit": "A done ticket does not prove verification or delivery authority.",
+      "coverage": [
+        "review",
+        "recovery-unavailable"
+      ]
+    },
+    {
+      "id": "prior-records",
+      "question": "Which earlier incident or review makes a check relevant?",
+      "limit": "Past similarity does not predict the new outcome.",
+      "coverage": [
+        "review"
+      ]
+    },
+    {
+      "id": "owner-context",
+      "question": "Which attributed work or delivery constraint affects the choice?",
+      "limit": "A date or statement does not grant approval or make an obligation mandatory.",
+      "coverage": [
+        "owner",
+        "calendar",
+        "annual-task",
+        "access-room"
+      ]
+    }
+  ],
+  "replayBoundary": "Use this packet for development replay only. Backend run receipts and differences must be retained separately; the frontend does not call backend tools."
+}

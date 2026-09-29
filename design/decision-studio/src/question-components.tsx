@@ -1,10 +1,17 @@
-import { useId, useState, type CSSProperties, type RefObject } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+  type RefObject,
+} from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowRight, Check, ChevronDown, LockKeyhole, X } from "./pixel-icons";
 import { Crow } from "./components";
 import { FeatherGlyph } from "./identity";
 import { ProviderMark, providers } from "./providers";
-import type { DemoSource } from "./question-demo-model";
+import { resolveSourceLink, type DemoSource } from "./source-model";
 
 const positions = [
   { x: 17, y: 24 },
@@ -44,7 +51,13 @@ export function SourceNetwork({
   moving?: boolean;
   onInspect: (source: DemoSource, trigger: HTMLButtonElement) => void;
 }) {
-  const visibleCount = step < 2 ? (step + 1) * 2 : sources.length;
+  const [page, setPage] = useState(0);
+  const currentPage = Math.min(
+    page,
+    Math.max(0, Math.ceil(sources.length / 6) - 1),
+  );
+  const pageSources = sources.slice(currentPage * 6, currentPage * 6 + 6);
+  const visibleCount = step < 2 ? (step + 1) * 2 : pageSources.length;
   return (
     <div className="ask-network-wrap">
       <div
@@ -60,7 +73,7 @@ export function SourceNetwork({
             className="ask-wires ask-wires-wide"
             aria-hidden="true"
           >
-            {sources.map((source, index) => {
+            {pageSources.map((source, index) => {
               const { x, y } = positions[index];
               const d = `M ${x * 8.8} ${y * 4.2} V ${y < 50 ? 173 : 250} H 431 V 214`;
               return (
@@ -84,7 +97,7 @@ export function SourceNetwork({
             className="ask-wires ask-wires-compact"
             aria-hidden="true"
           >
-            {sources.map((record, index) => {
+            {pageSources.map((record, index) => {
               const d = `M ${index % 2 === 0 ? 79.2 : 280.8} ${(17 + Math.floor(index / 2) * 33) * 5} H 180 V 250`;
               return (
                 <g
@@ -105,7 +118,7 @@ export function SourceNetwork({
             <Crow pose="glide" />
             <span>context → choice</span>
           </div>
-          {sources.map((source, index) => (
+          {pageSources.map((source, index) => (
             <button
               key={source.id}
               className={`ask-source-node ${source.influence} ${index < visibleCount ? "active" : "waiting"} ${step >= 2 ? "weighted" : ""}`}
@@ -115,7 +128,9 @@ export function SourceNetwork({
               aria-label={`Inspect ${source.label}: ${influenceLabel[source.influence]}`}
             >
               <span className="ask-node-meta">
-                <span>0{index + 1}</span>
+                <span>
+                  {String(currentPage * 6 + index + 1).padStart(2, "0")}
+                </span>
                 <ProviderMark provider={source.provider} />
               </span>
               <FeatherGlyph kind={source.feather} />
@@ -128,12 +143,33 @@ export function SourceNetwork({
           ))}
         </div>
       </div>
+      {sources.length > 6 && (
+        <nav className="source-pages" aria-label="Source network pages">
+          <button
+            onClick={() => setPage(currentPage - 1)}
+            disabled={currentPage === 0}
+          >
+            Previous sources
+          </button>
+          <span aria-live="polite">
+            {currentPage * 6 + 1}–
+            {Math.min(currentPage * 6 + 6, sources.length)} of {sources.length}{" "}
+            selected records
+          </span>
+          <button
+            onClick={() => setPage(currentPage + 1)}
+            disabled={(currentPage + 1) * 6 >= sources.length}
+          >
+            More sources <ArrowRight size={13} />
+          </button>
+        </nav>
+      )}
       <div className="ask-network-key">
         <span>
           <i />
           <i />
           <i />
-          Size = influence on this choice
+          Size = authored influence, not a measured weight
         </span>
         <span>
           <LockKeyhole size={11} />
@@ -145,18 +181,33 @@ export function SourceNetwork({
 }
 
 export function SourceInspector({
-  source,
+  source: initialSource,
   scope,
   onClose,
   returnFocus,
-  override,
+  sources = [initialSource],
+  context = "Selected synthetic basis",
 }: {
   source: DemoSource;
   scope: string;
   onClose: () => void;
   returnFocus: RefObject<HTMLElement | null>;
-  override?: string;
+  sources?: DemoSource[];
+  context?: string;
 }) {
+  const [trail, setTrail] = useState<DemoSource[]>([initialSource]);
+  const source = trail[trail.length - 1] ?? initialSource;
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    setTrail([initialSource]);
+  }, [initialSource, context]);
+  useEffect(() => {
+    titleRef.current?.focus();
+  }, [source]);
+  const related = sources.filter(
+    (record) =>
+      record.id !== source.id && record.record.origin === source.record.origin,
+  );
   return (
     <Dialog.Root
       open
@@ -179,6 +230,15 @@ export function SourceInspector({
               <X size={20} />
             </Dialog.Close>
           </div>
+          <p className="source-context">{context}</p>
+          {trail.length > 1 && (
+            <button
+              className="ask-text-button"
+              onClick={() => setTrail(trail.slice(0, -1))}
+            >
+              ← Back to {trail[trail.length - 2]?.label}
+            </button>
+          )}
           <div className="ask-source-heading">
             <FeatherGlyph kind={source.feather} />
             <div>
@@ -186,39 +246,83 @@ export function SourceInspector({
                 <ProviderMark provider={source.provider} />
                 {providers[source.provider].name} example
               </span>
-              <Dialog.Title>{source.label}</Dialog.Title>
+              <Dialog.Title ref={titleRef} tabIndex={-1}>
+                {source.label}
+              </Dialog.Title>
             </div>
           </div>
           <Dialog.Description className="ask-source-description">
             {scope}
           </Dialog.Description>
-          {override && (
-            <p className="ask-network-note">
-              Prepared what-if: {override}. The original record is retained
-              below.
-            </p>
-          )}
-          <blockquote>{source.quote}</blockquote>
           <section>
-            <h3>{influenceLabel[source.influence]} input</h3>
+            <h3>Why this matters · {influenceLabel[source.influence]}</h3>
             <p>{source.why}</p>
+          </section>
+          <section>
+            <h3>Prepared source record</h3>
+            <blockquote>{source.quote}</blockquote>
           </section>
           <section className="ask-source-limit">
             <h3>What this cannot tell us</h3>
             <p>{source.limit}</p>
           </section>
-          <dl className="ask-source-version">
-            <div>
-              <dt>Period</dt>
-              <dd>{source.period}</dd>
-            </div>
-            <div>
-              <dt>Revision</dt>
-              <dd>{source.revision}</dd>
-            </div>
-          </dl>
+          <details className="source-record-details">
+            <summary>
+              Record identity and provenance <ChevronDown size={14} />
+            </summary>
+            <dl className="ask-source-version">
+              {Object.entries({
+                Record: source.id,
+                Revision: source.revision,
+                Subject: source.record.subject,
+                Scope: source.record.scope,
+                Period: source.period,
+                Checked: source.record.checked,
+                Origin: source.record.origin,
+              }).map(([key, value]) => (
+                <div key={key}>
+                  <dt>{key}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+            {related.length > 0 && (
+              <p className="ask-network-note">
+                Shared origin with{" "}
+                {related.map((record) => record.label).join(", ")}. These
+                records do not independently corroborate that claim.
+              </p>
+            )}
+          </details>
+          {source.record.links.length > 0 && (
+            <section className="source-links">
+              <h3>Follow the connected records</h3>
+              {source.record.links.map((link) => {
+                const target = resolveSourceLink(link, sources);
+                return (
+                  <div key={`${link.label}-${link.identity}`}>
+                    {target ? (
+                      <button onClick={() => setTrail([...trail, target])}>
+                        {link.label}
+                        <ArrowRight size={14} />
+                      </button>
+                    ) : (
+                      <strong>{link.label}</strong>
+                    )}
+                    <small>{link.identity}</small>
+                    {!target && (
+                      <p>
+                        No supporting record in this example’s selected version.
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </section>
+          )}
           <p className="ask-fine">
-            Prepared example record. No tool is connected.
+            The quotation is prepared source content. “Why this matters” is an
+            authored interpretation. No tool is connected.
           </p>
         </Dialog.Content>
       </Dialog.Portal>
