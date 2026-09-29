@@ -12,7 +12,7 @@ Start with [the brand guide](BRAND.md). It owns the current mascot, wordmark, pa
 - [Typography study](typography/2026-09-21/README.md): eight licensed font specimens and the selected plain lowercase wordmark.
 - [Favicon sizes](homepage-mockups/2026-09-21/terminal-prototype/favicon-preview.html): the earlier head derivative at browser display sizes.
 
-Each preview README includes a loopback-only local server command. The design directories remain local previews, with one exception: the production build of [Decision Studio](decision-studio/README.md) is the public website in `site/`, deployed at crowbo.ai. The Command Room copy that previously occupied `site/` was removed on 29 September 2026; its prototype remains under homepage-mockups as design history. Their authored scenarios are fictional development examples; no model runs or owner decisions are executed.
+Each preview README includes a loopback-only local server command. The design directories remain local previews, with one exception: the production build of the [Decision Studio project](decision-studio/README.md) is the public website in `site/`, deployed at crowbo.ai, with the company homepage at the root and the Studio under `/studio/`. The Command Room copy that previously occupied `site/` was removed on 29 September 2026; its prototype remains under homepage-mockups as design history. Their authored scenarios are fictional development examples; no model runs or owner decisions are executed.
 
 ## Provenance
 

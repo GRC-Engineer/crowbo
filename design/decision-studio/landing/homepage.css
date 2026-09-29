@@ -1,0 +1,245 @@
+@font-face {
+  font-family: GeistPixel;
+  src: url('../../typography/2026-09-21/fonts/GeistPixel-Square.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  --background: #0c1010;
+  --chalk: #f5f3e8;
+  --sage: #91aa9d;
+  --oxide: #d18a66;
+  --muted: #9fa9a3;
+  background: var(--background);
+  color: var(--chalk);
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+::selection { background: var(--oxide); color: var(--background); }
+
+.page {
+  width: min(100%, 1504px);
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: clamp(38px, 4.4vw, 72px) clamp(26px, 6vw, 96px) 28px;
+  display: flex;
+  flex-direction: column;
+}
+
+.wordmark {
+  margin: 0 0 25px;
+  width: fit-content;
+  font: 400 clamp(90px, 14.2vw, 208px) / .9 GeistPixel, monospace;
+  letter-spacing: -.04em;
+}
+
+.positioning {
+  margin: 0;
+  color: var(--sage);
+  font: 400 17px / 1.5 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  letter-spacing: -.025em;
+}
+
+.introduction {
+  display: grid;
+  grid-template-columns: 1.12fr 1fr;
+  align-items: center;
+  gap: clamp(32px, 5vw, 80px);
+  margin: 48px 0 32px;
+}
+
+.statement {
+  max-width: 530px;
+  padding-top: 8px;
+}
+
+.statement p {
+  margin: 0 0 23px;
+  font: 400 clamp(19px, 1.68vw, 23px) / 1.6 Georgia, 'Times New Roman', serif;
+  text-wrap: pretty;
+}
+
+.contact { margin-top: 45px; }
+
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 32px;
+  min-height: 44px;
+  padding: 4px 0;
+  color: var(--chalk);
+  font: 400 14px / 1.5 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  text-decoration: underline;
+  text-decoration-color: #66766e;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 1px;
+  transition: color 150ms ease, text-decoration-color 150ms ease;
+}
+
+.contact-link span { color: var(--oxide); }
+.contact-link[href]:hover { color: var(--oxide); text-decoration-color: var(--oxide); }
+.contact-link:focus-visible { outline: 1px solid var(--sage); outline-offset: 8px; }
+
+.portrait-wrap {
+  width: min(100%, 370px);
+  margin: -38px -8px -12px 0;
+  justify-self: end;
+}
+
+.portrait {
+  display: block;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  aspect-ratio: 1000 / 950;
+  padding: 0;
+  border: 0;
+  background: var(--background);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.portrait:disabled { cursor: default; }
+.portrait:focus-visible { outline: 1px solid var(--sage); outline-offset: 12px; }
+
+.sprite,
+#crow-bytes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.sprite { mix-blend-mode: lighten; }
+.sprite img { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+#crow-bytes { opacity: 0; filter: brightness(1.45); }
+.portrait.is-decoding .sprite { opacity: 0; }
+.portrait.is-decoding #crow-bytes { opacity: 1; }
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: auto;
+  padding-top: 22px;
+  color: var(--muted);
+  font: 400 11px / 1.6 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+@media (min-width: 1504px) {
+  .introduction { margin-top: 76px; }
+  .portrait-wrap { width: 430px; }
+}
+
+@media (max-width: 800px) {
+  .page { padding: 42px 36px 24px; }
+  .wordmark { font-size: clamp(86px, 19vw, 150px); }
+  .introduction { grid-template-columns: 1fr; gap: 34px; margin: 43px 0 34px; }
+  .statement { max-width: 540px; padding: 0; }
+  .statement p { font-size: 21px; }
+  .contact { margin-top: 28px; }
+  .portrait-wrap { width: min(65%, 330px); margin: 0 -8px -8px 0; }
+}
+
+@media (max-width: 480px) {
+  .page { padding: 34px 26px 22px; }
+  .wordmark { font-size: clamp(72px, 21vw, 101px); margin-bottom: 24px; }
+  .positioning { font-size: 13px; letter-spacing: -.04em; }
+  .introduction { margin-top: 38px; gap: 25px; }
+  .statement p { font-size: 19px; line-height: 1.6; margin-bottom: 18px; }
+  .contact { margin-top: 22px; }
+  .portrait-wrap { width: 80%; max-width: 285px; }
+  .footer { flex-wrap: wrap; gap: 7px 20px; padding-top: 18px; font-size: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; }
+}
+
+/* Features section, added for the crowbo.ai landing page on 29 September 2026. */
+.contact { display: flex; flex-wrap: wrap; gap: 12px 40px; }
+
+.features {
+  margin: clamp(40px, 6vw, 96px) 0 48px;
+  padding-top: clamp(32px, 4vw, 56px);
+  border-top: 1px solid #1f2724;
+}
+
+.features-heading { max-width: 640px; }
+
+.eyebrow {
+  margin: 0 0 18px;
+  color: var(--sage);
+  font: 400 12px / 1.5 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.features h2 {
+  margin: 0 0 16px;
+  font: 400 clamp(24px, 2.4vw, 34px) / 1.25 Georgia, 'Times New Roman', serif;
+  letter-spacing: -.01em;
+  text-wrap: pretty;
+}
+
+.features-note {
+  margin: 0;
+  color: var(--muted);
+  font: 400 14px / 1.6 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+.feature-list {
+  list-style: none;
+  margin: clamp(32px, 4vw, 56px) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 40px clamp(28px, 4vw, 64px);
+}
+
+.feature-list li {
+  display: grid;
+  gap: 10px;
+  padding-top: 18px;
+  border-top: 1px solid #1f2724;
+}
+
+.feature-index {
+  color: var(--oxide);
+  font: 400 12px / 1 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+.feature-list h3 {
+  margin: 0;
+  font: 400 19px / 1.35 Georgia, 'Times New Roman', serif;
+  text-wrap: balance;
+}
+
+.feature-list p {
+  margin: 0;
+  color: var(--muted);
+  font: 400 15px / 1.6 Georgia, 'Times New Roman', serif;
+  text-wrap: pretty;
+}
+
+.features-cta { margin-top: clamp(32px, 4vw, 48px); }
+
+@media (max-width: 1100px) {
+  .feature-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .feature-list { grid-template-columns: 1fr; gap: 28px; }
+  .features h2 { font-size: 23px; }
+  .feature-list h3 { font-size: 18px; }
+}

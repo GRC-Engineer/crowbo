@@ -1,5 +1,7 @@
 # Crowbo company homepage
 
+Publication note, 29 September 2026: this page was ported into the [Decision Studio project](../../../decision-studio/README.md#publication-as-the-website--29-september) as the root of crowbo.ai, with a demo link and a features section added there. That copy is the deployed source; this directory is unchanged design history.
+
 Local prototype, updated 24 September 2026. This is the current website direction. The user selected a sparse company introduction after reviewing [Cursive](https://cursive.ai/) and [Praxic](https://www.praxic.ai/), then approved the broader company copy below.
 
 This is the starting page. The user plans to expand the website and add examples from the slide deck later. The current introduction now says Crowbo will help **humans and agents** make and explain those choices; the short format and existing design remain in place. The broader website and deck examples are deferred, not implemented by this copy update.
