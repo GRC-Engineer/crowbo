@@ -175,7 +175,7 @@ export const accessChecks = {
       claim: "The account’s production permissions and work were checked.",
       quote:
         "OUT-042: AC-042 records Maya’s review and designated platform approver Leon’s authorization. Alex applied support-operator-v2 to usr-042 and removed support-admins. A separate effective-rights read denies settings, user management and cross-queue exports; ticket handling and q-7 export succeed. Annual recovery remains the separately tested, approved-on-request path.",
-      why: "Separates the simulated proposal from a later prepared approval, implementation and scoped outcome record.",
+      why: "Separates the proposal from the later approval, implementation and scoped outcome record.",
       limit:
         "One fictional account at the recorded time. No claim about 12 staff, future grants or live monitoring. Production annual recovery has not been exercised here.",
       period: "1 October 2026 · 11:00",
@@ -209,10 +209,10 @@ export const accessChecks = {
         "This does not generalise to other accounts. Reassess changed permissions or required work; production annual recovery remains unobserved.",
       next: "Maya: retain the checks and review the annual recovery arrangement when due.",
       support:
-        "The outcome record is separate from recording a simulated next step. This demo did not make the change.",
+        "The outcome record stands apart from the recorded next step. It shows the approved change and its scoped results.",
     },
     change:
-      "OUT-042 adds later attributed authorization, observed implementation and scoped daily-work results. It is not created by the simulated-choice button.",
+      "OUT-042 adds later attributed authorization, observed implementation and scoped daily-work results.",
   },
   irrelevant: {
     label: "Try irrelevant meeting context",
