@@ -9,6 +9,7 @@ import {
   Pause,
   Play,
 } from "./pixel-icons";
+import { caseGuides } from "./case-guidance";
 import { WorkflowReview } from "./workflow-review";
 import { Crow } from "./components";
 import { FeatherGlyph } from "./identity";
@@ -218,7 +219,7 @@ export default function QuestionDemo() {
                     </span>
                     <span>
                       <strong>{entry.label}</strong>
-                      <small>{entry.question}</small>
+                      <small>{caseGuides[entry.id].invitation}</small>
                     </span>
                     <CornerDownRight size={16} />
                   </button>
@@ -299,7 +300,7 @@ export default function QuestionDemo() {
                     <small>
                       {state.paused
                         ? "Explore a source, then resume when you’re ready."
-                        : researchSteps[state.step].detail}
+                        : caseGuides[state.caseId].research[state.step]}
                     </small>
                   </span>
                 </div>

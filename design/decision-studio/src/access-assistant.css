@@ -222,11 +222,11 @@
   margin: 18px 0 4px;
 }
 .assistant-support summary {
-  font-size: 11px;
-  color: #536b56;
+  font-size: 13px;
+  color: var(--oxide);
 }
 .assistant-support p {
-  color: #454d40;
+  color: #c8d0c9;
   font-size: 12px;
   line-height: 1.6;
 }

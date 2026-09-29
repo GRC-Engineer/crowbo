@@ -142,7 +142,7 @@ export function NextStep({
               <X size={20} />
             </Dialog.Close>
           </div>
-          <Dialog.Title>Make the next step explicit.</Dialog.Title>
+          <Dialog.Title>Your next step</Dialog.Title>
           <Dialog.Description>
             Record a proposed next step for this version. This does not approve
             access, contact anyone or create work.

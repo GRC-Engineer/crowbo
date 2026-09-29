@@ -4,10 +4,14 @@ import {
   ArrowRight,
   ArrowUpRight,
   Check,
+  BookOpen,
+  GitCompareArrows,
+  Search,
   ChevronDown,
   LockKeyhole,
   X,
 } from "./pixel-icons";
+import { CaseGuidance, caseGuides } from "./case-guidance";
 import { Crow } from "./components";
 import { FeatherGlyph } from "./identity";
 import {
@@ -83,16 +87,11 @@ export function WorkflowReview({
         <div>
           <span className="ask-small">03 / Decide · {data.label}</span>
           <h1 ref={headingRef} tabIndex={-1}>
-            {data.question}
+            {caseGuides[caseId].title}
           </h1>
-          <p>{data.scope}</p>
         </div>
         <Crow pose="glide" />
       </div>
-      <p className="workflow-status">
-        <span>v{number.toString().padStart(2, "0")}</span>
-        {stage.status}
-      </p>
       <div className="ask-answer-grid">
         <section className="ask-answer">
           <div className="ask-answer-label">
@@ -125,7 +124,7 @@ export function WorkflowReview({
                     <X size={20} />
                   </Dialog.Close>
                 </div>
-                <Dialog.Title>Make the next step explicit.</Dialog.Title>
+                <Dialog.Title>Your next step</Dialog.Title>
                 <Dialog.Description>
                   Save a proposed next step for this version. This does not
                   approve a deviation, close an issue, contact anyone or change
@@ -161,45 +160,76 @@ export function WorkflowReview({
             </p>
           )}
         </section>
-        <aside className="ask-basis">
-          <span className="ask-small">Why this move</span>
-          {stage.sources
-            .filter((source) => stage.focus.includes(source.id))
-            .map((source) => (
-              <button
-                key={source.id}
-                onClick={(event) => inspect(source, event.currentTarget)}
-              >
-                <FeatherGlyph kind={source.feather} />
-                <span>
-                  <small>{source.label}</small>
-                  <strong>{source.claim}</strong>
-                </span>
-                <ArrowUpRight size={14} />
-              </button>
-            ))}
-          <details className="ask-confidence">
-            <summary>
-              How well supported is this? <ChevronDown size={14} />
-            </summary>
-            <p>{stage.advice.support}</p>
-            <p>
-              Authored synthetic advice. No measured confidence or live
-              reasoning.
-            </p>
-          </details>
-        </aside>
       </div>
-      {number > 1 && (
-        <div className="workflow-change" role="status">
-          <span className="ask-small">Why the advice changed</span>
-          <p>{stage.change}</p>
-        </div>
-      )}
       <div className="ask-result-details">
+        <details className="ask-disclosure">
+          <summary>
+            <span>
+              <BookOpen size={17} /> Why this recommendation?
+            </span>
+            <ChevronDown size={16} />
+          </summary>
+          <div className="ask-disclosure-body">
+            <p className="decision-scope">
+              <strong>{data.question}</strong>
+              <br />
+              {data.scope}
+            </p>
+            <p className="workflow-status">
+              v{number} · {stage.status}
+            </p>
+            <aside className="ask-basis">
+              <span className="ask-small">Why this move</span>
+              {stage.sources
+                .filter((source) => stage.focus.includes(source.id))
+                .map((source) => (
+                  <button
+                    key={source.id}
+                    onClick={(event) => inspect(source, event.currentTarget)}
+                  >
+                    <FeatherGlyph kind={source.feather} />
+                    <span>
+                      <small>{source.label}</small>
+                      <strong>{source.claim}</strong>
+                    </span>
+                    <ArrowUpRight size={14} />
+                  </button>
+                ))}
+              <details className="ask-confidence">
+                <summary>
+                  How well supported is this? <ChevronDown size={14} />
+                </summary>
+                <p>{stage.advice.support}</p>
+                <p>
+                  Authored synthetic advice. No measured confidence or live
+                  reasoning.
+                </p>
+              </details>
+            </aside>
+            {number > 1 && (
+              <div className="workflow-change" role="status">
+                <span className="ask-small">Why the advice changed</span>
+                <p>{stage.change}</p>
+              </div>
+            )}
+            <details className="ask-disclosure decision-source-explorer">
+              <summary>
+                <span>
+                  <Search size={16} /> Explore all {stage.sources.length}{" "}
+                  sources
+                </span>
+                <ChevronDown size={16} />
+              </summary>
+              <SourceNetwork sources={stage.sources} onInspect={inspect} />
+            </details>
+          </div>
+        </details>
+        <CaseGuidance caseId={caseId} />
         <details className="ask-disclosure workflow-updates">
           <summary>
-            <span>See what could change the decision</span>
+            <span>
+              <GitCompareArrows size={17} /> What could change this?
+            </span>
             <ChevronDown size={16} />
           </summary>
           <div className="ask-disclosure-body">
@@ -267,79 +297,81 @@ export function WorkflowReview({
             )}
           </div>
         </details>
-        <details className="ask-disclosure">
+        <details className="ask-disclosure decision-more">
           <summary>
-            <span>Explore the sources</span>
-            <span className="ask-disclosure-hint">
-              {stage.sources.length} selected records · v{number}{" "}
-              <ChevronDown size={16} />
+            <span>
+              <GitCompareArrows size={17} /> Options, context & history
             </span>
-          </summary>
-          <SourceNetwork sources={stage.sources} onInspect={inspect} />
-        </details>
-        <details className="ask-disclosure">
-          <summary>
-            <span>Compare the options</span>
             <ChevronDown size={16} />
           </summary>
-          <div className="ask-disclosure-body ask-options">
-            {data.alternatives.map((option) => (
-              <div key={option.title}>
-                <h3>{option.title}</h3>
-                <p>{option.tradeoff}</p>
+          <div className="ask-disclosure-body">
+            <details className="ask-disclosure">
+              <summary>
+                <span>Compare the options</span>
+                <ChevronDown size={16} />
+              </summary>
+              <div className="ask-disclosure-body ask-options">
+                {data.alternatives.map((option) => (
+                  <div key={option.title}>
+                    <h3>{option.title}</h3>
+                    <p>{option.tradeoff}</p>
+                  </div>
+                ))}
               </div>
-            ))}
+            </details>
+            {state.previous.length > 0 && (
+              <details className="ask-disclosure">
+                <summary>
+                  <span>Earlier advice</span>
+                  <span className="ask-disclosure-hint">
+                    {state.previous.length} retained versions{" "}
+                    <ChevronDown size={16} />
+                  </span>
+                </summary>
+                <div className="workflow-history">
+                  {state.previous.map((version) => (
+                    <section key={version.number}>
+                      <span className="ask-small">
+                        v{version.number} · {version.stage.label}
+                      </span>
+                      <h3>{version.stage.advice.title}</h3>
+                      <p>{version.stage.advice.reason}</p>
+                      <p className="ask-fine">
+                        {version.stage.advice.condition}
+                      </p>
+                      {state.recordedVersions.includes(version.number) && (
+                        <p className="ask-recorded">
+                          Simulated next step recorded for this version.
+                        </p>
+                      )}
+                      <details>
+                        <summary>Sources used for v{version.number}</summary>
+                        <div className="workflow-history-sources">
+                          {version.stage.sources.map((source) => (
+                            <button
+                              key={source.id}
+                              onClick={(event) =>
+                                inspect(source, event.currentTarget, version)
+                              }
+                            >
+                              {source.label}
+                              <small>{source.revision}</small>
+                              <ArrowUpRight size={12} />
+                            </button>
+                          ))}
+                        </div>
+                      </details>
+                    </section>
+                  ))}
+                </div>
+              </details>
+            )}
+            <ContextNote
+              note={state.note}
+              onSave={(value) => dispatch({ type: "note", value })}
+            />
           </div>
         </details>
-        {state.previous.length > 0 && (
-          <details className="ask-disclosure">
-            <summary>
-              <span>Earlier advice</span>
-              <span className="ask-disclosure-hint">
-                {state.previous.length} retained versions{" "}
-                <ChevronDown size={16} />
-              </span>
-            </summary>
-            <div className="workflow-history">
-              {state.previous.map((version) => (
-                <section key={version.number}>
-                  <span className="ask-small">
-                    v{version.number} · {version.stage.label}
-                  </span>
-                  <h3>{version.stage.advice.title}</h3>
-                  <p>{version.stage.advice.reason}</p>
-                  <p className="ask-fine">{version.stage.advice.condition}</p>
-                  {state.recordedVersions.includes(version.number) && (
-                    <p className="ask-recorded">
-                      Simulated next step recorded for this version.
-                    </p>
-                  )}
-                  <details>
-                    <summary>Sources used for v{version.number}</summary>
-                    <div className="workflow-history-sources">
-                      {version.stage.sources.map((source) => (
-                        <button
-                          key={source.id}
-                          onClick={(event) =>
-                            inspect(source, event.currentTarget, version)
-                          }
-                        >
-                          {source.label}
-                          <small>{source.revision}</small>
-                          <ArrowUpRight size={12} />
-                        </button>
-                      ))}
-                    </div>
-                  </details>
-                </section>
-              ))}
-            </div>
-          </details>
-        )}
-        <ContextNote
-          note={state.note}
-          onSave={(value) => dispatch({ type: "note", value })}
-        />
       </div>
       {inspection && (
         <SourceInspector
