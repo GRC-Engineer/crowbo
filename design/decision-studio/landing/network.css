@@ -469,3 +469,24 @@ html[data-variant="network"] .review-meta {
     font-size: clamp(48px, calc(28vw - 42px), 86px);
   }
 }
+
+/* De-generic pass, 29 September 2026: shared type with the studio, a
+   readable pause control, and no vertical stretch on tall narrow screens. */
+.network-caption,
+.network-motion-toggle {
+  font-family: Departure, ui-monospace, monospace;
+}
+.network-motion-toggle {
+  font-size: 12px;
+}
+.network-detail {
+  font-size: 11px;
+}
+@media (max-width: 800px) {
+  html[data-presentation="website"] .introduction {
+    flex: 0 0 auto;
+  }
+  .network-detail {
+    font-size: 11px;
+  }
+}

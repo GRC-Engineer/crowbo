@@ -66,3 +66,15 @@ The [29 September product study](decision-studio/README.md) applies this identit
 The study uses Geist Pixel Square for the existing lowercase wordmark, Departure Mono for terminal labels, Bricolage Grotesque for headings and Space Grotesk for reading. All four come from the existing licensed typography collection. Chalk makes the proposed recommendation readable; sage carries source context; oxide marks selection, corrections and the next action. Keep the dark base neutral and the wordmark free of glow or shadow.
 
 Short page transitions, feather scans, travelling packets and occasional crow movement support exploration. Text remains readable throughout, with a motion pause control and reduced-motion handling. Provider marks identify illustrative sources and do not imply active integrations. The [studio README](decision-studio/README.md) owns current verification receipts and links the earlier visual research; the [interaction model](../docs/INTERACTION-MODEL.md) owns the workflow meanings.
+
+## De-generic pass — 29 September 2026
+
+A review of the published site against generic dashboard and generated-design patterns found the identity strong in the content and weak in the chrome. The following decisions apply across the company page and Decision Studio. The [brand system sheet](brand-system/2026-09-29/README.md) shows them together.
+
+- **One reading face.** Space Grotesk is the reading face everywhere, including the company page, which previously used a system serif. Departure Mono replaces the system monospace stack for labels and codes on the company page. Geist Pixel Square remains wordmark-only; Bricolage Grotesque remains for headings.
+- **Label rule.** One uppercase Departure Mono eyebrow per block, never smaller than 11px. Field labels inside a block are sentence case in Bricolage Grotesque at 13px. Keyboard hints, badges and codes are never smaller than 11px.
+- **Pixel icons.** A set of thirty-one icons drawn on a 16-unit grid from filled rectangles, in `decision-studio/src/pixel-icons.tsx`, replaces the Lucide stroke library so glyphs share the stepped edges of the mascot and feathers.
+- **One border per layer.** Inside a dialog, a card holds text buttons rather than bordered buttons, and a notice is a paragraph with an oxide left rule rather than a bordered box.
+- **Shell.** The studio wordmark links to the company page, the sidebar carries an Ask a question entry back to the question-first view, the duplicate sidebar search is removed, and the viewer mark is a square monospace monogram rather than a circular avatar.
+
+Further Modular Crow poses are briefed in the brand system sheet and have not been generated; the approved artwork is unchanged. These are design decisions verified in the local browser, not audience or customer evidence.

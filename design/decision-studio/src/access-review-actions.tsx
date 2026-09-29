@@ -6,7 +6,7 @@ import {
   Check,
   GitCompareArrows,
   X,
-} from "lucide-react";
+} from "./pixel-icons";
 import { ProviderMark } from "./providers";
 import type { DemoSource } from "./question-demo-model";
 import {

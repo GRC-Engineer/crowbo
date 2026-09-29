@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown } from "./pixel-icons";
 import { ProviderTag, type Provider } from "./providers";
 import { useId, useState } from "react";
 import topology from "../../homepage-mockups/2026-09-21/assets/crowbo-feathers-topology-modular-v1.png";

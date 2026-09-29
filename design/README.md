@@ -4,6 +4,7 @@ Start with [the brand guide](BRAND.md). It owns the current mascot, wordmark, pa
 
 ## Current previews
 
+- [Brand system sheet](brand-system/2026-09-29/README.md): the identity as one system on 29 September 2026: palette jobs, four typefaces, the label rule, the pixel icon set, mascot family, feathers and specimen components, with the crow-iteration brief that has not yet been run.
 - [Decision Studio](decision-studio/README.md): React product study in the main checkout, with the original twelve topology feathers, source logos, contextual inspection, keyboard search and retained decision history. The [29 September review](decision-studio/DESIGN-PASS.md) records the three latest design loops.
 - [Company homepage](homepage-mockups/2026-09-21/homepage-prototype/README.md): approved company copy with an animated boxed network of twelve pixel feathers. The normal homepage has one contact link and a pause control; explicit preview URLs retain the design comparisons.
 - [Identity in use](homepage-mockups/2026-09-21/brand-board-prototype/README.md): a proposed brand board across the website, product and investor presentation, with interactive focus views. Awaiting review.
