@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0c1010" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>Crowbo brand system</title>
+    <meta
+      name="description"
+      content="Crowbo identity as one system: palette jobs, four typefaces, the label rule, the pixel icon set, mascot family, feathers, motion and specimen components. Local design reference, 29 September 2026."
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="../../crow-concepts/2026-09-24/approved-runtime/modular-favicon.png"
+    />
+    <style>
+      @font-face {
+        font-family: GeistPixel;
+        src: url("../../typography/2026-09-21/fonts/GeistPixel-Square.woff2")
+          format("woff2");
+        font-display: swap;
+      }
+      @font-face {
+        font-family: Bricolage;
+        src: url("../../typography/2026-09-21/fonts/BricolageGrotesque.ttf")
+          format("truetype");
+        font-weight: 200 800;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: SpaceGrotesk;
+        src: url("../../typography/2026-09-21/fonts/SpaceGrotesk.ttf")
+          format("truetype");
+        font-weight: 300 700;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: Departure;
+        src: url("../../typography/2026-09-21/fonts/DepartureMono-Regular.woff2")
+          format("woff2");
+        font-display: swap;
+      }
+      :root {
+        color-scheme: dark;
+        --base: #0c1010;
+        --ink: #171b1a;
+        --charcoal: #38413c;
+        --line: #29312e;
+        --chalk: #f5f3e8;
+        --sage: #91aa9d;
+        --oxide: #d18a66;
+        --muted: #a0aaa3;
+        --mono: Departure, ui-monospace, monospace;
+        --display: Bricolage, sans-serif;
+        --text: SpaceGrotesk, "Helvetica Neue", sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--base);
+        color: var(--chalk);
+        font: 400 16px/1.6 var(--text);
+        -webkit-font-smoothing: antialiased;
+      }
+      ::selection {
+        background: var(--oxide);
+        color: var(--base);
+      }
+      a {
+        color: var(--oxide);
+      }
+      .sheet {
+        width: min(100%, 1180px);
+        margin: 0 auto;
+        padding: 48px clamp(20px, 5vw, 64px) 80px;
+      }
+      header.masthead {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 24px;
+        align-items: end;
+        padding-bottom: 32px;
+        border-bottom: 1px solid var(--line);
+      }
+      .wordmark {
+        margin: 0;
+        font: 400 clamp(64px, 9vw, 120px) / 0.9 GeistPixel, monospace;
+        letter-spacing: -0.04em;
+      }
+      .masthead p {
+        margin: 14px 0 0;
+        color: var(--sage);
+        font: 15px/1.5 var(--mono);
+      }
+      .masthead img {
+        width: 150px;
+        height: 150px;
+        object-fit: contain;
+        image-rendering: pixelated;
+      }
+      section {
+        padding: 44px 0 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      .eyebrow {
+        display: block;
+        color: var(--sage);
+        font: 11px/1.6 var(--mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      h2 {
+        margin: 8px 0 12px;
+        font: 600 clamp(28px, 3vw, 38px) / 1.1 var(--display);
+        letter-spacing: -0.02em;
+      }
+      h3 {
+        margin: 0 0 6px;
+        font: 600 20px/1.2 var(--display);
+      }
+      .lede {
+        max-width: 62ch;
+        color: #c8cec9;
+        margin: 0 0 28px;
+      }
+      .rule {
+        border-left: 2px solid var(--oxide);
+        padding: 2px 0 2px 14px;
+        color: #d8ccb8;
+        max-width: 62ch;
+        margin: 18px 0 26px;
+      }
+      .grid {
+        display: grid;
+        gap: 18px;
+        margin-bottom: 36px;
+      }
+      .grid.four {
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      }
+      .grid.two {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      }
+      .grid.three {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      }
+      .swatch {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+        background: var(--ink);
+      }
+      .swatch > div:first-child {
+        height: 96px;
+      }
+      .swatch dl {
+        margin: 0;
+        padding: 14px 16px 16px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 4px 12px;
+        font-size: 14px;
+      }
+      .swatch dt {
+        color: var(--muted);
+        font: 11px/1.9 var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .swatch dd {
+        margin: 0;
+      }
+      .swatch dd code {
+        font: 13px var(--mono);
+        color: var(--sage);
+      }
+      .type-row {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 24px;
+        padding: 22px 0;
+        border-top: 1px solid var(--line);
+        align-items: baseline;
+      }
+      .type-row:last-of-type {
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 28px;
+      }
+      .type-row .meta {
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .type-row .meta strong {
+        display: block;
+        color: var(--chalk);
+        font-weight: 500;
+      }
+      .spec-wordmark {
+        font: 400 72px/0.9 GeistPixel, monospace;
+        letter-spacing: -0.04em;
+      }
+      .spec-heading {
+        font: 600 36px/1.1 var(--display);
+        letter-spacing: -0.02em;
+        margin: 0;
+      }
+      .spec-body {
+        font: 400 18px/1.6 var(--text);
+        max-width: 54ch;
+        margin: 0;
+      }
+      .spec-mono {
+        font: 13px/1.7 var(--mono);
+        color: var(--sage);
+        margin: 0;
+      }
+      .compare {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 18px;
+        margin-bottom: 36px;
+      }
+      .compare > div {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 20px;
+        background: var(--ink);
+      }
+      .compare .verdict {
+        display: inline-block;
+        margin-bottom: 14px;
+        font: 11px/1.6 var(--mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 3px 7px;
+        border-radius: 3px;
+      }
+      .verdict.no {
+        color: #e4ac8e;
+        border: 1px solid #d18a6666;
+      }
+      .verdict.yes {
+        color: var(--sage);
+        border: 1px solid #91aa9d66;
+      }
+      .bad-label {
+        display: block;
+        font: 7px/1.6 var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #748579;
+      }
+      .field-label {
+        display: block;
+        font: 500 13px/1.5 var(--display);
+        color: #b9c2b8;
+        margin: 14px 0 4px;
+      }
+      .icons {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+        gap: 10px;
+        margin-bottom: 30px;
+      }
+      .icons figure {
+        margin: 0;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--ink);
+        padding: 16px 10px 12px;
+        display: grid;
+        justify-items: center;
+        gap: 10px;
+      }
+      .icons svg {
+        width: 32px;
+        height: 32px;
+        color: var(--chalk);
+      }
+      .icons figcaption {
+        font: 11px/1.4 var(--mono);
+        color: var(--muted);
+        text-align: center;
+        word-break: break-word;
+      }
+      .icons figure.oxide svg {
+        color: var(--oxide);
+      }
+      .icons figure.sage svg {
+        color: var(--sage);
+      }
+      .mascots {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 18px;
+        margin-bottom: 30px;
+      }
+      .mascots figure {
+        margin: 0;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--ink);
+        padding: 18px;
+        display: grid;
+        gap: 12px;
+        justify-items: center;
+      }
+      .mascots img {
+        height: 120px;
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+        image-rendering: pixelated;
+      }
+      .mascots figcaption,
+      .feathers figcaption {
+        font-size: 14px;
+        color: var(--muted);
+        text-align: center;
+      }
+      .feathers {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 18px;
+        margin-bottom: 30px;
+      }
+      .feathers figure {
+        margin: 0;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--ink);
+        padding: 12px;
+      }
+      .feathers img {
+        width: 100%;
+        height: auto;
+        display: block;
+        image-rendering: pixelated;
+        opacity: 0.85;
+      }
+      /* Specimen components. */
+      .specimens {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 22px;
+        align-items: start;
+        margin-bottom: 30px;
+      }
+      .card-chalk {
+        background: var(--chalk);
+        color: var(--ink);
+        border-radius: 8px;
+        padding: 24px;
+      }
+      .card-chalk .eyebrow {
+        color: #55625b;
+      }
+      .card-chalk h3 {
+        font-size: 30px;
+        margin: 10px 0 8px;
+      }
+      .card-chalk p {
+        color: #4e5953;
+        margin: 0 0 16px;
+      }
+      .card-chalk .field-label {
+        color: #55625b;
+      }
+      .card-chalk .condition {
+        border-top: 1px solid #cdd1c7;
+        padding-top: 12px;
+        margin-top: 4px;
+        display: flex;
+        gap: 9px;
+        color: #586159;
+        font-size: 14px;
+      }
+      .card-chalk .condition svg {
+        width: 16px;
+        height: 16px;
+        color: #965a39;
+        flex-shrink: 0;
+        margin-top: 3px;
+      }
+      .btn-primary {
+        margin-top: 18px;
+        width: 100%;
+        min-height: 48px;
+        border: 1px solid var(--ink);
+        background: var(--ink);
+        color: var(--chalk);
+        border-radius: 6px;
+        font: 500 14px var(--text);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 16px;
+        gap: 16px;
+      }
+      .btn-primary svg {
+        width: 16px;
+        height: 16px;
+      }
+      .card-dark {
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #121716;
+        padding: 22px 20px;
+      }
+      .card-dark h3 {
+        font-size: 24px;
+        margin: 12px 0 8px;
+      }
+      .card-dark p {
+        color: #a6b19a;
+        margin: 0;
+        font-size: 14px;
+      }
+      .card-dark .tradeoff {
+        border-top: 1px solid var(--line);
+        margin-top: 18px;
+        padding-top: 14px;
+      }
+      .btn-text {
+        margin-top: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--oxide);
+        font: 500 14px var(--text);
+        background: none;
+        border: 0;
+        padding: 6px 0;
+        min-height: 40px;
+      }
+      .btn-text svg {
+        width: 15px;
+        height: 15px;
+      }
+      .nav-spec {
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #0e1311;
+        padding: 18px 14px;
+        display: grid;
+        gap: 4px;
+        max-width: 260px;
+      }
+      .nav-spec .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 41px;
+        padding: 0 12px;
+        border-radius: 6px;
+        color: #c9d0ca;
+        font: 500 14px var(--text);
+      }
+      .nav-spec .nav-item svg {
+        width: 17px;
+        height: 17px;
+        color: var(--sage);
+      }
+      .nav-spec .nav-item.active {
+        background: #1a211e;
+        color: var(--chalk);
+        box-shadow: inset 2px 0 0 var(--oxide);
+      }
+      .honesty {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 30px;
+      }
+      .honesty span {
+        border: 1px solid #53665a55;
+        border-radius: 4px;
+        padding: 5px 9px;
+        font: 11px/1.6 var(--mono);
+        letter-spacing: 0.04em;
+        color: #b0c4b6;
+      }
+      .honesty span.oxide {
+        color: #e4ac8e;
+        border-color: #d18a6644;
+      }
+      ul.plain {
+        padding-left: 18px;
+        color: #c8cec9;
+        max-width: 66ch;
+      }
+      ul.plain li {
+        margin-bottom: 6px;
+      }
+      footer {
+        padding-top: 28px;
+        color: var(--muted);
+        font: 12px/1.6 var(--mono);
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      @media (max-width: 720px) {
+        header.masthead {
+          grid-template-columns: 1fr;
+          align-items: start;
+        }
+        .type-row {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        .spec-wordmark {
+          font-size: 56px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sheet">
+      <header class="masthead">
+        <div>
+          <h1 class="wordmark">crowbo</h1>
+          <p>Brand system · 29 September 2026 · local design reference</p>
+        </div>
+        <img
+          src="../../crow-concepts/2026-09-24/approved-runtime/modular-crow.png"
+          alt="Modular Crow, the Crowbo mascot"
+        />
+      </header>
+
+      <section id="palette">
+        <span class="eyebrow">01 · Palette</span>
+        <h2>Four colours, four jobs.</h2>
+        <p class="lede">
+          Chalk is for the thing you should read. Sage carries context and
+          infrastructure. Oxide marks the one action or the thing that changed.
+          Near-black anchors everything. Charcoal is a shade plane, never a
+          fifth accent.
+        </p>
+        <div class="grid four">
+          <div class="swatch">
+            <div style="background: #f5f3e8"></div>
+            <dl>
+              <dt>Name</dt>
+              <dd>Chalk</dd>
+              <dt>Token</dt>
+              <dd><code>#F5F3E8</code></dd>
+              <dt>Job</dt>
+              <dd>The recommendation surface, wordmark, glasses</dd>
+            </dl>
+          </div>
+          <div class="swatch">
+            <div style="background: #91aa9d"></div>
+            <dl>
+              <dt>Name</dt>
+              <dd>Sage</dd>
+              <dt>Token</dt>
+              <dd><code>#91AA9D</code></dd>
+              <dt>Job</dt>
+              <dd>Source context, paths, eyes, labels</dd>
+            </dl>
+          </div>
+          <div class="swatch">
+            <div style="background: #d18a66"></div>
+            <dl>
+              <dt>Name</dt>
+              <dd>Warm oxide</dd>
+              <dt>Token</dt>
+              <dd><code>#D18A66</code></dd>
+              <dt>Job</dt>
+              <dd>Selection, correction, the next action, focus ring</dd>
+            </dl>
+          </div>
+          <div class="swatch">
+            <div style="background: #171b1a; border-bottom: 1px solid #29312e"></div>
+            <dl>
+              <dt>Name</dt>
+              <dd>Near-black</dd>
+              <dt>Token</dt>
+              <dd><code>#171B1A</code> on <code>#0C1010</code></dd>
+              <dt>Job</dt>
+              <dd>Body, surfaces, the dark base</dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section id="type">
+        <span class="eyebrow">02 · Type</span>
+        <h2>Four faces, each with one permission.</h2>
+        <p class="lede">
+          The company page previously read in a system serif while the studio
+          read in Space Grotesk. From this pass both use the same reading
+          face, so the path from landing to demo is one voice.
+        </p>
+        <div class="type-row">
+          <div class="meta">
+            <strong>Geist Pixel Square</strong>Wordmark only. Lowercase, 400,
+            −0.04em, no glow or shadow.
+          </div>
+          <div class="spec-wordmark">crowbo</div>
+        </div>
+        <div class="type-row">
+          <div class="meta">
+            <strong>Bricolage Grotesque</strong>Headings and sentence-case
+            field labels. 600 for headings, 500 for labels.
+          </div>
+          <p class="spec-heading">Give support a role that fits the work.</p>
+        </div>
+        <div class="type-row">
+          <div class="meta">
+            <strong>Space Grotesk</strong>Reading text everywhere, 16px minimum
+            in the studio, 18 to 21px on the company page.
+          </div>
+          <p class="spec-body">
+            Security teams have no shortage of information. The challenge is
+            knowing what deserves their time and resources.
+          </p>
+        </div>
+        <div class="type-row">
+          <div class="meta">
+            <strong>Departure Mono</strong>Eyebrows, codes, terminal lines and
+            keyboard hints. Never below 11px.
+          </div>
+          <p class="spec-mono">
+            DECISION 001 · VERSION 1<br />
+            &gt; Reduce unnecessary access without breaking the work.<br />
+            v1 · initial view &nbsp; ⌘ K
+          </p>
+        </div>
+      </section>
+
+      <section id="labels">
+        <span class="eyebrow">03 · Labels</span>
+        <h2>One eyebrow per block.</h2>
+        <p class="lede">
+          Uppercase monospace labels are a signature when they appear once per
+          block and texture when they appear on every line. Inside a block,
+          field labels are sentence case in the heading face.
+        </p>
+        <div class="compare">
+          <div>
+            <span class="verdict no">Before · generic</span>
+            <span class="bad-label">Recommended move</span>
+            <h3 style="margin-top: 6px">Test a role that fits the work.</h3>
+            <span class="bad-label" style="margin-top: 14px">Why this option</span>
+            <p style="margin: 4px 0 0; color: #a6b19a; font-size: 14px">
+              Keep tickets and own-queue exports.
+            </p>
+            <span class="bad-label" style="margin-top: 14px">What must hold</span>
+            <p style="margin: 4px 0 0; color: #a6b19a; font-size: 14px">
+              Owner review and a permissions test.
+            </p>
+            <span class="bad-label" style="margin-top: 14px">Next action</span>
+            <p style="margin: 4px 0 0; color: #a6b19a; font-size: 14px">
+              Review and test the proposed role.
+            </p>
+          </div>
+          <div>
+            <span class="verdict yes">After · authored</span>
+            <span class="eyebrow">Recommended move</span>
+            <h3 style="margin-top: 6px">Test a role that fits the work.</h3>
+            <span class="field-label">Why this option</span>
+            <p style="margin: 0; color: #a6b19a; font-size: 14px">
+              Keep tickets and own-queue exports.
+            </p>
+            <span class="field-label">What must hold</span>
+            <p style="margin: 0; color: #a6b19a; font-size: 14px">
+              Owner review and a permissions test.
+            </p>
+            <span class="field-label">Next action</span>
+            <p style="margin: 0; color: #a6b19a; font-size: 14px">
+              Review and test the proposed role.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="icons">
+        <span class="eyebrow">04 · Pixel icons</span>
+        <h2>Glyphs on the mascot's grid.</h2>
+        <p class="lede">
+          Thirty-one icons drawn on a 16-unit grid from filled rectangles, so
+          they share the stepped edges of Modular Crow, Packet Runner and the
+          feathers. They replace the Lucide stroke set. Chalk on dark by
+          default; oxide for the action, sage for context.
+        </p>
+        <div class="icons" id="icon-sheet"></div>
+        <p class="rule">
+          Source of truth: <code>decision-studio/src/pixel-icons.tsx</code>.
+          This sheet draws from a copy of the same rectangle lists.
+        </p>
+      </section>
+
+      <section id="mascots">
+        <span class="eyebrow">05 · Mascot family</span>
+        <h2>Modular Crow and Packet Runner.</h2>
+        <p class="lede">
+          Modular Crow anchors a page or a source network. Packet Runner flies
+          in the upper right of page headings, facing inward, in three poses.
+          Both keep the compact body, stepped crest, chalk circuit glasses,
+          sage eyes and sparse oxide terminals.
+        </p>
+        <div class="mascots">
+          <figure>
+            <img
+              src="../../crow-concepts/2026-09-24/approved-runtime/modular-crow.png"
+              alt="Modular Crow, standing"
+            />
+            <figcaption>Modular Crow · anchor</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="../../crow-concepts/2026-09-24/approved-runtime/runner-glide.png"
+              alt="Packet Runner, gliding"
+            />
+            <figcaption>Packet Runner · glide</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="../../crow-concepts/2026-09-24/approved-runtime/runner-up.png"
+              alt="Packet Runner, wings up"
+            />
+            <figcaption>Packet Runner · up</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="../../crow-concepts/2026-09-24/approved-runtime/runner-down.png"
+              alt="Packet Runner, wings down"
+            />
+            <figcaption>Packet Runner · down</figcaption>
+          </figure>
+        </div>
+        <p class="rule">
+          Further poses (perched-reading, pointing, a 24px head) are briefed in
+          the README beside this page and have not been generated. They remain
+          candidates until selected.
+        </p>
+      </section>
+
+      <section id="feathers">
+        <span class="eyebrow">06 · Feathers</span>
+        <h2>Twelve feathers, six source families.</h2>
+        <p class="lede">
+          Each feather stands for a kind of evidence. Braid for reviews,
+          Cluster for meetings, Branch for permissions, Merge for changes,
+          Spine for policies, Vector for experience, Column for capacity, Series
+          for incident feeds, Object for records, Loop for control checks, Shard
+          for risk assessments and Mesh for dependencies. Their circuits
+          illustrate relationships, not measured weights.
+        </p>
+        <div class="feathers">
+          <figure>
+            <img
+              src="../../homepage-mockups/2026-09-21/assets/crowbo-feathers-topology-modular-v1.png"
+              alt="Six topology feather designs"
+            />
+            <figcaption>Topology sheet</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="../../homepage-mockups/2026-09-21/assets/crowbo-feathers-infrastructure-modular-v1.png"
+              alt="Six infrastructure feather designs"
+            />
+            <figcaption>Infrastructure sheet</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="components">
+        <span class="eyebrow">07 · Components</span>
+        <h2>One border per layer.</h2>
+        <p class="lede">
+          The chalk card is the only light surface on a screen, so the eye
+          lands on the answer first. Inside a card, buttons are solid or text,
+          never another bordered box. A notice is a paragraph with a left rule.
+        </p>
+        <div class="specimens">
+          <div class="card-chalk">
+            <span class="eyebrow">Recommendation</span>
+            <h3>Support operator</h3>
+            <p>
+              Keep ticket handling and scoped reports. Remove the administration
+              the team does not need for its confirmed work.
+            </p>
+            <span class="field-label">What must hold</span>
+            <div class="condition">
+              <svg viewBox="0 0 16 16" fill="currentColor" fill-rule="evenodd" shape-rendering="crispEdges" aria-hidden="true"><path d="M5 1h6v2H5zM4 3h2v4H4zM10 3h2v4h-2zM3 7h10v8H3zM7 9h2v2H7zM7 11h2v2H7z"/></svg>
+              <span>Owner review and a controlled permissions check are still required.</span>
+            </div>
+            <button class="btn-primary" type="button">
+              Review recommendation
+              <svg viewBox="0 0 16 16" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><path d="M2 7h10v2H2zM8 3h2v2H8zM10 5h2v2h-2zM12 7h2v2h-2zM10 9h2v2h-2zM8 11h2v2H8z"/></svg>
+            </button>
+          </div>
+          <div class="card-dark">
+            <span class="eyebrow">01 · Proposed</span>
+            <h3>Custom support role</h3>
+            <p>Keep tickets and own-queue reports. Remove settings and user administration.</p>
+            <div class="tradeoff">
+              <span class="field-label" style="margin-top: 0">The trade-off</span>
+              <p>Requires role support, owner review and a controlled permissions test.</p>
+            </div>
+            <button class="btn-text" type="button">
+              Record preference
+              <svg viewBox="0 0 16 16" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><path d="M2 7h10v2H2zM8 3h2v2H8zM10 5h2v2h-2zM12 7h2v2h-2zM10 9h2v2h-2zM8 11h2v2H8z"/></svg>
+            </button>
+          </div>
+          <div class="nav-spec">
+            <span class="eyebrow" style="padding: 0 12px 8px">Workspace</span>
+            <span class="nav-item active"><svg viewBox="0 0 16 16" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><path d="M7 1h2v2H7zM5 3h2v2H5zM9 3h2v2H9zM3 5h2v2H3zM11 5h2v2h-2zM3 7h2v7H3zM11 7h2v7h-2zM3 12h10v2H3zM7 9h2v5H7z"/></svg>Decisions</span>
+            <span class="nav-item"><svg viewBox="0 0 16 16" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><path d="M11 1h3v2h-3zM12 3h2v2h-2zM9 3h2v2H9zM10 5h2v2h-2zM7 5h2v2H7zM8 7h2v2H8zM5 7h2v2H5zM6 9h2v2H6zM3 9h2v2H3zM4 11h2v2H4zM2 13h2v2H2z"/></svg>Sources</span>
+            <span class="nav-item"><svg viewBox="0 0 16 16" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><path d="M3 2h4v4H3zM1 8h8v6H1zM10 4h3v3h-3zM10 9h5v5h-5z"/></svg>People</span>
+            <span class="nav-item"><svg viewBox="0 0 16 16" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><path d="M4 2h8v2H4zM12 4h2v8h-2zM4 12h8v2H4zM2 4h2v8H2zM7 5h2v4H7zM7 8h4v2H7z"/></svg>History</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="motion">
+        <span class="eyebrow">08 · Motion and honesty</span>
+        <h2>Short, pausable, labelled.</h2>
+        <ul class="plain">
+          <li>Page transitions under 250ms; feather scans and travelling packets are finite, with a visible pause control.</li>
+          <li>The system reduced-motion preference is respected everywhere and disables the toggle.</li>
+          <li>Every synthetic surface carries a quiet label. These are typographic, never dialogs.</li>
+        </ul>
+        <div class="honesty">
+          <span>Synthetic study</span>
+          <span>Illustrative network</span>
+          <span>No live connections</span>
+          <span class="oxide">Owner review pending</span>
+          <span class="oxide">Simulation only</span>
+          <span>Resets on reload</span>
+        </div>
+      </section>
+
+      <footer>
+        <span>Owner of decisions: design/BRAND.md</span>
+        <span>Local reference · no model runs · no deployment</span>
+      </footer>
+    </div>
+
+    <script>
+      // Copy of the rectangle lists in decision-studio/src/pixel-icons.tsx.
+      // Each entry: [name, evenOdd, rects]. Keep in step with the source.
+      const icons = [
+        ["ArrowRight", 0, [[2,7,10,2],[8,3,2,2],[10,5,2,2],[12,7,2,2],[10,9,2,2],[8,11,2,2]]],
+        ["ArrowLeft", 0, [[4,7,10,2],[6,3,2,2],[4,5,2,2],[2,7,2,2],[4,9,2,2],[6,11,2,2]]],
+        ["ArrowUp", 0, [[7,4,2,10],[3,8,2,2],[5,6,2,2],[7,2,2,2],[9,6,2,2],[11,8,2,2]]],
+        ["ArrowDown", 0, [[7,2,2,10],[3,6,2,2],[5,8,2,2],[7,12,2,2],[9,8,2,2],[11,6,2,2]]],
+        ["ArrowUpRight", 0, [[6,3,7,2],[11,3,2,7],[9,5,2,2],[7,7,2,2],[5,9,2,2],[3,11,2,2]]],
+        ["CornerDownRight", 0, [[3,2,2,7],[3,7,9,2],[9,4,2,2],[11,6,2,2],[11,8,2,2],[9,10,2,2]]],
+        ["ChevronDown", 0, [[2,5,2,2],[4,7,2,2],[6,9,2,2],[8,9,2,2],[10,7,2,2],[12,5,2,2]]],
+        ["ChevronRight", 0, [[5,2,2,2],[7,4,2,2],[9,6,2,2],[9,8,2,2],[7,10,2,2],[5,12,2,2]]],
+        ["Check", 0, [[2,8,2,2],[4,10,2,2],[6,12,2,2],[8,10,2,2],[10,8,2,2],[12,6,2,2],[14,4,1,2]]],
+        ["X", 0, [[3,3,2,2],[5,5,2,2],[7,7,2,2],[9,9,2,2],[11,11,2,2],[11,3,2,2],[9,5,2,2],[5,9,2,2],[3,11,2,2]]],
+        ["Minus", 0, [[2,7,12,2]]],
+        ["Menu", 0, [[2,3,12,2],[2,7,12,2],[2,11,12,2]]],
+        ["LockKeyhole", 1, [[5,1,6,2],[4,3,2,4],[10,3,2,4],[3,7,10,8],[7,9,2,2],[7,11,2,2]]],
+        ["Search", 0, [[4,2,5,2],[4,9,5,2],[2,4,2,5],[9,4,2,5],[10,10,2,2],[12,12,2,2]]],
+        ["Settings", 1, [[7,1,2,3],[7,12,2,3],[1,7,3,2],[12,7,3,2],[3,3,2,2],[11,3,2,2],[3,11,2,2],[11,11,2,2],[4,4,8,8],[7,7,2,2]]],
+        ["Play", 0, [[4,2,2,12],[6,3,2,10],[8,4,2,8],[10,5,2,6],[12,7,2,2]]],
+        ["Pause", 0, [[4,2,3,12],[9,2,3,12]]],
+        ["RotateCcw", 0, [[4,2,8,2],[12,4,2,6],[4,12,8,2],[2,4,2,5],[12,10,2,2],[1,8,4,2],[3,10,2,2]]],
+        ["Plug", 0, [[5,1,2,4],[9,1,2,4],[3,5,10,5],[6,10,4,2],[7,12,2,3]]],
+        ["History", 0, [[4,2,8,2],[12,4,2,8],[4,12,8,2],[2,4,2,8],[7,5,2,4],[7,8,4,2]]],
+        ["Home", 0, [[7,1,2,2],[5,3,2,2],[9,3,2,2],[3,5,2,2],[11,5,2,2],[3,7,2,7],[11,7,2,7],[3,12,10,2],[7,9,2,5]]],
+        ["BookOpen", 0, [[2,3,5,2],[2,3,2,10],[2,11,5,2],[7,2,2,12],[9,3,5,2],[12,3,2,10],[9,11,5,2]]],
+        ["Command", 1, [[1,1,5,5],[2,2,3,3],[10,1,5,5],[11,2,3,3],[1,10,5,5],[2,11,3,3],[10,10,5,5],[11,11,3,3],[5,5,6,6],[7,7,2,2]]],
+        ["CodeXml", 0, [[5,3,2,2],[3,5,2,2],[1,7,2,2],[3,9,2,2],[5,11,2,2],[9,3,2,2],[11,5,2,2],[13,7,2,2],[11,9,2,2],[9,11,2,2]]],
+        ["MessageSquare", 1, [[2,2,12,10],[4,4,8,6],[2,12,2,3],[4,12,2,1]]],
+        ["MessageCircle", 0, [[5,2,6,2],[3,3,2,2],[11,3,2,2],[2,5,2,6],[12,5,2,6],[11,11,2,2],[5,12,6,2],[3,11,2,2],[2,13,3,2]]],
+        ["Users", 0, [[3,2,4,4],[1,8,8,6],[10,4,3,3],[10,9,5,5]]],
+        ["Fingerprint", 0, [[5,1,6,2],[3,3,2,2],[11,3,2,2],[2,5,2,5],[12,5,2,5],[6,5,4,2],[5,7,2,5],[9,7,2,5],[7,9,2,2],[7,12,2,3],[3,11,2,2],[11,11,2,2]]],
+        ["GitCompareArrows", 1, [[1,1,5,5],[2,2,3,3],[10,10,5,5],[11,11,3,3],[2,6,2,6],[2,12,8,2],[7,2,5,2],[12,2,2,8]]],
+        ["Feather", 0, [[11,1,3,2],[12,3,2,2],[9,3,2,2],[10,5,2,2],[7,5,2,2],[8,7,2,2],[5,7,2,2],[6,9,2,2],[3,9,2,2],[4,11,2,2],[2,13,2,2]]],
+        ["Sparkles", 0, [[7,1,2,4],[7,11,2,4],[1,7,4,2],[11,7,4,2],[6,6,4,4],[12,1,2,2],[2,13,2,2]]],
+      ];
+      const sheet = document.getElementById("icon-sheet");
+      const tone = { ArrowRight: "oxide", ArrowUpRight: "oxide", Check: "sage", LockKeyhole: "oxide", Sparkles: "oxide" };
+      for (const [name, evenOdd, rects] of icons) {
+        const figure = document.createElement("figure");
+        if (tone[name]) figure.className = tone[name];
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 16 16");
+        svg.setAttribute("fill", "currentColor");
+        svg.setAttribute("shape-rendering", "crispEdges");
+        svg.setAttribute("aria-hidden", "true");
+        if (evenOdd) svg.setAttribute("fill-rule", "evenodd");
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", rects.map(([x, y, w, h]) => `M${x} ${y}h${w}v${h}h${-w}z`).join(""));
+        svg.append(path);
+        const caption = document.createElement("figcaption");
+        caption.textContent = name;
+        figure.append(svg, caption);
+        sheet.append(figure);
+      }
+    </script>
+  </body>
+</html>

@@ -32,6 +32,7 @@ import {
   Play,
   Search,
   Settings,
+  Sparkles,
   Users,
   X,
 } from "./pixel-icons";
@@ -371,14 +372,10 @@ export default function App() {
           </a>
           <aside className="sidebar" aria-label="Workspace navigation">
             <div className="sidebar-brand">
-              <button
-                className="wordmark"
-                onClick={() => navigate("nest")}
-                aria-label="Crowbo home"
-              >
+              <a className="wordmark" href="../" aria-label="Crowbo home">
                 crowbo
                 <span className="brand-dot" />
-              </button>
+              </a>
               <button
                 className="icon-button mobile-close"
                 aria-label="Close navigation"
@@ -418,6 +415,10 @@ export default function App() {
               ))}
             </nav>
             <nav className="sidebar-settings" aria-label="Settings">
+              <a className="nav-item" href="./">
+                <Sparkles size={17} />
+                <span>Ask a question</span>
+              </a>
               <button
                 className={`nav-item ${page === "settings" ? "active" : ""}`}
                 onClick={() => navigate("settings")}
@@ -427,12 +428,6 @@ export default function App() {
                 <span>Settings</span>
               </button>
             </nav>
-            <button
-              className="sidebar-bottom"
-              onClick={() => openPanel({ kind: "command" })}
-            >
-              <Search size={15} /> Search<kbd>⌘ K</kbd>
-            </button>
           </aside>
 
           <div className="workspace">
@@ -826,6 +821,11 @@ export default function App() {
                 ))}
               </nav>
               <nav className="settings-navigation" aria-label="Mobile settings">
+                <a className="nav-item" href="./">
+                  <Sparkles size={19} />
+                  <span>Ask a question</span>
+                  <ChevronRight size={15} />
+                </a>
                 <button
                   className={`nav-item ${page === "settings" ? "active" : ""}`}
                   onClick={() => navigate("settings")}

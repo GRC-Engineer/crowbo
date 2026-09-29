@@ -11,7 +11,9 @@ import {
   featherDesigns,
   type FeatherDesign,
 } from "../src/identity";
-import { ArrowRight, pixelIcons } from "../src/pixel-icons";
+import * as pixelIcons from "../src/pixel-icons";
+
+const { ArrowRight } = pixelIcons;
 
 const poses = import.meta.glob<string>(
   "../../crow-concepts/2026-09-29/state-poses/web/*.png",
@@ -28,6 +30,10 @@ const poseNotes: Record<string, { name: string; use: string; wide?: true }> = {
   },
   "05-resting": { name: "Resting", use: "Motion paused" },
   "06-pointing": { name: "Pointing", use: "The next action" },
+  "12-compact-head": {
+    name: "Compact head",
+    use: "Inline mark beside a label",
+  },
   "09-feather-in-beak": {
     name: "Carrying a feather",
     use: "A new source was added",
@@ -250,7 +256,7 @@ function Brand() {
       <Section
         id="type"
         title="Type"
-        note="Four local typefaces, one job each. No text is set below 10 pixels."
+        note="Four local typefaces, one job each. One uppercase mono label per block. No text is set below 11 pixels."
       >
         <ul className="type-list">
           {type.map((face) => (
@@ -313,7 +319,7 @@ function Brand() {
       <Section
         id="icons"
         title="Icons"
-        note="Thirty-one icons on an 8 by 8 grid. They render at 16, 24 or 32 pixels so every pixel stays square."
+        note="Thirty-one icons drawn on a 16-unit grid from filled rectangles, so they share the stepped edges of the crow and the feathers."
       >
         <ul className="icon-grid">
           {Object.entries(pixelIcons).map(([name, Icon]) => (

@@ -118,7 +118,7 @@ body {
   border: 1px solid var(--oxide-700);
   background: var(--base);
   color: var(--oxide-300);
-  font: 10px var(--mono);
+  font: 11px var(--mono);
   font-style: normal;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -152,7 +152,7 @@ body {
   color: var(--chalk);
 }
 .swatch .swatch-status {
-  font: 10px var(--mono);
+  font: 11px var(--mono);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--ink-200);

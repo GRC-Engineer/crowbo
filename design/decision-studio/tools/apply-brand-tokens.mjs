@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const TOKEN_FILE = join(root, "src/tokens.css");
-const MIN_FONT_PX = 10;
+const MIN_FONT_PX = 11;
 const ELEVATION_BLUR_PX = 30;
 
 export const STYLESHEETS = ["src", "landing", "brand"]

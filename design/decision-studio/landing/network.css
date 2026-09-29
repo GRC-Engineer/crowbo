@@ -231,7 +231,7 @@ html[data-presentation="website"] .portrait-wrap {
   bottom: 3px;
   color: var(--chalk);
   font:
-    10px / 1 ui-monospace,
+    11px / 1 ui-monospace,
     monospace;
   opacity: 0.75;
   pointer-events: none;
@@ -293,7 +293,7 @@ html[data-presentation="website"] .masthead-crow {
   display: block;
   margin-top: 2px;
   color: var(--chalk);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 .network-caption.is-active .network-label {
@@ -311,7 +311,7 @@ html[data-presentation="website"] .masthead-crow {
   background: transparent;
   color: var(--muted);
   font:
-    10px / 1.5 ui-monospace,
+    11px / 1.5 ui-monospace,
     "SFMono-Regular",
     Menlo,
     Consolas,
@@ -332,7 +332,7 @@ html[data-presentation="website"] .masthead-crow {
   flex-wrap: wrap;
   gap: 3px 12px;
   padding: 0 10px 8px;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
 }
 .network-sizing .size-options {
@@ -341,7 +341,7 @@ html[data-presentation="website"] .masthead-crow {
 }
 .network-sizing button {
   min-height: 30px;
-  font-size: 10px;
+  font-size: 11px;
   padding: 3px 9px;
   border: 1px solid var(--charcoal);
 }
@@ -358,7 +358,7 @@ html[data-presentation="website"] .masthead-crow {
   gap: 7px 20px;
   padding: 0 10px 10px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .motif-options {
   display: flex;
@@ -368,7 +368,7 @@ html[data-presentation="website"] .masthead-crow {
   min-height: 30px;
   border: 1px solid var(--charcoal);
   padding: 3px 9px;
-  font-size: 10px;
+  font-size: 11px;
 }
 .question-choice {
   display: flex;
@@ -442,7 +442,7 @@ html[data-variant="network"] .review-meta {
     font-size: 11px;
   }
   .network-detail {
-    font-size: 10px;
+    font-size: 11px;
   }
   .network-node::before,
   .network-node::after {
@@ -463,12 +463,33 @@ html[data-variant="network"] .review-meta {
     gap: 3px 8px;
   }
   .network-question {
-    font-size: 10px;
+    font-size: 11px;
   }
 }
 
 @media (max-width: 480px) {
   html[data-presentation="website"] .wordmark {
     font-size: clamp(48px, calc(28vw - 42px), 86px);
+  }
+}
+
+/* De-generic pass, 29 September 2026: shared type with the studio, a
+   readable pause control, and no vertical stretch on tall narrow screens. */
+.network-caption,
+.network-motion-toggle {
+  font-family: Departure, ui-monospace, monospace;
+}
+.network-motion-toggle {
+  font-size: 12px;
+}
+.network-detail {
+  font-size: 11px;
+}
+@media (max-width: 800px) {
+  html[data-presentation="website"] .introduction {
+    flex: 0 0 auto;
+  }
+  .network-detail {
+    font-size: 11px;
   }
 }

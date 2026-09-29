@@ -83,7 +83,7 @@
   overflow: clip;
 }
 .ask-small {
-  font: 10px/1.5 var(--mono);
+  font: 11px/1.5 var(--mono);
   text-transform: uppercase;
   letter-spacing: 0.055em;
   color: var(--sage);
@@ -176,7 +176,7 @@
   gap: 8px;
 }
 .ask-footer > span:last-child {
-  font: 10px var(--mono);
+  font: 11px var(--mono);
   letter-spacing: 0.04em;
 }
 .ask-composer {
@@ -316,7 +316,7 @@
   border: 1px solid var(--ink-400);
   padding: 6px 8px;
   color: var(--oxide-300);
-  font-size: 10px;
+  font-size: 11px;
   white-space: nowrap;
 }
 .ask-step-list {
@@ -337,7 +337,7 @@
   font-size: 12px;
 }
 .ask-step-list li > span {
-  font: 10px var(--mono);
+  font: 11px var(--mono);
   height: 22px;
   width: 22px;
   border: 1px solid var(--charcoal);
@@ -421,7 +421,7 @@
   object-fit: contain;
 }
 .ask-network-centre span {
-  font: 10px var(--mono);
+  font: 11px var(--mono);
   color: var(--sage);
 }
 .ask-source-node {
@@ -469,7 +469,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font: 10px var(--mono);
+  font: 11px var(--mono);
   color: var(--muted);
   margin-top: 6px;
 }
@@ -477,7 +477,7 @@
   display: flex;
   justify-content: space-between;
   width: 100%;
-  font: 10px var(--mono);
+  font: 11px var(--mono);
   color: var(--sage);
 }
 .ask-node-meta .provider-mark {
@@ -512,7 +512,7 @@
   justify-content: center;
   gap: 32px;
   padding: 6px 18px 20px;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
 }
 .ask-network-key > span {
@@ -628,7 +628,7 @@
   color: var(--slate);
 }
 .ask-answer-label > span:last-child {
-  font: 10px var(--mono);
+  font: 11px var(--mono);
   color: var(--ink-200);
 }
 .ask-answer h2 {
@@ -1165,7 +1165,7 @@
     font-size: 11px;
   }
   .ask-demo-label {
-    font-size: 10px;
+    font-size: 11px;
   }
   .ask-main {
     margin-top: 24px;
@@ -1222,7 +1222,7 @@
     gap: 9px;
   }
   .ask-step-list li {
-    font-size: 10px;
+    font-size: 11px;
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
@@ -1266,7 +1266,7 @@
     padding: 11px 0;
   }
   .ask-disclosure-hint {
-    font-size: 10px;
+    font-size: 11px;
   }
   .ask-challenge .ask-disclosure-body {
     padding: 20px;
@@ -1277,7 +1277,7 @@
   }
   .ask-network-key {
     gap: 15px;
-    font-size: 10px;
+    font-size: 11px;
     flex-wrap: wrap;
   }
   .ask-inspector .ask-source-heading h2 {
@@ -1330,13 +1330,13 @@
     justify-content: space-between;
   }
   .ask-footer {
-    font-size: 10px;
+    font-size: 11px;
     align-items: flex-start;
   }
   .ask-footer > span:last-child {
     max-width: 85px;
     text-align: right;
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.7;
   }
   .ask-composer {
@@ -1361,7 +1361,7 @@
     min-height: 120px;
   }
   .ask-example-heading .ask-small {
-    font-size: 10px;
+    font-size: 11px;
   }
   .ask-result {
     padding: 22px 15px 0;
@@ -1386,7 +1386,7 @@
     top: -13px;
   }
   .ask-result-question .ask-small {
-    font-size: 10px;
+    font-size: 11px;
   }
   .ask-answer {
     padding: 22px 20px;

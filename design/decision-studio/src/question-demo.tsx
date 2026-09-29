@@ -13,7 +13,7 @@ import {
   Play,
   RotateCcw,
   Search,
-  MissingPiece,
+  Sparkles,
   X,
 } from "./pixel-icons";
 import { Crow } from "./components";
@@ -140,8 +140,7 @@ export default function QuestionDemo() {
                 <Crow />
               </div>
               <h1 ref={heading} tabIndex={-1}>
-                What needs
-                <br />a decision?
+                What needs <br />a decision?
               </h1>
               <p>
                 Pick a prepared security question and see the records behind the
@@ -207,8 +206,10 @@ export default function QuestionDemo() {
                     key={entry.id}
                     aria-pressed={state.draft === entry.question}
                     onClick={() => {
+                      // Choosing a prepared question starts its journey
+                      // directly; the composer stays for typed questions.
                       dispatch({ type: "edit", value: entry.question });
-                      input.current?.focus();
+                      dispatch({ type: "submit" });
                     }}
                   >
                     <span>
@@ -228,7 +229,7 @@ export default function QuestionDemo() {
                 <p id="ask-prepared-note">
                   A scripted demo with fictional sources.
                   <br />
-                  Choose an example to see the whole walkthrough.
+                  Choosing an example starts its walkthrough.
                 </p>
                 <button
                   className="ask-primary"
@@ -467,7 +468,7 @@ export default function QuestionDemo() {
                   <details className="ask-disclosure ask-challenge">
                     <summary>
                       <span>
-                        <MissingPiece size={17} />
+                        <Sparkles size={17} />
                         What might we be missing?
                       </span>
                       <span className="ask-disclosure-hint">

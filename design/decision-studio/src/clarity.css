@@ -138,7 +138,7 @@
 }
 .recommendation-meta .eyebrow {
   color: var(--slate);
-  font-size: 10px;
+  font-size: 11px;
 }
 .recommendation-meta .badge {
   color: var(--oxide-700);
@@ -465,4 +465,163 @@
 .motion-off .sources-disclosure summary,
 .motion-off .disclosure-arrow {
   transition: none;
+}
+
+/* ---------------------------------------------------------------------------
+   De-generic pass, 29 September 2026.
+   Three rules: labels never drop below 11px; one uppercase mono eyebrow per
+   block, with inner field labels in sentence case; and one border per layer
+   inside a dialog. Pixel icons replace the stroke icon library.
+   ------------------------------------------------------------------------- */
+
+/* Label floor. */
+.eyebrow,
+.badge,
+kbd,
+.navigation-label,
+.demo-label,
+.recommendation-meta .eyebrow,
+.recommendation-meta .badge,
+.option-top .badge,
+.review-gates .badge,
+.viewer-avatar,
+.ask-small,
+.access-conversation-label > span:last-child,
+.ask-answer-label > span:last-child {
+  font-size: 11px;
+}
+.search-trigger,
+.sidebar-bottom,
+.option-card .secondary-button,
+.option-card p,
+.option-tradeoff p,
+.review-gates p,
+.dialog-notice {
+  font-size: 13px;
+}
+.eyebrow,
+.ask-small {
+  letter-spacing: 0.06em;
+}
+
+/* One eyebrow per block: inner field labels read as words, not codes. */
+.option-tradeoff .eyebrow,
+.review-gates > .eyebrow,
+.access-field-label {
+  font: 500 13px/1.5 var(--display);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fog);
+}
+.recommendation-card .access-field-label,
+.ask-answer .access-field-label {
+  color: var(--slate);
+}
+.access-field-label {
+  margin: 18px 0 6px;
+}
+
+/* Flatten the dialogs: the card is the container, so its button is text. */
+.option-card .secondary-button {
+  width: auto;
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  padding: 6px 0;
+  min-height: 40px;
+  color: var(--oxide);
+  gap: 8px;
+}
+.option-card .secondary-button:hover {
+  background: transparent;
+  color: var(--chalk);
+}
+.option-card .secondary-button:focus-visible {
+  outline: 2px solid var(--oxide);
+  outline-offset: 4px;
+}
+.dialog-notice {
+  border: 0;
+  border-left: 2px solid var(--oxide);
+  background: transparent;
+  padding: 2px 0 2px 14px;
+  color: var(--chalk-300);
+  line-height: 1.65;
+}
+.review-gates {
+  border-top-color: var(--line);
+}
+
+/* Shell: the wordmark is a link home, the avatar is a pixel monogram, and
+   the sidebar has one search entry point (the top bar). */
+a.wordmark,
+a.nav-item {
+  color: inherit;
+  text-decoration: none;
+}
+a.wordmark:hover {
+  color: var(--chalk);
+}
+a.wordmark:focus-visible {
+  outline: 2px solid var(--oxide);
+  outline-offset: 6px;
+}
+.viewer-avatar {
+  background: var(--ink);
+  border: 1px solid var(--sage);
+  color: var(--sage);
+  font-family: var(--mono);
+  letter-spacing: 0.04em;
+}
+.search-trigger {
+}
+.search-trigger kbd,
+.command-footer kbd {
+  font-size: 11px;
+}
+
+/* Pixel icons sit on the text baseline like the glyphs they replace. */
+.pixel-icon {
+  flex-shrink: 0;
+  vertical-align: -0.15em;
+}
+
+/* Label floor inside the expanded source network and the access result. */
+.instrument-count small,
+.instrument-footer,
+.instrument-footer > span:last-child,
+.instrument-header .eyebrow,
+.node-address,
+.node-code,
+.topology-node-label,
+.network-crow span,
+.access-path-step small,
+.access-pending .access-section-label > span:last-child,
+.access-path-choice small,
+.access-added-sources small,
+.ask-basis small,
+.ask-basis button > span > span:first-child {
+  font-size: 11px;
+}
+
+/* Label floor: source-row eyebrows, the Ask network nodes and footers. */
+.selected-feather .eyebrow,
+.feather-row-title > .eyebrow,
+.library-detail .eyebrow,
+.person-evidence .eyebrow,
+.source-explanation .eyebrow,
+.flight-entry .eyebrow,
+.paper-heading .eyebrow,
+.ask-node-meta > span,
+.ask-node-influence,
+.ask-network-key,
+.ask-footer span,
+.access-view-controls > span {
+  font-size: 11px;
+}
+.ask-footer > span:last-child,
+.ask-illustration,
+.ask-step-list li > span:first-child,
+.ask-step-list li > i {
+  font-size: 11px;
 }

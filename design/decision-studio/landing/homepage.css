@@ -5,6 +5,20 @@
   font-weight: 400;
   font-display: swap;
 }
+@font-face {
+  font-family: SpaceGrotesk;
+  src: url("../../typography/2026-09-21/fonts/SpaceGrotesk.ttf")
+    format("truetype");
+  font-weight: 300 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: Departure;
+  src: url("../../typography/2026-09-21/fonts/DepartureMono-Regular.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
 
 :root {
   color-scheme: dark;
@@ -47,10 +61,8 @@ body {
   margin: 0;
   color: var(--sage);
   font:
-    400 17px / 1.5 ui-monospace,
-    "SFMono-Regular",
-    Menlo,
-    Consolas,
+    400 17px / 1.5 Departure,
+    ui-monospace,
     monospace;
   letter-spacing: -0.025em;
 }
@@ -71,9 +83,9 @@ body {
 .statement p {
   margin: 0 0 23px;
   font:
-    400 clamp(19px, 1.68vw, 23px) / 1.6 Georgia,
-    "Times New Roman",
-    serif;
+    400 clamp(18px, 1.55vw, 21px) / 1.62 SpaceGrotesk,
+    "Helvetica Neue",
+    sans-serif;
   text-wrap: pretty;
 }
 
@@ -89,10 +101,8 @@ body {
   padding: 4px 0;
   color: var(--chalk);
   font:
-    400 14px / 1.5 ui-monospace,
-    "SFMono-Regular",
-    Menlo,
-    Consolas,
+    400 14px / 1.5 Departure,
+    ui-monospace,
     monospace;
   text-decoration: underline;
   text-decoration-color: var(--ink-200);
@@ -184,10 +194,8 @@ body {
   padding-top: 22px;
   color: var(--muted);
   font:
-    400 11px / 1.6 ui-monospace,
-    "SFMono-Regular",
-    Menlo,
-    Consolas,
+    400 11px / 1.6 Departure,
+    ui-monospace,
     monospace;
 }
 
@@ -260,7 +268,7 @@ body {
     flex-wrap: wrap;
     gap: 7px 20px;
     padding-top: 18px;
-    font-size: 10px;
+    font-size: 11px;
   }
 }
 
@@ -276,4 +284,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 12px 40px;
+}
+.glyph {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
 }

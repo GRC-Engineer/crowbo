@@ -60,8 +60,11 @@ test("the only shadows are hard-edged", () => {
   assert.deepEqual(soft, []);
 });
 
-test("no text is set smaller than 10px", () => {
-  assert.deepEqual(offenders(/font(-size)?\s*:[^;]*\b[1-9](\.\d+)?px/), []);
+test("no text is set smaller than 11px", () => {
+  assert.deepEqual(
+    offenders(/font(-size)?\s*:[^;]*\b([1-9]|10)(\.\d+)?px/),
+    [],
+  );
 });
 
 test("the rewrite tool has nothing left to change", () => {

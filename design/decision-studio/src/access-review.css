@@ -19,7 +19,7 @@
 .access-field-label {
   display: block;
   color: var(--slate);
-  font: 10px/1.5 var(--mono);
+  font: 11px/1.5 var(--mono);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin: 17px 0 7px;
@@ -118,7 +118,7 @@
 }
 .access-proposed {
   display: inline-block;
-  font: 10px/1.5 var(--mono);
+  font: 11px/1.5 var(--mono);
   color: var(--fog);
   margin-top: 7px;
 }
@@ -185,7 +185,7 @@
 .access-path-step small {
   display: block;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   margin-bottom: 5px;
 }
 .access-path-step strong {
@@ -258,7 +258,7 @@
 .access-conversation-label > span:last-child {
   margin-left: auto;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .access-conversation blockquote {
   font-family: var(--display);
@@ -278,7 +278,7 @@
   padding-top: 19px;
 }
 .access-pending .access-section-label > span:last-child {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
 }
 .access-pending h3 {
@@ -343,7 +343,7 @@
 }
 .access-path-choice small {
   grid-column: 2;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--fog);
   margin-top: 4px;
 }
@@ -406,7 +406,7 @@
 .access-history li button span {
   margin-left: auto;
   color: var(--sage);
-  font: 10px/1.5 var(--mono);
+  font: 11px/1.5 var(--mono);
 }
 .access-history li button svg {
   color: var(--oxide);
@@ -440,7 +440,7 @@
 }
 .access-added-sources small {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
   margin-bottom: 5px;
 }

@@ -10,9 +10,21 @@ Vite builds `index.html`, `demo/index.html` and `brand/index.html` together into
 
 Both pages are public and static. The demo is unlinked from the homepage and has `noindex, nofollow` in its HTML and HTTP headers, including its workspace view. The homepage remains indexable. No `robots.txt` restriction prevents crawlers from reading the demo directives. These directives do not control access or establish removal from an existing search index. No authentication or access policy is implemented. The demo calls no backend, model or external service; `connect-src 'none'` and `form-action 'none'` remain in force. Publishing it establishes no evaluation result or user acceptance.
 
-## Brand rules in code, 29 September
+## De-generic pass — 29 September
 
-The [unslop pass](UNSLOP-PASS.md) moved colour, corner, shadow and icon rules into code. `src/tokens.css` holds the tokens. `src/pixel-icons.tsx` holds the icons and replaces `lucide-react`. `tools/apply-brand-tokens.mjs` rewrites a stylesheet against the tokens, and `npm run tokens` runs it. `tests/brand-tokens.test.mjs` fails when a stylesheet uses a raw colour, a radius, a blur or a soft shadow. The build now has a third page, the [brand system](brand/index.html), published at `/brand/`, unlisted and marked `noindex`.
+A full review of the published site against generic dashboard and generated-design patterns led to one bounded pass over both pages; [the brand guide](../BRAND.md#de-generic-pass--29-september-2026) owns the decisions and [the brand system sheet](../brand-system/2026-09-29/README.md) lays them out.
+
+- `src/pixel-icons.tsx` replaces `lucide-react`, which is removed from the dependencies. Thirty-one icons are drawn on a 16-unit grid from filled rectangles, hidden from assistive technology, with the text beside them carrying the meaning.
+- `src/clarity.css` raises every label to at least 11px, converts inner field labels (the trade-off, before any change, why this option, next action) to sentence case in the heading face, turns the option cards' bordered buttons into text buttons, and makes the review notice a left-ruled paragraph.
+- The workspace wordmark is a link to the company page, the sidebar has an Ask a question link back to `./`, the duplicate bottom search is removed and the viewer mark is a square monogram.
+- The company page reads in Space Grotesk and labels in Departure Mono, shared with the studio; the pause control is 12px; on screens under 800px wide the introduction no longer stretches to fill tall viewports.
+- The welcome heading reads "What needs a decision?" to assistive technology, and choosing a prepared question starts its journey directly.
+
+Checked in the local browser from the rebuilt `site/` at 1280×900, 390×1300 and 390×844: all four fonts load on both pages; no Lucide elements remain; the compare and review dialogs, the Sources page, the mobile navigation and the Ask result render with pixel icons and sentence-case field labels; the landing footer no longer stretches on tall narrow screens; the browser console is empty. Type-check, production build and all 23 behaviour tests pass. These are local UI checks, not an accessibility audit, a user study or decision-quality evidence.
+
+## Second pass: brand rules in code, 29 September
+
+The [unslop pass](UNSLOP-PASS.md) followed the de-generic pass above and moved colour, corner and shadow rules into code. `src/tokens.css` holds the tokens. `tools/apply-brand-tokens.mjs` rewrites a stylesheet against the tokens, and `npm run tokens` runs it. `tests/brand-tokens.test.mjs` fails when a stylesheet uses a raw colour, a radius, a blur or a soft shadow. The build now has a third page, the [brand system](brand/index.html), published at `/brand/`, unlisted and marked `noindex`.
 
 ## Workflow coverage and next refinement
 

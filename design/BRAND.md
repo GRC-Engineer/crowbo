@@ -32,7 +32,7 @@ The earlier [Circuit Frames V3 head icon](crow-concepts/2026-09-22/circuit-frame
 
 ### State pose candidates
 
-On 29 September 2026, eleven [state poses](crow-concepts/2026-09-29/state-poses/README.md) were generated from the approved Modular Crow and Packet Runner: inspecting, weighing, challenging, unresolved, resting, pointing, carrying a feather, a pair, a runner with a record, an expression sheet and a size ladder. They are candidates awaiting selection. The product uses none of them. Their pixel grid is approximate, so a selected pose needs a redraw on a native grid before it becomes a sprite.
+On 29 September 2026, twelve [state poses](crow-concepts/2026-09-29/state-poses/README.md) were generated from the approved Modular Crow and Packet Runner: inspecting, weighing, challenging, unresolved, resting, pointing, carrying a feather, a pair, a runner with a record, an expression sheet, a size ladder and a compact head. This runs the crow iteration brief in the [brand system sheet](brand-system/2026-09-29/README.md). They are candidates awaiting selection. The product uses none of them. Their pixel grid is approximate, so a selected pose needs a redraw on a native grid before it becomes a sprite.
 
 ## Wordmark and palette
 
@@ -57,7 +57,7 @@ The earlier presentation direction, selected on 22 September, used crow purple `
 
 ## Interface rules
 
-Added 29 September 2026 by the [unslop pass](decision-studio/UNSLOP-PASS.md). The four selected colours and the type selection above are unchanged. These rules apply them to the interface and are enforced by `decision-studio/tests/brand-tokens.test.mjs`.
+Added 29 September 2026 by the [second pass](decision-studio/UNSLOP-PASS.md), which follows the de-generic pass recorded below. The selected colours, typefaces, label rule and icon set are unchanged. These rules cover what the first pass left open and are enforced by `decision-studio/tests/brand-tokens.test.mjs`.
 
 | Rule | Detail |
 | --- | --- |
@@ -66,13 +66,10 @@ Added 29 September 2026 by the [unslop pass](decision-studio/UNSLOP-PASS.md). Th
 | Shadows | Floating layers cast one hard offset shadow. Panels in the page cast none. |
 | Overlays | A flat scrim. No blur. |
 | Marks | Squares. No circles. |
-| Icons | Thirty-one icons drawn on an 8 by 8 grid in `decision-studio/src/pixel-icons.tsx`, rendered at 16, 24 or 32 pixels. |
-| Text size | Nothing below 10 pixels. |
-| Copy | A line says what the thing is or does. |
+| Text size | The 11 pixel floor in the label rule applies to every text size in a stylesheet. |
+| Copy | A line says what the thing is or does. Two-beat taglines are removed. |
 
 The [brand system page](decision-studio/brand/index.html) renders all of this from the live tokens, icons and artwork. It builds to `/brand/`, unlisted and marked `noindex`.
-
-Two observations are recorded for a later decision and changed nothing: Space Grotesk and Bricolage Grotesque are common in generated interfaces, and the landing page sets body copy in a system serif that the demo does not use.
 
 ## Website direction
 
@@ -89,3 +86,15 @@ The [29 September product study](decision-studio/README.md) applies this identit
 The study uses Geist Pixel Square for the existing lowercase wordmark, Departure Mono for terminal labels, Bricolage Grotesque for headings and Space Grotesk for reading. All four come from the existing licensed typography collection. Chalk makes the proposed recommendation readable; sage carries source context; oxide marks selection, corrections and the next action. Keep the dark base neutral and the wordmark free of glow or shadow.
 
 Short page transitions, feather scans, travelling packets and occasional crow movement support exploration. Text remains readable throughout, with a motion pause control and reduced-motion handling. Provider marks identify illustrative sources and do not imply active integrations. The [studio README](decision-studio/README.md) owns current verification receipts and links the earlier visual research; the [interaction model](../docs/INTERACTION-MODEL.md) owns the workflow meanings.
+
+## De-generic pass — 29 September 2026
+
+A review of the published site against generic dashboard and generated-design patterns found the identity strong in the content and weak in the chrome. The following decisions apply across the company page and Decision Studio. The [brand system sheet](brand-system/2026-09-29/README.md) shows them together.
+
+- **One reading face.** Space Grotesk is the reading face everywhere, including the company page, which previously used a system serif. Departure Mono replaces the system monospace stack for labels and codes on the company page. Geist Pixel Square remains wordmark-only; Bricolage Grotesque remains for headings.
+- **Label rule.** One uppercase Departure Mono eyebrow per block, never smaller than 11px. Field labels inside a block are sentence case in Bricolage Grotesque at 13px. Keyboard hints, badges and codes are never smaller than 11px.
+- **Pixel icons.** A set of thirty-one icons drawn on a 16-unit grid from filled rectangles, in `decision-studio/src/pixel-icons.tsx`, replaces the Lucide stroke library so glyphs share the stepped edges of the mascot and feathers.
+- **One border per layer.** Inside a dialog, a card holds text buttons rather than bordered buttons, and a notice is a paragraph with an oxide left rule rather than a bordered box.
+- **Shell.** The studio wordmark links to the company page, the sidebar carries an Ask a question entry back to the question-first view, the duplicate sidebar search is removed, and the viewer mark is a square monospace monogram rather than a circular avatar.
+
+Further Modular Crow poses were briefed in the brand system sheet and generated later the same day as [unselected candidates](crow-concepts/2026-09-29/state-poses/README.md); the approved artwork is unchanged. These are design decisions verified in the local browser, not audience or customer evidence.

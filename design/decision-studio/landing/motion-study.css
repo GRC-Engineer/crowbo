@@ -134,7 +134,7 @@ html[data-variant="flock"][data-crow-ready] #crow-bytes {
   gap: 3px 14px;
   padding: 0 14px 9px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 @media (max-width: 800px) {
