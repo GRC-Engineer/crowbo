@@ -12,10 +12,9 @@ Security decision infrastructure. Crowbo brings permitted evidence, business con
 
 ## What is available
 
-The public website, frontend demo and backend are separate deliverables:
+The public website is the frontend study; the backend is a separate deliverable:
 
-- **Website:** [crowbo.ai](https://crowbo.ai) serves the Command Room design prototype with fictional decision examples. It does not call a model or change a security system.
-- **Frontend:** Decision Studio includes a question flow, access-review conversation, assistant view, sources and versioned decisions. It uses synthetic data and is not connected to the backend. The newer company homepage and brand studies remain in `design/`.
+- **Website and frontend:** [crowbo.ai](https://crowbo.ai) serves Decision Studio, built from [design/decision-studio](design/decision-studio/README.md) into `site/`. It includes a question flow, access-review conversation, assistant view, sources and versioned decisions. It uses synthetic data, is not connected to the backend, does not call a model and does not change a security system. No sign-in exists yet; every page is public. The earlier Command Room website and the company homepage study remain under `design/` as history and are no longer hosted.
 - **Backend:** the Python CLI and local MCP interface import permitted source bundles, prepare Jev assessments, retrieve evidence with Turbopuffer and retain recommendations, feedback and reassessment. [The pilot guide](docs/PILOT.md) records its scope and observed checks. It is not a hosted multiuser service.
 - **Earlier proof:** [the offline programme experiment](proof/README.md) preserves the synthetic control and investment decision loop and its historical results.
 
@@ -41,6 +40,8 @@ npm run build
 npm run dev
 ```
 
+`npm run build` regenerates `site/` at the repository root. Commit the regenerated `site/` together with the source change.
+
 Credentials, authorised source inputs and runtime outputs stay outside Git. Follow [the pilot guide](docs/PILOT.md#running-it) before connecting any provider. The synthetic tests need no provider credentials.
 
 ## Review backend changes
@@ -49,7 +50,7 @@ Run `uv run --locked ruff check src tests proof/mcp_scenarios.py` and `uv run --
 
 ## Website deployment
 
-Only `site/` is published. [wrangler.jsonc](wrangler.jsonc) configures static assets on Cloudflare Workers with crowbo.ai as a custom domain; [site/_headers](site/_headers) sets response security headers. The consolidation of frontend and backend code does not change those files or expose either application through the website.
+Only `site/` is published, and it is generated: `npm run build` in `design/decision-studio` writes the Decision Studio bundle there and removes stale files, so do not edit `site/` by hand. [wrangler.jsonc](wrangler.jsonc) configures static assets on Cloudflare Workers with crowbo.ai as a custom domain. The Studio's [public/](design/decision-studio/public) folder supplies the response security headers in `_headers`, the 404 page and the font and provider-mark licence texts, which Vite copies into `site/` unchanged. No Worker code runs and the backend is not exposed through the website.
 
 Preview the website with `npx wrangler dev`. The deployment command is `npx wrangler deploy`. Git-triggered builds and their production branch are configured in Cloudflare; a live website alone does not establish that automatic deployment is connected.
 

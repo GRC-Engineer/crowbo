@@ -1,6 +1,12 @@
 # Crowbo decision studio
 
-React design study, updated 29 September 2026 in the main checkout. The [earlier identity pass](DESIGN-PASS.md) records the Clay research, twelve-feather system, provider marks and three new review loops. Synthetic Acme evidence only. This study preserves the earlier [three-layout prototype](../decision-prototype/2026-09-28/README.md).
+React design study, updated 29 September 2026 in the main checkout. Since 29 September 2026 its production build is the public website at [crowbo.ai](https://crowbo.ai); see [Publication as the website](#publication-as-the-website--29-september). The [earlier identity pass](DESIGN-PASS.md) records the Clay research, twelve-feather system, provider marks and three new review loops. Synthetic Acme evidence only. This study preserves the earlier [three-layout prototype](../decision-prototype/2026-09-28/README.md).
+
+## Publication as the website — 29 September
+
+The founder decided that crowbo.ai should serve only Decision Studio, the latest artefact, and that the earlier Command Room prototype should leave `site/`. `npm run build` now writes this project's production bundle to the repository's `site/` directory and empties stale files first (see `vite.config.ts`). The `public/` folder is copied verbatim into that output: `_headers` carries the unchanged Cloudflare response headers and Content Security Policy, `404.html` is a static not-found page, and `licenses/` holds the OFL and MIT texts for the four bundled fonts plus the Simple Icons CC0 licence, disclaimer and provenance for the provider marks. The regenerated `site/` is committed so Cloudflare's git-triggered deploy needs no Node step.
+
+The website is static. Nothing calls the backend, a model or any network origin; `connect-src 'none'` and `form-action 'none'` remain in force. There is no sign-in. The founder's intended end state, stated 29 September 2026, is one website with a small public main page of a few lines of text at the root and the whole Decision Studio behind authentication. The current build is the interim: the Studio occupies the root until that landing page exists. The relative asset base already allows the Studio to move to a path such as `/studio/` as a second Vite entry, with the landing page as the root entry, so a later Cloudflare Access policy or product sign-in can gate that path alone. No authentication, landing page or access policy is implemented in this repository. Publishing the build does not change the study's status: synthetic Acme evidence, no evaluation result, no user acceptance.
 
 ## Workflow coverage and next refinement
 
@@ -12,7 +18,7 @@ The [next bounded UI delta](../../docs/INTERACTION-MODEL.md#smallest-next-ui-del
 
 ## Question-first walkthrough — 29 September
 
-Open [Ask Crowbo](http://127.0.0.1:8799/decision-studio/dist/?view=ask). This separate route implements the [question-first interaction map](../../docs/INTERACTION-MODEL.md#question-first-walkthrough-29-september), using PStack Experience First, Exhaust the Design Space and Model the Domain. The ordinary workspace remains at the URL without the query string.
+Open [Ask Crowbo](http://127.0.0.1:8799/?view=ask) after serving `site/` as described under [Run](#run). This separate route implements the [question-first interaction map](../../docs/INTERACTION-MODEL.md#question-first-walkthrough-29-september), using PStack Experience First, Exhaust the Design Space and Model the Domain. The ordinary workspace remains at the URL without the query string.
 
 One opening card expands into a question composer, a finite source-network illustration, and a recommendation. Prepared support-access and gateway-upgrade questions each have six fictional records. Feather shapes use the existing topology family; provider marks are examples. Larger cards mean greater influence on this choice. Constraints have a separate Must hold marker. The graph uses two columns on phones, without sideways scrolling.
 
@@ -131,13 +137,13 @@ npm ci
 npm run build
 ```
 
-From the repository root, serve the design directory on loopback:
+The build writes to `site/` at the repository root. From there, serve it on loopback:
 
 ```sh
-python3 -m http.server 8799 --bind 127.0.0.1 --directory design
+python3 -m http.server 8799 --bind 127.0.0.1 --directory site
 ```
 
-Open <http://127.0.0.1:8799/decision-studio/dist/>. Use the production build for review because its CSP intentionally blocks development WebSockets.
+Open <http://127.0.0.1:8799/>. Use the production build for review because its CSP intentionally blocks development WebSockets. `npx wrangler dev` from the repository root serves the same folder with the `_headers` response headers applied, which the Python server does not do.
 
 Changes stay in this tab and reset on reload. Saving a correction does not change advice; explicit reassessment creates a retained version. Notes are not interpreted by a model. A simulated preference never approves a role change. Source timestamps describe the fixture, not live freshness. Judgment quality remains outside this UI study.
 
@@ -153,4 +159,4 @@ The browser checks covered 1440px desktop, 768px tablet, 390px phone, and a 320p
 
 `npm test` passed five decision-loop tests. `npm run build` passed strict TypeScript checking and production bundling. Formatting and whitespace checks passed. Vite reports non-fatal `use client` directive warnings for the client-only dependencies; this study does not use server rendering. That baseline JS bundle was approximately 142 kB gzipped. Original full-resolution PNG exports are retained; a production asset-size pass is still appropriate.
 
-These receipts establish local UI behavior, not a full accessibility audit, a user study, backend integration, or decision quality. No site was published or deployed. The prototype remains available through the loopback server.
+These receipts establish local UI behavior, not a full accessibility audit, a user study, backend integration, or decision quality. No site was published or deployed at that time; publication followed on 29 September as described above.
