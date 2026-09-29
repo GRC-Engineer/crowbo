@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Crowbo is early-stage security decision infrastructure. Explore a fictional, local decision lab.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>crowbo / security decision infrastructure</title>
+  <link rel="icon" href="assets/crowbo-circuit-favicon-v3.png" type="image/png">
+  <link rel="stylesheet" href="terminal.css?v=circuit-frames-v3">
+  <script src="terminal.js?v=circuit-frames-v3" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#playground">Skip to the decision lab</a>
+  <div class="session-strip"><span><i class="status-square" aria-hidden="true"></i> crowbo / command room</span><span>DESIGN PROTOTYPE_02</span><button id="motion-toggle" type="button" aria-pressed="true">[fx:on]</button></div>
+  <div class="site-frame">
+    <header class="site-header" id="top">
+      <a class="wordmark" href="#top" aria-label="Crowbo home"><span data-scramble>crowbo</span></a>
+      <nav aria-label="Main navigation">
+        <a href="#playground" data-scramble>[01] playground</a>
+        <a href="#readme" data-scramble>[02] readme</a>
+        <a href="#references" data-scramble>[03] references</a>
+      </nav>
+      <button class="shortcut" data-help type="button" aria-label="Show keyboard commands">?</button>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="command-line"><span>~</span> cat crowbo.txt<span class="block-cursor" aria-hidden="true">▊</span></p>
+          <h1 id="hero-title">security decisions.<br> <span class="mint" data-scramble>show your working.</span></h1>
+          <p class="hero-description">Put the evidence, constraints and alternatives on the same screen. See what changes the answer.</p>
+          <div class="hero-actions"><a class="terminal-button primary" href="#playground"><span data-scramble>$ explore</span><span aria-hidden="true">↵</span></a><button class="terminal-button secondary" data-help type="button"><span data-scramble>? help</span></button></div>
+          <div class="hero-hint"><span>↳</span> Try the controls. Question the recommendation.</div>
+        </div>
+
+        <figure class="specimen" id="specimen">
+          <div class="specimen-heading"><span><span class="mint">┌</span> familiar / circuit_frames_v3</span><div class="render-controls" aria-label="Archivist rendering"><button type="button" data-render="sprite" aria-pressed="true">sprite</button><button type="button" data-render="bytes" aria-pressed="false">bytes</button></div></div>
+          <button class="crow-stage" id="crow-stage" type="button" aria-label="Scatter the Archivist with circuit glasses into bytes" aria-describedby="crow-hint">
+            <span class="crow-sprite"><img id="crow-source" src="assets/crowbo-circuit-frames-v3.png" width="1254" height="1254" alt=""></span>
+            <canvas id="crow-bytes" width="840" height="798" aria-hidden="true"></canvas>
+            <span class="crosshair one" aria-hidden="true">+</span><span class="crosshair two" aria-hidden="true">+</span><span class="crosshair three" aria-hidden="true">+</span><span class="crosshair four" aria-hidden="true">+</span>
+          </button>
+          <figcaption><span id="crow-hint">hover for bytes. click to peck.</span><span id="crow-encoding">SPRITE / 01</span></figcaption>
+        </figure>
+      </section>
+
+      <div class="route-strip" aria-label="Decision process"><span class="route-label">THE LOOP</span><a href="#playground" data-open-view="evidence" data-scramble>[ evidence ]</a><span aria-hidden="true">──→</span><a href="#playground" data-open-view="options" data-scramble>[ alternatives ]</a><span aria-hidden="true">──→</span><a href="#playground" data-open-view="trace" data-scramble>[ reasoning ]</a><span aria-hidden="true">──→</span><span class="lemon">your call.</span></div>
+
+      <section class="playground section" id="playground" aria-labelledby="lab-title">
+        <div class="section-heading"><div><p class="eyebrow">01 / DECISION LAB</p><h2 id="lab-title">change a fact.<br class="mobile-break">  follow the difference.</h2></div><span class="simulation-tag">SIMULATION · FICTIONAL INPUTS</span></div>
+        <p class="lab-intro">A team has $120k. Findings arrive faster than they get fixed.<br> Another tool, more capacity, or a better question?</p>
+
+        <div class="workbench">
+          <div class="workbench-title"><span><span class="mint">◆</span> vulnerability-investment</span><span id="revision-label">revision_01</span></div>
+          <div class="scenario-row"><span class="control-label">load scenario</span><div class="scenario-buttons" aria-label="Example scenario"><button type="button" data-scenario="unknown" aria-pressed="true" data-scramble>unclear bottleneck</button><button type="button" data-scenario="gap" aria-pressed="false" data-scramble>coverage gap</button><button type="button" data-scenario="capacity" aria-pressed="false" data-scramble>capacity plan</button></div></div>
+          <div class="workbench-grid">
+            <div class="workspace">
+              <div class="file-tabs" role="tablist" aria-label="Decision files"><button type="button" role="tab" id="tab-evidence" data-view="evidence" aria-selected="true" aria-controls="view-evidence">evidence.md</button><button type="button" role="tab" id="tab-options" data-view="options" aria-selected="false" aria-controls="view-options" tabindex="-1">options.diff</button><button type="button" role="tab" id="tab-trace" data-view="trace" aria-selected="false" aria-controls="view-trace" tabindex="-1">trace.log <span id="trace-count">1</span></button></div>
+
+              <div class="file-content" id="view-evidence" role="tabpanel" aria-labelledby="tab-evidence">
+                <div class="file-line"><span>01</span><p><span class="muted">#</span> what's in the record</p></div>
+                <div class="evidence-list" aria-label="Inspect a fact">
+                  <button type="button" class="evidence-row" data-fact="budget" aria-pressed="false"><span class="line-number">02</span><span>available_budget</span><strong>$120,000 <small>USD / year</small></strong><span class="fact-plus">+</span></button>
+                  <button type="button" class="evidence-row" data-fact="arrivals" aria-pressed="false"><span class="line-number">03</span><span>findings_arriving</span><strong>12 <small>/ week</small></strong><span class="fact-plus">+</span></button>
+                  <button type="button" class="evidence-row" data-fact="resolved" aria-pressed="false"><span class="line-number">04</span><span>findings_resolved</span><strong>8 <small>/ week</small></strong><span class="fact-plus">+</span></button>
+                  <button type="button" class="evidence-row" data-fact="backlog" aria-pressed="false"><span class="line-number">05</span><span>overdue_backlog</span><strong>32 <small>findings</small></strong><span class="fact-plus">+</span></button>
+                </div>
+                <div class="source-inspector" id="source-inspector"><span class="mint">↳ inspect</span><p id="source-text">Select a fact to inspect its source and limits.</p></div>
+                <div class="scenario-note"><span class="lemon">?</span><p id="scenario-note">The queue is growing. We do not yet know whether time, ownership or the release process is the constraint.</p></div>
+                <div class="capacity-control"><div><label for="capacity">Hypothetical resolutions / week</label><output for="capacity" id="capacity-value">8</output></div><input id="capacity" type="range" min="4" max="24" step="1" value="8"><div class="range-labels"><span>4</span><span>current: 8</span><span>24</span></div><p>Adjust the assumption, then rerun. A higher number needs evidence.</p></div>
+              </div>
+
+              <div class="file-content" id="view-options" role="tabpanel" aria-labelledby="tab-options" hidden>
+                <div class="file-line"><span>01</span><p><span class="muted">#</span> alternatives, with constraints</p></div>
+                <div class="option-row"><span class="mint">+</span><div><h3>More detection</h3><p>Test whether the proposed tool closes a material coverage gap. Someone still has to handle its findings.</p></div><strong>$60k</strong></div>
+                <div class="option-row"><span class="mint">+</span><div><h3>More remediation capacity</h3><p>Useful if time is the bottleneck and the proposed throughput is achievable.</p></div><strong>$90k</strong></div>
+                <div class="option-row"><span class="lemon">~</span><div><h3>Improve the existing workflow</h3><p>Check ownership, prioritisation and release constraints before buying around the problem.</p></div><strong>scope?</strong></div>
+                <div class="option-row excluded"><span>−</span><div><h3>Buy both, immediately</h3><p>$150k exceeds the $120k limit. A staged or smaller option needs its own case.</p></div><strong>$150k</strong></div>
+                <p class="file-footnote">Illustrative annual costs. Feasibility is only one part of the decision.</p>
+              </div>
+
+              <div class="file-content" id="view-trace" role="tabpanel" aria-labelledby="tab-trace" hidden>
+                <div class="file-line"><span>01</span><p><span class="muted">#</span> what changed, and why</p></div>
+                <p class="trace-intro">Each rerun keeps the preceding basis. These are proposed assessments, not owner approvals.</p><ol id="trace-history" class="trace-history"></ol>
+              </div>
+              <div class="run-row"><span id="draft-status" role="status">basis loaded / no pending changes</span><button class="run-button" type="button" id="reassess"><span data-scramble>$ reassess</span><span aria-hidden="true">↵</span></button></div>
+            </div>
+
+            <aside class="assessment" aria-label="Illustrative assessment" aria-live="polite" aria-atomic="true">
+              <div class="assessment-top"><span>stdout / next_step</span><span class="lemon">[candidate]</span></div>
+              <p class="assessment-command" id="assessment-command">&gt; inspect bottleneck</p>
+              <h3 id="recommendation">Inspect the bottleneck.</h3>
+              <p id="recommendation-why">More detections could add to a queue the team cannot clear. Find the constraint before choosing an investment.</p>
+              <div class="queue-heading"><span>QUEUE PROJECTION</span><strong id="queue-change">+4 / week</strong></div>
+              <div class="queue-plot" id="queue-plot" aria-label="Illustrative queue projection"></div>
+              <div class="plot-axis"><span>now</span><span>week 6</span></div>
+              <p class="queue-note" id="queue-note">32 → 56 findings in six weeks at the stated rates.</p>
+              <div class="open-question"><span class="lemon">UNRESOLVED</span><p id="open-question">What actually blocks remediation: time, ownership or the release process?</p></div>
+              <div class="owner-line"><span>decision_owner</span><strong>human, always.</strong></div>
+            </aside>
+          </div>
+          <div class="workbench-bottom"><span>Counts describe this queue. They are not a risk score.</span><span id="lab-status">fictional / local / inspectable</span></div>
+        </div>
+      </section>
+
+      <section class="readme section" id="readme" aria-labelledby="readme-title">
+        <div class="section-heading"><div><p class="eyebrow">02 / README.MD</p><h2 id="readme-title">the answer needs a paper trail.</h2></div><span class="muted">less hand-waving. more working.</span></div>
+        <div class="readme-grid"><div class="readme-copy"><p>Crowbo is being built for security decisions that need an explanation.</p><p>Choosing a tool. Finding a bottleneck. Challenging an assumption. The point is to make the reasoning available to the person who has to own the call.</p><p class="readme-status"><span class="lemon">[development]</span> This is a design playground. The examples are authored simulations; they do not run a model or execute a decision.</p></div>
+          <div class="contract"><div class="contract-title">decision.record <span>← inspect the contract</span></div><details open><summary><span class="mint">01</span> evidence <span>+</span></summary><p>What supports the claim? Keep its source, scope, freshness and limits attached.</p></details><details><summary><span class="mint">02</span> alternatives <span>+</span></summary><p>Compare feasible moves, including an existing process change and asking for missing information.</p></details><details><summary><span class="mint">03</span> uncertainty <span>+</span></summary><p>Name the unresolved fact that could change the answer. Do not smooth it into a confidence score.</p></details><details><summary><span class="mint">04</span> authority <span>+</span></summary><p>A recommendation proposes a next step. The accountable owner decides and authorises it.</p></details><details><summary><span class="mint">05</span> reassessment <span>+</span></summary><p>When a material fact changes, revisit the decision and retain the earlier reasoning.</p></details></div></div>
+      </section>
+
+      <section class="references section" id="references" aria-labelledby="references-title">
+        <div class="section-heading"><div><p class="eyebrow">03 / REFERENCE DESK</p><h2 id="references-title">a few tabs worth keeping open.</h2></div><span class="muted">design research / 21.09.26</span></div>
+        <div class="reference-list">
+          <a href="https://turbopuffer.com/" target="_blank" rel="noopener noreferrer"><span class="reference-index">01</span><span class="reference-name" data-scramble>turbopuffer</span><span>ASCII architecture. Monospace density. Useful controls.</span><span aria-hidden="true">↗</span></a>
+          <a href="https://opencode.ai/" target="_blank" rel="noopener noreferrer"><span class="reference-index">02</span><span class="reference-name" data-scramble>opencode</span><span>Quiet borders. Pixel identity. Commands up front.</span><span aria-hidden="true">↗</span></a>
+          <a href="https://www.terminal.shop/" target="_blank" rel="noopener noreferrer"><span class="reference-index">03</span><span class="reference-name" data-scramble>terminal</span><span>The site reads like a file in your editor.</span><span aria-hidden="true">↗</span></a>
+          <a href="https://ghostty.org/" target="_blank" rel="noopener noreferrer"><span class="reference-index">04</span><span class="reference-name" data-scramble>ghostty</span><span>A character rendered as characters.</span><span aria-hidden="true">↗</span></a>
+        </div>
+        <p class="reference-note">Also studied <a href="https://modal.com/" target="_blank" rel="noopener noreferrer">Modal</a> for technical product demonstrations and <a href="https://charm.land/" target="_blank" rel="noopener noreferrer">Charm</a> for personality. Crowbo's art, colours and interactions follow its own direction.</p>
+      </section>
+
+      <footer class="site-footer"><div><span>crowbo / end of file</span><a href="#top" data-scramble>cd ~ ↑</a></div><a href="#top" class="footer-wordmark" aria-label="Crowbo, back to top"><span data-scramble>crowbo</span></a><div class="footer-last"><span>security decision infrastructure</span><span>the crow asks one more question.</span></div></footer>
+    </main>
+  </div>
+
+  <aside class="command-dock" aria-label="Interactive local command prompt">
+    <div id="shell-output" class="shell-output" hidden><div class="shell-output-header"><span>session.log <span class="muted">/ local demo commands</span></span><button type="button" id="close-shell" aria-label="Close command output">[esc]</button></div><div id="shell-lines" role="log" aria-live="polite" aria-relevant="additions"></div></div>
+    <form id="command-form" autocomplete="off"><label for="command-input">guest<span>@</span>crowbo<span>:~$</span></label><input id="command-input" name="command" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="help · explore · peck" aria-label="Local demo command"><button type="submit" aria-label="Run local demo command">enter ↵</button><button type="button" class="dock-help" data-help aria-label="Show available commands">?</button></form>
+    <div class="dock-status"><span><span class="mint">■</span> local playground <span class="dock-divider">/</span> no account required</span><span>press <kbd>/</kbd> to type <span class="dock-divider">·</span> <kbd>?</kbd> for help</span></div>
+  </aside>
+
+  <dialog id="help-dialog" aria-labelledby="help-title"><div class="dialog-heading"><h2 id="help-title">available commands</h2><button type="button" id="close-help" aria-label="Close help">[esc]</button></div><p>Type below, or click a command. Everything runs inside this mockup.</p><div class="help-commands"><button type="button" data-command="explore"><code>explore</code><span>Open the decision lab</span></button><button type="button" data-command="scenario gap"><code>scenario gap</code><span>Load an urgent coverage gap</span></button><button type="button" data-command="scenario capacity"><code>scenario capacity</code><span>Load the capacity proposal</span></button><button type="button" data-command="set capacity 16"><code>set capacity 16</code><span>Change the throughput assumption</span></button><button type="button" data-command="reassess"><code>reassess</code><span>Rerun and keep the previous basis</span></button><button type="button" data-command="references"><code>references</code><span>Open the design reference desk</span></button><button type="button" data-command="peck"><code>peck</code><span>Disturb the resident corvid</span></button><button type="button" data-command="clear"><code>clear</code><span>Clear command output</span></button></div><div class="help-footer"><span><kbd>↑</kbd> <kbd>↓</kbd> command history</span><span><kbd>tab</kbd> autocomplete</span></div></dialog>
+  <noscript><p class="noscript">This prototype uses JavaScript for commands and interactions. The page content remains readable.</p></noscript>
+</body>
+</html>
