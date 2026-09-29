@@ -38,11 +38,8 @@ import {
   type AccessVersion,
   type RecoveryPath,
 } from "./access-review-model";
-import {
-  CompareOptions,
-  NextStep,
-  PendingContextCard,
-} from "./access-review-actions";
+import { CompareOptions, PendingContextCard } from "./access-review-actions";
+import { DecisionJourney } from "./agent-handoff";
 import { AccessAssistant } from "./access-assistant";
 import "./access-review.css";
 import "./workflow-review.css";
@@ -129,8 +126,10 @@ function ChangedSources({
 
 export function AccessReview({
   headingRef,
+  onTryAnother,
 }: {
   headingRef: RefObject<HTMLHeadingElement | null>;
+  onTryAnother: () => void;
 }) {
   const [state, dispatch] = useReducer(accessReducer, accessInitialState);
   const [view, setView] = useState<"decision" | "assistant">("decision");
@@ -148,7 +147,6 @@ export function AccessReview({
   const advice = accessAdvice[state.current.basis];
   const sources = versionSources(state.current);
   const pending = state.pending ? pendingSource(state.pending) : null;
-  const recorded = state.recordedVersions.includes(state.current.number);
   const hasRecovery = sources.some((record) => record.id === "annual-task");
   const decidingSources = sources.filter((record) =>
     isAccessCheck(state.current.basis)
@@ -239,382 +237,401 @@ export function AccessReview({
   }
 
   return (
-    <div className={`ask-result access-review access-view-${view}`}>
-      <div className="ask-result-question">
-        <div>
-          <span className="ask-small">03 / Decide · Access reviews</span>
-          <h1 ref={headingRef} tabIndex={-1}>
-            {view === "decision"
-              ? caseGuides.access.title
-              : "Your coding assistant"}
-          </h1>
-        </div>
-        <Crow pose="glide" />
-      </div>
-      <div className="access-view-controls">
-        <div role="group" aria-label="Decision presentation">
-          <button
-            aria-pressed={view === "decision"}
-            onClick={() => setView("decision")}
-          >
-            Decision view
-          </button>
-          <button
-            aria-pressed={view === "assistant"}
-            onClick={() => setView("assistant")}
-          >
-            Assistant preview
-          </button>
-        </div>
-        <span>Same decision · v{state.current.number}</span>
-      </div>
-      {view === "assistant" ? (
-        <AccessAssistant
-          state={state}
-          dispatch={dispatch}
-          answerRef={answerHeading}
-          pendingRef={pendingHeading}
-          onInspect={inspect}
-          onDiscard={discardContext}
-          onOpenDecision={() => setView("decision")}
-        />
-      ) : (
-        <>
-          <div className="ask-answer-grid">
-            <section className="ask-answer">
-              <div className="ask-answer-label">
-                <span className="ask-small">Recommended move</span>
-                <span>
-                  v{state.current.number} ·{" "}
-                  {state.current.number > 1 ? "Revised" : "Initial view"}
-                </span>
-              </div>
-              <h2 ref={answerHeading} tabIndex={-1}>
-                {advice.title}
-              </h2>
-              <p>{advice.reason}</p>
-              <div className="ask-condition">
-                <LockKeyhole size={16} />
-                <span>
-                  <strong>What must hold</strong>
-                  {advice.condition}
-                </span>
-              </div>
-              <NextStep
-                version={state.current}
-                recorded={recorded}
-                onRecord={() => dispatch({ type: "record" })}
-              />
-              {recorded && (
-                <p className="ask-recorded">
-                  <Check size={13} /> Simulated next step recorded for v
-                  {state.current.number}
-                </p>
-              )}
-            </section>
+    <DecisionJourney
+      key={`access:${state.current.number}`}
+      context={{
+        caseId: "access",
+        specification: "1.0.0",
+        version: state.current.number,
+        question: demoCases.access.question,
+        scope: demoCases.access.scope,
+        advice,
+        sources,
+        note: state.note,
+      }}
+      blocked={state.pending !== null}
+      onRecord={() => dispatch({ type: "record" })}
+      onTryAnother={onTryAnother}
+    >
+      {(continueAction) => (
+        <div className={`ask-result access-review access-view-${view}`}>
+          <div className="ask-result-question">
+            <div>
+              <span className="ask-small">03 / Decide · Access reviews</span>
+              <h1 ref={headingRef} tabIndex={-1}>
+                {view === "decision"
+                  ? caseGuides.access.title
+                  : "Your coding assistant"}
+              </h1>
+            </div>
+            <Crow pose="glide" />
           </div>
-          <div className="ask-result-details">
-            <details className="ask-disclosure">
-              <summary>
-                <span>
-                  <BookOpen size={17} /> Why this recommendation?
-                </span>
-                <ChevronDown size={16} />
-              </summary>
-              <div className="ask-disclosure-body">
-                <p className="decision-scope">
-                  <strong>{demoCases.access.question}</strong>
-                  <br />
-                  {demoCases.access.scope}
-                </p>
-                <aside className="ask-basis">
-                  <span className="ask-small">The deciding inputs</span>
-                  {decidingSources.map((record) => (
-                    <button
-                      key={record.id}
-                      onClick={(event) => inspect(record, event.currentTarget)}
-                    >
-                      <FeatherGlyph kind={record.feather} />
-                      <span>
-                        <small>
-                          <ProviderMark provider={record.provider} />{" "}
-                          {record.label}
-                        </small>
-                        <strong>{record.claim}</strong>
-                      </span>
-                      <ArrowUpRight size={14} />
-                    </button>
-                  ))}
-                  <details className="ask-confidence">
-                    <summary>
-                      How well is this supported?
-                      <ChevronDown size={14} />
-                    </summary>
-                    <p>{advice.support}</p>
-                  </details>
-                </aside>
-                <ChangedSources version={state.current} onInspect={inspect} />
-                <details className="ask-disclosure decision-source-explorer">
+          <div className="access-view-controls">
+            <div role="group" aria-label="Decision presentation">
+              <button
+                aria-pressed={view === "decision"}
+                onClick={() => setView("decision")}
+              >
+                Decision view
+              </button>
+              <button
+                aria-pressed={view === "assistant"}
+                onClick={() => setView("assistant")}
+              >
+                Assistant preview
+              </button>
+            </div>
+            <span>Same decision · v{state.current.number}</span>
+          </div>
+          {view === "assistant" ? (
+            <AccessAssistant
+              state={state}
+              dispatch={dispatch}
+              answerRef={answerHeading}
+              pendingRef={pendingHeading}
+              onInspect={inspect}
+              onDiscard={discardContext}
+              onOpenDecision={() => setView("decision")}
+              continueAction={continueAction}
+            />
+          ) : (
+            <>
+              <div className="ask-answer-grid">
+                <section className="ask-answer">
+                  <div className="ask-answer-label">
+                    <span className="ask-small">Recommended move</span>
+                    <span>
+                      v{state.current.number} ·{" "}
+                      {state.current.number > 1 ? "Revised" : "Initial view"}
+                    </span>
+                  </div>
+                  <h2 ref={answerHeading} tabIndex={-1}>
+                    {advice.title}
+                  </h2>
+                  <p>{advice.reason}</p>
+                  <div className="ask-condition">
+                    <LockKeyhole size={16} />
+                    <span>
+                      <strong>What must hold</strong>
+                      {advice.condition}
+                    </span>
+                  </div>
+                  {continueAction}
+                </section>
+              </div>
+              <div className="ask-result-details">
+                <details className="ask-disclosure">
                   <summary>
                     <span>
-                      <Search size={17} /> Explore all {sources.length} sources
+                      <BookOpen size={17} /> Why this recommendation?
                     </span>
                     <ChevronDown size={16} />
                   </summary>
-                  <div className="ask-disclosure-body ask-source-body">
-                    <SourceNetwork sources={sources} onInspect={inspect} />
-                  </div>
-                </details>
-              </div>
-            </details>
-            <CaseGuidance caseId="access" />
-
-            {((hasRecovery && !isAccessCheck(state.current.basis)) ||
-              pending) && (
-              <section
-                className="access-conversation"
-                ref={challengePanel}
-                tabIndex={-1}
-                aria-label="Challenge the recommendation"
-              >
-                <div className="access-conversation-label">
-                  <MessageCircle size={15} />
-                  <span className="ask-small">
-                    A question that changes the picture
-                  </span>
-                  <span>Prepared example</span>
-                </div>
-                <blockquote>
-                  {state.pending?.kind === "check"
-                    ? "Does the selected basis still support this choice?"
-                    : "What about the annual recovery task?"}
-                </blockquote>
-                {hasRecovery && !isAccessCheck(state.current.basis) && (
-                  <p>
-                    The task needs more than the daily role. Is there a working
-                    way to provide that capability only when it’s needed?
-                  </p>
-                )}
-
-                {state.pending && (
-                  <PendingContextCard
-                    context={state.pending}
-                    version={state.current.number}
-                    headingRef={pendingHeading}
-                    onInspect={inspect}
-                    onReassess={() => dispatch({ type: "reassess" })}
-                    onDiscard={discardContext}
-                  />
-                )}
-
-                {hasRecovery &&
-                  !pending &&
-                  !isAccessCheck(state.current.basis) && (
-                    <div className="access-prepared-paths">
-                      <span className="access-field-label">
-                        Explore a prepared evidence outcome
-                      </span>
-                      <div>
-                        {(["tested", "unverified", "unavailable"] as const).map(
-                          (status: RecoveryPath) => (
-                            <button
-                              key={status}
-                              className="access-path-choice"
-                              aria-disabled={state.current.basis === status}
-                              onClick={() => {
-                                if (state.current.basis !== status)
-                                  dispatch({ type: "prepare-path", status });
-                              }}
-                            >
-                              <FeatherGlyph
-                                kind={recoveryPaths[status].feather}
-                              />
-                              <strong>
-                                {status === "tested"
-                                  ? "Tested path"
-                                  : status === "unverified"
-                                    ? "Runbook only"
-                                    : "No path available"}
-                              </strong>
-                              <small>
-                                {state.current.basis === status
-                                  ? "Current example"
-                                  : status === "tested"
-                                    ? "A recorded rehearsal"
-                                    : status === "unverified"
-                                      ? "A process on paper"
-                                      : "A platform constraint"}
-                              </small>
-                              {state.current.basis === status ? (
-                                <Check size={14} />
-                              ) : (
-                                <ArrowRight size={14} />
-                              )}
-                            </button>
-                          ),
-                        )}
-                      </div>
-                      <p className="ask-fine">
-                        Fictional alternatives. Selecting one previews a record;
-                        reassessment applies it.
-                      </p>
-                    </div>
-                  )}
-              </section>
-            )}
-
-            {availableFollowups(state.current.basis).some(
-              (prompt) => prompt.action.type === "prepare-check",
-            ) && (
-              <details className="ask-disclosure">
-                <summary>
-                  <span>
-                    <GitCompareArrows size={17} /> What could change this?
-                  </span>
-                  <ChevronDown size={16} />
-                </summary>
-                <div className="ask-disclosure-body">
-                  <p className="decision-scope">
-                    Try one new fact and see whether it changes the
-                    recommendation. You can inspect it before reassessing.
-                  </p>
-                  <div className="access-answer-tools">
-                    {(!isAccessCheck(state.current.basis) ||
-                      state.current.basis === "irrelevant") && (
-                      <button
-                        className="access-secondary access-challenge-button"
-                        onClick={() => {
-                          if (
-                            state.current.basis === "daily" ||
-                            state.current.basis === "irrelevant"
-                          )
-                            dispatch({ type: "challenge" });
-                          else {
-                            challengePanel.current?.scrollIntoView({
-                              block: "center",
-                              behavior: "instant",
-                            });
-                            challengePanel.current?.focus({
-                              preventScroll: true,
-                            });
-                          }
-                        }}
-                      >
-                        <MessageCircle size={16} /> Challenge this
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="workflow-update-options">
-                    {availableFollowups(state.current.basis)
-                      .filter(
-                        (prompt) => prompt.action.type === "prepare-check",
-                      )
-                      .map((prompt) => (
+                  <div className="ask-disclosure-body">
+                    <p className="decision-scope">
+                      <strong>{demoCases.access.question}</strong>
+                      <br />
+                      {demoCases.access.scope}
+                    </p>
+                    <aside className="ask-basis">
+                      <span className="ask-small">The deciding inputs</span>
+                      {decidingSources.map((record) => (
                         <button
-                          disabled={state.pending !== null}
-                          key={prompt.label}
-                          onClick={() => dispatch(prompt.action)}
+                          key={record.id}
+                          onClick={(event) =>
+                            inspect(record, event.currentTarget)
+                          }
                         >
-                          {prompt.label}
-                          <ArrowRight size={16} />
+                          <FeatherGlyph kind={record.feather} />
+                          <span>
+                            <small>
+                              <ProviderMark provider={record.provider} />{" "}
+                              {record.label}
+                            </small>
+                            <strong>{record.claim}</strong>
+                          </span>
+                          <ArrowUpRight size={14} />
                         </button>
                       ))}
+                      <details className="ask-confidence">
+                        <summary>
+                          How well is this supported?
+                          <ChevronDown size={14} />
+                        </summary>
+                        <p>{advice.support}</p>
+                      </details>
+                    </aside>
+                    <ChangedSources
+                      version={state.current}
+                      onInspect={inspect}
+                    />
+                    <details className="ask-disclosure decision-source-explorer">
+                      <summary>
+                        <span>
+                          <Search size={17} /> Explore all {sources.length}{" "}
+                          sources
+                        </span>
+                        <ChevronDown size={16} />
+                      </summary>
+                      <div className="ask-disclosure-body ask-source-body">
+                        <SourceNetwork sources={sources} onInspect={inspect} />
+                      </div>
+                    </details>
                   </div>
-                  <p className="ask-fine">
-                    Prepared alternative records. Each update needs explicit
-                    reassessment.
-                  </p>
-                </div>
-              </details>
-            )}
-            <details className="ask-disclosure decision-more">
-              <summary>
-                <span>
-                  <GitCompareArrows size={17} /> Options, context & history
-                </span>
-                <ChevronDown size={16} />
-              </summary>
-              <div className="ask-disclosure-body">
-                <CompareOptions basis={state.current.basis} />
-                {state.previous.length > 0 && (
-                  <details className="ask-disclosure access-history">
+                </details>
+                <CaseGuidance caseId="access" />
+
+                {((hasRecovery && !isAccessCheck(state.current.basis)) ||
+                  pending) && (
+                  <section
+                    className="access-conversation"
+                    ref={challengePanel}
+                    tabIndex={-1}
+                    aria-label="Challenge the recommendation"
+                  >
+                    <div className="access-conversation-label">
+                      <MessageCircle size={15} />
+                      <span className="ask-small">
+                        A question that changes the picture
+                      </span>
+                      <span>Prepared example</span>
+                    </div>
+                    <blockquote>
+                      {state.pending?.kind === "check"
+                        ? "Does the selected basis still support this choice?"
+                        : "What about the annual recovery task?"}
+                    </blockquote>
+                    {hasRecovery && !isAccessCheck(state.current.basis) && (
+                      <p>
+                        The task needs more than the daily role. Is there a
+                        working way to provide that capability only when it’s
+                        needed?
+                      </p>
+                    )}
+
+                    {state.pending && (
+                      <PendingContextCard
+                        context={state.pending}
+                        version={state.current.number}
+                        headingRef={pendingHeading}
+                        onInspect={inspect}
+                        onReassess={() => dispatch({ type: "reassess" })}
+                        onDiscard={discardContext}
+                      />
+                    )}
+
+                    {hasRecovery &&
+                      !pending &&
+                      !isAccessCheck(state.current.basis) && (
+                        <div className="access-prepared-paths">
+                          <span className="access-field-label">
+                            Explore a prepared evidence outcome
+                          </span>
+                          <div>
+                            {(
+                              ["tested", "unverified", "unavailable"] as const
+                            ).map((status: RecoveryPath) => (
+                              <button
+                                key={status}
+                                className="access-path-choice"
+                                aria-disabled={state.current.basis === status}
+                                onClick={() => {
+                                  if (state.current.basis !== status)
+                                    dispatch({ type: "prepare-path", status });
+                                }}
+                              >
+                                <FeatherGlyph
+                                  kind={recoveryPaths[status].feather}
+                                />
+                                <strong>
+                                  {status === "tested"
+                                    ? "Tested path"
+                                    : status === "unverified"
+                                      ? "Runbook only"
+                                      : "No path available"}
+                                </strong>
+                                <small>
+                                  {state.current.basis === status
+                                    ? "Current example"
+                                    : status === "tested"
+                                      ? "A recorded rehearsal"
+                                      : status === "unverified"
+                                        ? "A process on paper"
+                                        : "A platform constraint"}
+                                </small>
+                                {state.current.basis === status ? (
+                                  <Check size={14} />
+                                ) : (
+                                  <ArrowRight size={14} />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                          <p className="ask-fine">
+                            Fictional alternatives. Selecting one previews a
+                            record; reassessment applies it.
+                          </p>
+                        </div>
+                      )}
+                  </section>
+                )}
+
+                {availableFollowups(state.current.basis).some(
+                  (prompt) => prompt.action.type === "prepare-check",
+                ) && (
+                  <details className="ask-disclosure">
                     <summary>
                       <span>
-                        <History size={17} /> Previous advice
+                        <GitCompareArrows size={17} /> What could change this?
                       </span>
-                      <span className="ask-disclosure-hint">
-                        {state.previous.length} retained{" "}
-                        <ChevronDown size={16} />
-                      </span>
+                      <ChevronDown size={16} />
                     </summary>
                     <div className="ask-disclosure-body">
-                      {state.previous.map((version) => (
-                        <article key={version.number}>
-                          <span className="ask-small">
-                            v{version.number} · {basisLabels[version.basis]}
-                          </span>
-                          <h3>{accessAdvice[version.basis].title}</h3>
-                          <p>{accessAdvice[version.basis].reason}</p>
-                          <p>
-                            <strong>Condition at the time: </strong>
-                            {accessAdvice[version.basis].condition}
-                          </p>
-                          {state.recordedVersions.includes(version.number) && (
-                            <p className="access-old-choice">
-                              A simulated next step was recorded for this
-                              version.
-                            </p>
-                          )}
-                          <details>
-                            <summary>
-                              Sources behind v{version.number}
-                              <ChevronDown size={13} />
-                            </summary>
-                            <ul>
-                              {versionSources(version).map((record) => (
-                                <li key={record.id}>
-                                  <button
-                                    onClick={(event) =>
-                                      inspect(
-                                        record,
-                                        event.currentTarget,
-                                        version,
-                                      )
-                                    }
-                                  >
-                                    {record.label}
-                                    <span>{record.revision}</span>
-                                    <ArrowUpRight size={12} />
-                                  </button>
-                                </li>
-                              ))}
-                            </ul>
-                          </details>
-                        </article>
-                      ))}
+                      <p className="decision-scope">
+                        Try one new fact and see whether it changes the
+                        recommendation. You can inspect it before reassessing.
+                      </p>
+                      <div className="access-answer-tools">
+                        {(!isAccessCheck(state.current.basis) ||
+                          state.current.basis === "irrelevant") && (
+                          <button
+                            className="access-secondary access-challenge-button"
+                            onClick={() => {
+                              if (
+                                state.current.basis === "daily" ||
+                                state.current.basis === "irrelevant"
+                              )
+                                dispatch({ type: "challenge" });
+                              else {
+                                challengePanel.current?.scrollIntoView({
+                                  block: "center",
+                                  behavior: "instant",
+                                });
+                                challengePanel.current?.focus({
+                                  preventScroll: true,
+                                });
+                              }
+                            }}
+                          >
+                            <MessageCircle size={16} /> Challenge this
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="workflow-update-options">
+                        {availableFollowups(state.current.basis)
+                          .filter(
+                            (prompt) => prompt.action.type === "prepare-check",
+                          )
+                          .map((prompt) => (
+                            <button
+                              disabled={state.pending !== null}
+                              key={prompt.label}
+                              onClick={() => dispatch(prompt.action)}
+                            >
+                              {prompt.label}
+                              <ArrowRight size={16} />
+                            </button>
+                          ))}
+                      </div>
+                      <p className="ask-fine">
+                        Prepared alternative records. Each update needs explicit
+                        reassessment.
+                      </p>
                     </div>
                   </details>
                 )}
-                <ContextNote
-                  note={state.note}
-                  onSave={(value) => dispatch({ type: "note", value })}
-                />
+                <details className="ask-disclosure decision-more">
+                  <summary>
+                    <span>
+                      <GitCompareArrows size={17} /> Options, context & history
+                    </span>
+                    <ChevronDown size={16} />
+                  </summary>
+                  <div className="ask-disclosure-body">
+                    <CompareOptions basis={state.current.basis} />
+                    {state.previous.length > 0 && (
+                      <details className="ask-disclosure access-history">
+                        <summary>
+                          <span>
+                            <History size={17} /> Previous advice
+                          </span>
+                          <span className="ask-disclosure-hint">
+                            {state.previous.length} retained{" "}
+                            <ChevronDown size={16} />
+                          </span>
+                        </summary>
+                        <div className="ask-disclosure-body">
+                          {state.previous.map((version) => (
+                            <article key={version.number}>
+                              <span className="ask-small">
+                                v{version.number} · {basisLabels[version.basis]}
+                              </span>
+                              <h3>{accessAdvice[version.basis].title}</h3>
+                              <p>{accessAdvice[version.basis].reason}</p>
+                              <p>
+                                <strong>Condition at the time: </strong>
+                                {accessAdvice[version.basis].condition}
+                              </p>
+                              {state.recordedVersions.includes(
+                                version.number,
+                              ) && (
+                                <p className="access-old-choice">
+                                  A simulated next step was recorded for this
+                                  version.
+                                </p>
+                              )}
+                              <details>
+                                <summary>
+                                  Sources behind v{version.number}
+                                  <ChevronDown size={13} />
+                                </summary>
+                                <ul>
+                                  {versionSources(version).map((record) => (
+                                    <li key={record.id}>
+                                      <button
+                                        onClick={(event) =>
+                                          inspect(
+                                            record,
+                                            event.currentTarget,
+                                            version,
+                                          )
+                                        }
+                                      >
+                                        {record.label}
+                                        <span>{record.revision}</span>
+                                        <ArrowUpRight size={12} />
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </details>
+                            </article>
+                          ))}
+                        </div>
+                      </details>
+                    )}
+                    <ContextNote
+                      note={state.note}
+                      onSave={(value) => dispatch({ type: "note", value })}
+                    />
+                  </div>
+                </details>
               </div>
-            </details>
-          </div>
-        </>
+            </>
+          )}
+          {source && (
+            <SourceInspector
+              source={source}
+              scope={demoCases.access.scope}
+              sources={inspectionBasis.sources}
+              context={inspectionBasis.context}
+              onClose={() => setSource(null)}
+              returnFocus={sourceTrigger}
+            />
+          )}
+        </div>
       )}
-      {source && (
-        <SourceInspector
-          source={source}
-          scope={demoCases.access.scope}
-          sources={inspectionBasis.sources}
-          context={inspectionBasis.context}
-          onClose={() => setSource(null)}
-          returnFocus={sourceTrigger}
-        />
-      )}
-    </div>
+    </DecisionJourney>
   );
 }

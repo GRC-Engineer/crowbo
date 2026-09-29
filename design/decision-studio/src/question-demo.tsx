@@ -318,10 +318,17 @@ export default function QuestionDemo() {
           )}
 
           {state.kind === "result" && state.caseId === "access" && (
-            <AccessReview headingRef={heading} />
+            <AccessReview
+              headingRef={heading}
+              onTryAnother={() => dispatch({ type: "question" })}
+            />
           )}
           {state.kind === "result" && state.caseId !== "access" && (
-            <WorkflowReview caseId={state.caseId} headingRef={heading} />
+            <WorkflowReview
+              caseId={state.caseId}
+              headingRef={heading}
+              onTryAnother={() => dispatch({ type: "question" })}
+            />
           )}
         </motion.section>
         <footer className="ask-footer">

@@ -1,0 +1,316 @@
+.decision-continue > p {
+  font-size: 12px;
+  color: #b7c4ba;
+  margin-top: 12px;
+}
+.decision-continue button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.agent-handoff {
+  padding: 24px 30px 28px;
+  scroll-margin-top: 18px;
+}
+.handoff-top,
+.handoff-heading,
+.handoff-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.handoff-top {
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.handoff-top .ask-text-button {
+  font-size: 13px;
+}
+.handoff-demo {
+  font: 11px/1.5 var(--mono);
+  color: var(--oxide);
+}
+.handoff-heading {
+  margin-bottom: 18px;
+}
+.handoff-heading h1 {
+  font: 500 clamp(28px, 4vw, 36px)/1.15 var(--display);
+  margin: 10px 0 0;
+}
+.handoff-heading .crow {
+  width: 100px;
+  height: 78px;
+  object-fit: contain;
+}
+.handoff-next {
+  padding: 14px 19px;
+  background: #171d1b;
+  border-left: 2px solid var(--oxide);
+}
+.handoff-next .ask-small {
+  color: var(--oxide);
+}
+.handoff-next p {
+  font-size: 17px;
+  line-height: 1.55;
+  margin: 8px 0 0;
+}
+.handoff-intro {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #bdc8be;
+  margin: 16px 0;
+  max-width: 620px;
+}
+.handoff-setup > label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+.handoff-setup select {
+  appearance: auto;
+  background: #19221d;
+  border: 1px solid #526158;
+  border-radius: 4px;
+  color: var(--chalk);
+  padding: 12px 15px;
+  width: 100%;
+  font: inherit;
+  font-size: 15px;
+  min-height: 48px;
+}
+.handoff-setup select:focus-visible {
+  outline: 2px solid var(--oxide);
+  outline-offset: 4px;
+}
+.handoff-setup fieldset {
+  border: 0;
+  padding: 0;
+  margin: 18px 0 14px;
+  grid-template-columns: 1fr 1fr;
+  display: grid;
+  gap: 10px;
+}
+.handoff-setup legend {
+  font: 500 16px/1.5 var(--display);
+  margin-bottom: 12px;
+}
+.handoff-task {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 14px;
+  border: 1px solid #39463e;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.handoff-task[data-selected="true"] {
+  border-color: var(--sage);
+  background: #1c2821;
+}
+.handoff-task input {
+  margin: 4px 0 0;
+  accent-color: var(--sage);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.handoff-task:focus-within {
+  outline: 2px solid var(--oxide);
+  outline-offset: 2px;
+}
+.handoff-task strong {
+  font-weight: 500;
+  font-size: 15px;
+}
+.handoff-task small {
+  display: block;
+  color: #b2c1b4;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 5px;
+}
+.handoff-scope,
+.handoff-boundary {
+  display: flex;
+  gap: 10px;
+  color: #b7c5b9;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.handoff-scope {
+  margin: 14px 0;
+}
+.handoff-scope svg,
+.handoff-boundary svg {
+  flex-shrink: 0;
+  color: var(--oxide);
+  margin-top: 3px;
+}
+.handoff-scope strong {
+  color: var(--chalk);
+  font-weight: 500;
+}
+.handoff-context .ask-disclosure-body p {
+  font-size: 13px;
+  line-height: 1.65;
+  margin: 12px 0;
+  color: #bbc8be;
+}
+.handoff-context strong {
+  color: var(--chalk);
+  font-weight: 500;
+}
+.handoff-context ul {
+  list-style: none;
+  padding: 0;
+  border-block: 1px solid #354136;
+}
+.handoff-context li {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 8px 0;
+  font-size: 13px;
+}
+.handoff-context small {
+  color: var(--sage);
+  font: 11px var(--mono);
+}
+.handoff-actions {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.handoff-actions .ask-text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  font-size: 13px;
+}
+.handoff-footnote,
+.handoff-copy > p {
+  color: #a9b8ae;
+  font-size: 12px;
+  line-height: 1.6;
+  margin-top: 15px;
+}
+.handoff-running {
+  padding: 24px 0 8px;
+}
+.handoff-running ol,
+.handoff-response ol {
+  padding: 0;
+  margin: 24px 0;
+  list-style: none;
+}
+.handoff-running li,
+.handoff-response li {
+  display: flex;
+  gap: 17px;
+  align-items: flex-start;
+  padding: 18px 0;
+  border-bottom: 1px solid #344238;
+}
+.handoff-running li {
+  color: #a6b4aa;
+  font-size: 15px;
+}
+.handoff-running li[aria-current="step"] {
+  color: var(--chalk);
+}
+.handoff-running li[aria-current="step"] > span {
+  background: var(--oxide);
+  color: var(--ink);
+}
+.handoff-running li > span {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  font: 11px var(--mono);
+  border: 1px solid #47564b;
+  border-radius: 3px;
+}
+.handoff-running li[data-done="true"] > span {
+  color: var(--sage);
+}
+.handoff-running > p {
+  color: #b5c3b9;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.handoff-response {
+  border: 1px solid #425246;
+  border-top: 3px solid var(--oxide);
+  border-radius: 4px;
+  padding: 24px;
+  background: #171d1b;
+}
+.handoff-response .ask-small {
+  color: var(--oxide);
+}
+.handoff-response h2 {
+  font: 500 25px/1.3 var(--display);
+  margin: 14px 0;
+}
+.handoff-response li > span {
+  font: 12px/1.8 var(--mono);
+  color: var(--sage);
+}
+.handoff-response p {
+  font-size: 14px;
+  line-height: 1.65;
+  color: #c0ccc2;
+}
+.handoff-response .handoff-boundary {
+  font-size: 12px;
+  margin-top: 20px;
+}
+.handoff-copy {
+  margin-top: 24px;
+}
+.handoff-copy label {
+  display: block;
+  font-size: 13px;
+  margin: 18px 0 10px;
+}
+.handoff-copy textarea {
+  width: 100%;
+  min-height: 180px;
+  color: var(--chalk);
+  background: #101612;
+  padding: 16px;
+  font: 12px/1.6 var(--mono);
+  border: 1px solid var(--sage);
+  border-radius: 4px;
+}
+@media (max-width: 740px) {
+  .handoff-setup fieldset {
+    grid-template-columns: 1fr;
+  }
+  .agent-handoff {
+    padding: 22px 16px;
+  }
+  .handoff-heading .crow {
+    width: 66px;
+    height: 53px;
+  }
+  .handoff-response {
+    padding: 20px 17px;
+  }
+  .handoff-actions {
+    gap: 12px;
+  }
+  .handoff-actions .ask-primary {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .handoff-context li {
+    flex-direction: column;
+    gap: 5px;
+  }
+}

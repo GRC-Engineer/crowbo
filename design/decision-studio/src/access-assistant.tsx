@@ -1,9 +1,14 @@
-import { useId, useRef, type Dispatch, type RefObject } from "react";
+import {
+  useId,
+  useRef,
+  type Dispatch,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import {
   ArrowRight,
   ArrowUp,
   ArrowUpRight,
-  Check,
   ChevronDown,
   CodeXml,
   CornerDownRight,
@@ -14,11 +19,7 @@ import { Crow } from "./components";
 import { FeatherGlyph } from "./identity";
 import { ProviderMark } from "./providers";
 import { ContextNote } from "./question-components";
-import {
-  CompareOptions,
-  NextStep,
-  PendingContextCard,
-} from "./access-review-actions";
+import { CompareOptions, PendingContextCard } from "./access-review-actions";
 import {
   accessAdvice,
   availableFollowups,
@@ -40,6 +41,7 @@ export function AccessAssistant({
   onInspect,
   onDiscard,
   onOpenDecision,
+  continueAction,
 }: {
   state: AccessState;
   dispatch: Dispatch<AccessAction>;
@@ -52,6 +54,7 @@ export function AccessAssistant({
   ) => void;
   onDiscard: () => void;
   onOpenDecision: () => void;
+  continueAction: ReactNode;
 }) {
   const input = useRef<HTMLTextAreaElement>(null);
   const inputId = useId();
@@ -60,7 +63,6 @@ export function AccessAssistant({
   const advice = accessAdvice[state.current.basis];
   const sources = versionSources(state.current);
   const prompts = availableFollowups(state.current.basis);
-  const recorded = state.recordedVersions.includes(state.current.number);
   return (
     <section
       className="assistant-preview"
@@ -182,19 +184,7 @@ export function AccessAssistant({
                 </summary>
                 <p>{advice.support}</p>
               </details>
-              <span className="access-field-label">Next action</span>
-              <p className="access-next-description">{advice.next}</p>
-              <NextStep
-                version={state.current}
-                recorded={recorded}
-                onRecord={() => dispatch({ type: "record" })}
-              />
-              {recorded && (
-                <p className="ask-recorded">
-                  <Check size={13} /> Simulated next step recorded for v
-                  {state.current.number}
-                </p>
-              )}
+              {continueAction}
             </div>
             <div className="assistant-result-tools">
               <CompareOptions basis={state.current.basis} />
