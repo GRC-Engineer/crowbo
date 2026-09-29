@@ -17,7 +17,7 @@ These PNGs have dark backgrounds, not transparent production alpha. The homepage
 
 ### mascot
 
-Input: `/Users/ayoubfandi/Documents/crowbo/design/crow-concepts/2026-09-24/modular-crow/modular-packet-chalk-sage-oxide-v1.png`.
+Input: `design/crow-concepts/2026-09-24/modular-crow/modular-packet-chalk-sage-oxide-v1.png`.
 
 Output: `crowbo-modular-homepage-v1.png`.
 
@@ -29,7 +29,7 @@ One square canvas, uniform fully OPAQUE background #0C1010, no transparency. Cro
 
 ### favicon
 
-Input: `/Users/ayoubfandi/Documents/crowbo/design/crow-concepts/2026-09-24/modular-crow/modular-packet-chalk-sage-oxide-v1.png`.
+Input: `design/crow-concepts/2026-09-24/modular-crow/modular-packet-chalk-sage-oxide-v1.png`.
 
 Output: `crowbo-modular-favicon-v1.png`.
 
@@ -40,7 +40,7 @@ Composition: bold head silhouette fills 84% of a square with safe margins, no bo
 
 ### topology
 
-Input: `/Users/ayoubfandi/Documents/crowbo/design/homepage-mockups/2026-09-21/assets/crowbo-feathers-topology-v2.png`.
+Input: `design/homepage-mockups/2026-09-21/assets/crowbo-feathers-topology-v2.png`.
 
 Output: `crowbo-feathers-topology-modular-v1.png`.
 
@@ -53,7 +53,7 @@ The six captions must remain exactly SPINE, BRANCH, MESH, LOOP, BRAID, CLUSTER i
 
 ### infrastructure
 
-Input: `/Users/ayoubfandi/Documents/crowbo/design/homepage-mockups/2026-09-21/assets/crowbo-feathers-infrastructure-v1.png`.
+Input: `design/homepage-mockups/2026-09-21/assets/crowbo-feathers-infrastructure-v1.png`.
 
 Output: `crowbo-feathers-infrastructure-modular-v1.png`.
 

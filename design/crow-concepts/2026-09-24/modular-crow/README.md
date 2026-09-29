@@ -29,5 +29,5 @@ Maintain crisp square pixel clusters and clean flat solid fills. No transparency
 ## Provenance
 
 - Input: [six-tier comparison board](../pixel-tiers/crowbo-six-pixel-tiers-board-v1.png).
-- Generated source: `/Users/ayoubfandi/.codex/generated_images/01a0c49f-cdfd-7d82-a8d6-b5b02b1ccaf6/exec-5dffcd83-d9de-4bed-adde-14e73c67fde5.png`.
+- Generated source: `exec-5dffcd83-d9de-4bed-adde-14e73c67fde5.png`.
 - Workspace image: [modular-packet-chalk-sage-oxide-v1.png](modular-packet-chalk-sage-oxide-v1.png), copied without image edits.

@@ -43,6 +43,10 @@ npm run dev
 
 Credentials, authorised source inputs and runtime outputs stay outside Git. Follow [the pilot guide](docs/PILOT.md#running-it) before connecting any provider. The synthetic tests need no provider credentials.
 
+## Review backend changes
+
+Run `uv run --locked ruff check src tests proof/mcp_scenarios.py` and `uv run --locked ruff format --check src tests proof/mcp_scenarios.py` alongside the tests. Follow the [GitHub checkpoint workflow](AGENTS.md#github-checkpoints) to commit, push and review each bounded change.
+
 ## Website deployment
 
 Only `site/` is published. [wrangler.jsonc](wrangler.jsonc) configures static assets on Cloudflare Workers with crowbo.ai as a custom domain; [site/_headers](site/_headers) sets response security headers. The consolidation of frontend and backend code does not change those files or expose either application through the website.

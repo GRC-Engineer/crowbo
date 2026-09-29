@@ -97,12 +97,12 @@ No other text, headers, swatches, percentages or UI. Calm, polished, readable co
 
 | Workspace file | Built-in generated source |
 | --- | --- |
-| [studies/01-sharp-archivist-v1.png](studies/01-sharp-archivist-v1.png) | `/Users/ayoubfandi/.codex/generated_images/01a0c49f-cdfd-7d82-a8d6-b5b02b1ccaf6/exec-9a51c6da-e8eb-4d54-847d-55d8fec6139b.png` |
-| [studies/02-block-archivist-v1.png](studies/02-block-archivist-v1.png) | `/Users/ayoubfandi/.codex/generated_images/01a0c49f-cdfd-7d82-a8d6-b5b02b1ccaf6/exec-76bfc7f6-9e4d-4344-9f3f-eeb1c5c20d53.png` |
-| [studies/03-logic-crow-v2.png](studies/03-logic-crow-v2.png) | `/Users/ayoubfandi/.codex/generated_images/01a0c49f-cdfd-7d82-a8d6-b5b02b1ccaf6/exec-1fe0a63f-393d-4bba-a0e4-42b6e10933c8.png` |
-| [studies/04-modular-crow-v2.png](studies/04-modular-crow-v2.png) | `/Users/ayoubfandi/.codex/generated_images/01a0c49f-cdfd-7d82-a8d6-b5b02b1ccaf6/exec-7eb645c4-1c74-41e6-8bc5-10fa10146fa5.png` |
-| [studies/05-node-sprite-v2.png](studies/05-node-sprite-v2.png) | `/Users/ayoubfandi/.codex/generated_images/01a0c49f-cdfd-7d82-a8d6-b5b02b1ccaf6/exec-59515f0a-2671-4d54-88f3-ded0697af41c.png` |
-| [studies/06-packet-runner-v2.png](studies/06-packet-runner-v2.png) | `/Users/ayoubfandi/.codex/generated_images/01a0c49f-cdfd-7d82-a8d6-b5b02b1ccaf6/exec-38c0d365-a504-450a-995b-affc8edf6b15.png` |
-| [crowbo-six-pixel-tiers-board-v1.png](crowbo-six-pixel-tiers-board-v1.png) | `/Users/ayoubfandi/.codex/generated_images/01a0c49f-cdfd-7d82-a8d6-b5b02b1ccaf6/exec-6b5397e2-3e4f-4517-b78d-e9bba7ae7a11.png` |
+| [studies/01-sharp-archivist-v1.png](studies/01-sharp-archivist-v1.png) | `exec-9a51c6da-e8eb-4d54-847d-55d8fec6139b.png` |
+| [studies/02-block-archivist-v1.png](studies/02-block-archivist-v1.png) | `exec-76bfc7f6-9e4d-4344-9f3f-eeb1c5c20d53.png` |
+| [studies/03-logic-crow-v2.png](studies/03-logic-crow-v2.png) | `exec-1fe0a63f-393d-4bba-a0e4-42b6e10933c8.png` |
+| [studies/04-modular-crow-v2.png](studies/04-modular-crow-v2.png) | `exec-7eb645c4-1c74-41e6-8bc5-10fa10146fa5.png` |
+| [studies/05-node-sprite-v2.png](studies/05-node-sprite-v2.png) | `exec-59515f0a-2671-4d54-88f3-ded0697af41c.png` |
+| [studies/06-packet-runner-v2.png](studies/06-packet-runner-v2.png) | `exec-38c0d365-a504-450a-995b-affc8edf6b15.png` |
+| [crowbo-six-pixel-tiers-board-v1.png](crowbo-six-pixel-tiers-board-v1.png) | `exec-6b5397e2-3e4f-4517-b78d-e9bba7ae7a11.png` |
 
 The initial board attempt with six reference paths was rejected by the tool's five-reference limit before generation. The final prompt above uses five references and explicitly recreates tier 02 as an intermediate. All saved image files are byte-preserving copies of generated output.

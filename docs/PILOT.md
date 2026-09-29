@@ -212,9 +212,9 @@ Pstack Architect and First Principles shaped the bounded implementation. Three r
 
 The implementation plan passed the required Corridor analysis before code. Its private-storage, in-memory-secret and revision/grant-binding guidance was applied; the feedback CLI ran once for this implementation task.
 
-## Next useful increment
+## Historical next increment
 
-Confirm the specific records and owner inputs that establish real commitments and available capacity, then run the cited two-week review. Its source selection and professional judgment need human review; independent feasibility calculations and owner-choice recording remain future application work. Compare its usefulness with the same model given equivalent evidence before claiming an advantage. Unattended source scheduling, additional connectors, regex search, a multiuser service and deployment remain later work.
+The initial pilot proposed a two-week prioritisation review after confirming commitment and capacity evidence. This is historical sequencing, not the current build plan. The [backend brief](TECHNICAL-PLAN.md#portfolio-reconciliation-29-september-2026) owns the current three-workflow portfolio and proposed increments. The observations below preserve the limitations at each run's date.
 
 ## Baseline audit
 
@@ -399,7 +399,7 @@ The private run used three labelled synthetic families and one real account case
 
 All three methods chose the tested scoped credential in one synthetic case and the tested project-scoped role in another, rejecting a narrower role that failed a required recovery task. Their two complete comparison groups have matching input receipts. After clarifying output constraints and requesting shorter answers, both guided methods completed the real case and recommended establishing current work and effective permissions. The plain arm still failed validation, so the full real three-method comparison remains incomplete. The guided pair's model, schema, prompt, limits and source payload match apart from contextual Jev.
 
-No Jev benefit is established. Both real answers overinterpreted a backlogged PAM initiative as absence of a workable temporary-access mechanism. Some synthetic answers asked redundant questions or made weak identity/feasibility inferences. Unknown-fact and exact-account citation errors continued after the prompt correction; the backend rejected them. Further qualification should test a smaller structured interpretation boundary and practitioner-reviewed semantic expectations, rather than weaken checks to improve completion counts.
+No Jev benefit is established. Both guided answers made an unsupported inference about whether an alternative was available. Some synthetic answers asked redundant questions or made weak identity/feasibility inferences. Unknown-fact and exact-account citation errors continued after the prompt correction; the backend rejected them. Further qualification should test a smaller structured interpretation boundary and practitioner-reviewed semantic expectations, rather than weaken checks to improve completion counts. Private operational details remain in the private experiment record.
 
 Local verification passes 224 tests, current backend Ruff/format checks, and 60 local documentation links and anchors. Actual MCP clients negotiated protocol `2026-07-28`; saved-result readback passed current access and unchanged-evidence checks. Source/processor revocation and cache corruption were exercised with synthetic tests. This run did not change real access grants or source systems.
 
