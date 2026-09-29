@@ -1,0 +1,308 @@
+# Crowbo interaction model
+
+Import note, 29 September 2026: this frontend copy preserves the exploration below. Backend-only documents and the connected backend remain in the backend worktree; the Decision Studio here uses local synthetic state.
+
+28 September 2026, with the simplicity direction updated on 29 September. Page and workflow exploration grounded in the connected backend, deck v35 and public interaction research. The current product UI uses plain navigation labels as described in [Crowbo vocabulary](#crowbo-vocabulary); the earlier bird vocabulary is retained there as design history. A private static decision prototype now renders saved backend results; no multiuser UI or customer usability study exists. The [foundation](FOUNDATION.md) owns product intent; the backend brief (`TECHNICAL-PLAN.md` in the backend worktree) owns implementation sequencing; [evaluation](EVALUATION.md) owns judgment quality.
+
+## Initial workflow portfolio, 29 September
+
+The founder-approved shared handoff selects **remediation tracking, access reviews, and issues and exceptions management** as applications of Crowbo's security decision capability. This selects the portfolio, not launch order, equal implementation depth or the commercial entry point. The backend owner has reconciled the foundation in its worktree; this public frontend snapshot does not import those separate product-document changes. This section records the interaction consequences without creating a second product roadmap.
+
+| Workflow | Decision the UI helps explain | Current demo coverage | Smallest proposed addition |
+| --- | --- | --- | --- |
+| Remediation tracking | Is the agreed treatment progressing and effective, and should we continue, unblock, verify, change treatment, escalate, wait or propose closure? | The service-upgrade example compares a proposed change. It does not track an agreed treatment to verified completion. | A non-access case asking whether a fix can be closed when its PR is merged but deployment and verification remain unresolved. |
+| Access reviews | Which feasible arrangement supports the account's required work: retain, narrow, remove or temporary access; or what check is needed first? | The most developed example: support access, alternatives, annual-recovery challenge, explicit reassessment and retained advice in Decision view and Assistant preview. | Preserve this worked example and its tested, unverified and unavailable recovery branches. |
+| Issues and exceptions management | What gap exists, how should it be handled, and under what conditions could an exception be recommended? | No dedicated issue or exception lifecycle demonstration. | A non-access logging-gap case comparing restoration, a supported temporary safeguard and a bounded exception request. |
+
+Issues and exceptions establish the meaning and handling of a problem. Remediation follows the chosen treatment toward verified completion. Keep one stable case reference and linked issue, treatment and exception records where they concern the same problem. A deviation, requested exception, authorised acceptance and implemented safeguard have different states. Changed facts or expiry prompt an explicit review; the preview must not imply automatic monitoring. One access case crossing these workflows demonstrates continuity, not transfer to independent domains.
+
+Software upgrades can be cases within remediation or exception handling. Control testing and reassessment are possible later applications. Third-party reassessment and vendor management are outside the initial scope. The portfolio adds no campaign administration, integrations or execution authority to this UI study.
+
+### Smallest next UI delta
+
+Proposed, not implemented: keep the single opening card and editable question. Add workflow labels to the prepared question choices rather than new navigation pages. Preserve the approved crow, boxed feather topology, fonts, palette, source inspection and assistant presentation. Extend the existing card structure: recommended move, why, what must hold and next action. Comparison, challenge and source detail remain optional disclosures.
+
+Prepare two additional synthetic stories:
+
+- **Remediation:** a fictional agreed patch is merged. Without deployment and a scoped verification result, recommend the specific missing check. A later prepared record can establish deployment plus verification and support a proposal to close. Keep merged, deployed, verified and closed distinct; the final button records a simulated proposal.
+- **Issue or exception:** a fictional policy requires audit logging for a named service, but the supplied observation shows a gap. Show the requirement, affected scope, business timing and evidence for any proposed safeguard. A bounded exception recommendation needs conditions, an owner, expiry and reassessment triggers. Missing acceptance authority stays unresolved; recording the request cannot approve it. A later expiry or changed safeguard stages reconsideration.
+
+In each story, show which material source changed the advice, preserve exact prior source revisions, and offer a specific deciding question when facts are insufficient. Notes stay attributed and unverified. Source scope, period and freshness remain inspectable. Source count and network animation cannot stand in for judgment quality. Where risk is shown, use the customer's existing method and distinguish current assessment from proposed treatment and observed outcome.
+
+The backend's `DECISION-DATA-MODEL.md` owns case, source, feedback and reassessment contracts, including the proposed portfolio extensions; `PERMISSIONS.md` owns access boundaries. Those files and `TECHNICAL-PLAN.md` remain in the backend worktree. Reuse their existing operations before proposing new ones. Workflow criteria, durable cross-workflow links and lifecycle fields need a reviewed case before implementation. A UI sketch does not establish those backend capabilities. `EVALUATION.md` and `MEASUREMENT-PLAN.md` there own judgment qualification and proposed workload research; no quality, speed, cost or demand advantage follows from this demo.
+
+## What the user comes to do
+
+Help a GRC or Security Assurance team decide what deserves attention, understand the trade-off, involve the right owner, and check what happened afterward. The three workflows above share that loop. The accountable owner and delivery team have different responsibilities.
+
+The central object should be a decision case: a question about a defined subject and period, with evidence, options, recommendations, reported choices and subsequent observations. One case can have several immutable recommendation versions. A conversation can start or explore a case, and several source systems can inform it. The case must remain findable after the conversation ends.
+
+Users should be able to answer:
+
+1. What needs my attention, and why now?
+2. What is Crowbo recommending, and what would we postpone or give up?
+3. What facts, assumptions and missing information could change that recommendation?
+4. Who can make the decision, and who would deliver the work?
+5. What did we choose, what happened, and does the choice need revisiting?
+
+The UI should expose the evidence needed to answer these questions. Model names, vector counts and request traces belong in operational detail. Evidence freshness and missing capacity belong beside the recommendation because they affect whether someone can use it.
+
+## Three layouts explored
+
+Following pstack Experience First, First Principles and Exhaust the Design Space, these are earlier competing interaction sketches. They have not been tested with users. The controls-led sketch is design history, not an additional initial workflow.
+
+| Approach | Main journey | Strength | Main cost | Decision |
+| --- | --- | --- | --- | --- |
+| Conversation-led | Ask, receive an answer, continue the thread, search past chats | Quick initial question and natural headless entry | Finding unresolved choices, comparing versions and reviewing programme outcomes requires reconstructing conversations | Keep conversation as an entry and exploration method. |
+| Controls-led | Browse controls, inspect evidence, identify gaps, create work | Familiar to the initial GRC buyer and useful for assessing a specific control | Cross-domain trade-offs, external commitments and capacity become secondary; the product can become another control register | Keep a scoped control view within context and evidence. |
+| Decision-led | Review attention queue, open a case, compare options, record a view, revisit outcomes | Keeps reasoning, ownership, corrections and consequences together; the same case works in UI and MCP | Requires a small case index and clear status semantics beyond today's individual result IDs | Recommended organising model. |
+
+## Pages and how they connect
+
+These are five logical areas, not five pages that must all ship together. Start with three navigation entries: **Now, Decisions, Sources**. Initially, context and outcomes live inside a decision. Promote them to cross-case pages when repeated use establishes a need.
+
+| Area | User's question | What is visible | Main interaction and destination |
+| --- | --- | --- | --- |
+| Now | What needs attention in my programme or team? | Decisions needing a view, missing deciding facts, changed evidence, upcoming confirmed commitments and outcomes awaiting follow-up. Each item says why it appears. | Open the exact case and version that needs attention. Start a question with a period and scope. |
+| Decisions | What should we do, why, and what did we choose? | Searchable case list; one detail page with recommendation, alternatives, constraints, evidence, feedback and version history. | Inspect an option, correct a claim, record a simulated choice, or explicitly reassess. |
+| Context | What matters here, and what can this team do? | Objectives, commitments, capabilities, available capacity, owners and dependencies, each with source or attributed assertion, applicable period and confirmation status. | Review a disputed assumption and see which cases use it. Later edits create a new context version for subsequent reasoning. |
+| Sources | What information is available and fit for this question? | Selected systems and scopes, actual last successful check, incomplete coverage, processing readiness, access problems, and searchable evidence. | Open an evidence detail panel or add a permitted record to a case. Administrators manage connection/access settings separately from reading evidence. |
+| Impact | What changed after our decisions? | Choices and follow-ups, reported delivery, outcome evidence, remaining exposure, and what is still unknown. Expected benefits are separate from observed results. | Drill from a result to its case, original rationale and supporting observation. |
+
+The Now page should present a small queue of consequential items. A ranked row needs a plain explanation such as “owner confirmation needed before Friday's commitment.” A source's urgency language or a high Jev value is insufficient to label it non-negotiable. User filters change what is shown; they do not silently change the recommendation's underlying priority method.
+
+The Decisions list is the durable library. The Now queue is a view of cases needing attention. They must link to the same records, so clearing a notification does not close or delete a case. Deduplicate repeated source updates around the affected case and show the material change. Saved preferences, assignment, notification handling and automatic change detection are proposed capabilities.
+
+```mermaid
+flowchart TD
+    A["Ask in an assistant or open Crowbo"] --> B["Define question, scope and period"]
+    B --> C["Decision case"]
+    N["Now: decisions needing attention"] --> C
+    L["Decisions: saved cases"] --> C
+    C <--> E["Evidence and source status"]
+    C <--> X["Business context and capacity"]
+    C --> R["Record choice or correction"]
+    R --> H["Retained history"]
+    H --> V["Reassess using current evidence"]
+    V --> C
+    R --> O["Reported outcome and supporting observation"]
+    O --> I["Impact across cases"]
+    I --> C
+```
+
+This diagram proposes navigation and explicit user actions. It does not imply automatic monitoring, execution or reassessment.
+
+## The decision page
+
+### Question-first walkthrough, 29 September
+
+The founder selected a synthetic walkthrough before a live connection. This is a separate entry study at `decision-studio/dist/?view=ask`; the existing decision workspace stays available. The organising object remains a decision case. The entry becomes one expanding card, with detail appearing only when useful.
+
+PStack Experience First, Exhaust the Design Space and Model the Domain guide this comparison:
+
+| Sketch | Experience | Trade-off |
+| --- | --- | --- |
+| Chat transcript | Type a question, read successive messages, ask follow-ups. | Familiar, but the recommendation and its unresolved conditions drift apart. |
+| Permanent workbench | Question, source graph and recommendation occupy three columns. | Everything is inspectable, but too much appears before the first question. |
+| Expanding card — selected for this study | Open one card, ask, watch a bounded source sequence, then review one recommendation. | Requires deliberate state and focus transitions; keeps the first screen simple. |
+
+The local journey is **entry → question → research illustration → recommendation → optional challenge or source detail → simulated next step**. Two prepared questions cover support access and a service upgrade. The typed state model permits research only for those prepared questions. An unsupported free-text question stays editable and prompts selection of an example; it never receives an unrelated scripted answer.
+
+The research illustration activates boxed feathers and provider marks in a finite sequence. It can be paused or skipped, and reduced motion removes animated travel. Card size represents a named, ordinal influence on this particular choice: deciding, supporting or context. A constraint is marked **Must hold** independently of size. Neither source count nor search rank becomes a decision-confidence score.
+
+The result says **Recommended next move**, followed by its deciding reason and material condition. Confidence is expressed through what supports the proposal and what remains unconfirmed; no percentage purports to measure whether the whole decision is correct. Alternatives and source scope, period, revision and limits open on request. This study is clearly labelled synthetic throughout. Provider marks identify fictional example records, not active integrations.
+
+**What might we be missing?** introduces one relevant counterargument grounded in a source limit, then the check that would settle it. For example, a quiet activity log may omit an infrequent recovery workflow. An explicit prepared what-if changes the proposed next step while preserving a visible before/after. Free-text operator context is attributed, unverified and displayed as text; it does not silently trigger inference or create an organisation-wide rule. Recording a simulated next step remains separate from any approval or execution.
+
+Implementation plan: add an isolated React walkthrough and scoped styles; reuse the approved crow, twelve-feather family, local fonts, provider marks, Motion and Radix Dialog; route to it only through `?view=ask`. Keep prepared fixtures and legal transitions in a small typed module. Add behaviour checks for unknown questions, completion, explicit what-if and simulation boundaries; verify desktop, phone, keyboard, source inspection and motion controls. No new dependencies, storage, model calls or external actions.
+
+The later live version must obtain source and result state from actual operations. The inspected backend exposes search, inspection, one bounded decision run and saved-result inspection; it does not emit per-node research progress. Its eventual UI must not substitute this timer-based illustration for live events. Offline evaluation qualifies the method separately; the illustration must not claim that evaluations are running. The founder's judgment can enter as attributed context or reviewed criteria, with its version and limits retained.
+
+Research inputs: [Turbopuffer query documentation](https://turbopuffer.com/docs/query) for retrieval; [TypeSafe primitives](https://docs.typesafe.ai/primitives) for focused source judgments; and [Daniel Miessler's RedTeam skill](https://github.com/danielmiessler/LifeOS/blob/main/LifeOS/install/skills/RedTeam/SKILL.md) for the pattern of a claim, a strong objection and a constructive check. The challenge interaction borrows that pattern, not the skill's orchestration or instructions. The proposed experience and influence assignments are design hypotheses, not evaluation results.
+
+#### Access review: a recommendation that survives a challenge
+
+The implemented UI-only refinement anchors the access demonstration in one question: **Reduce unnecessary access without breaking the work.** It is the implementation starting point within the portfolio above. The service-upgrade example remains available, while the access story promotes comparison and challenge into the main interaction.
+
+Three presentation sketches were compared using PStack Experience First and Exhaust the Design Space. A full chat transcript makes follow-up natural but separates the recommendation from its conditions. Four separate story screens make the narrative obvious but require repeated navigation to compare advice. The selected sketch keeps one recommendation card, adds an inline challenge, and explains each revision beside the changed source relationship. Earlier advice stays inspectable.
+
+The story has four moments: establish tickets and quarter-end exports as required work; compare Administrator, removing reporting and a proposed narrower role; introduce a synthetic annual recovery task requiring administrative capability; then revise the advice when the supporting facts change. The card uses Recommended move, Why this option, What must hold and Next action. Compare options and Challenge this are visible actions. Recording a proposed next step stays separate from authorising or executing access changes.
+
+The recovery task and the temporary-access mechanism are separate fixture records. A prepared challenge first establishes the rare task. It cannot establish that temporary access exists or works. The next prepared record can describe a tested recovery path, an unverified runbook, or an unavailable mechanism. Only the tested branch includes a fictional controlled rehearsal, completion of the recovery task, time-bound grant and expiry checks, and the own-queue export boundary. Its scope and limits remain visible. Owner approval and any outstanding daily-role checks still apply. Missing or unavailable temporary access cannot produce the combined everyday-role-and-recovery recommendation.
+
+The changed source relationship should be legible: observed activity did not cover annual recovery; recovery needs a capability absent from the daily role; a tested temporary path can supply that capability for the task. Animate only the affected connection, respect reduced motion and allow motion to be paused. Source influence and firm constraints retain their separate meanings. Do not add a decision-correctness percentage.
+
+Implementation plan: keep the existing question, research and upgrade flow; isolate access-review state and UI in focused modules; reuse the current source network and inspector through a shared source component. Retain immutable recommendation versions, stage new fixture facts before explicit reassessment, and bind each displayed version to its own source set. Keep notes as unverified React text. Use existing artwork, fonts, Radix and Motion. Add behaviour tests for insufficient evidence, tested versus unverified/unavailable branches, retained advice, idempotent reassessment and simulated choice boundaries. Verify the actual desktop, phone and keyboard flow, then record receipts in the studio README. No backend changes, connections, publication or external actions.
+
+#### The same decision in a coding assistant
+
+The implemented refinement keeps the existing decision page and adds an explicitly illustrative assistant view to the access-review result. A view switch changes presentation while retaining the same recommendation version, staged context, source revisions, note and simulated next-step records. It does not create a second decision or imply a live host connection. The existing question entry, research illustration, service-upgrade example and ordinary workspace remain available.
+
+The assistant preview starts with the same ordinary-language question. Crowbo returns a compact recommendation with its material conditions and source citations. Prepared follow-up suggestions fill an editable composer. Sending the exact prepared annual-recovery question stages the owner statement; it does not silently apply it. The tested, runbook-only and unavailable follow-ups likewise stage their respective synthetic records for explicit reassessment. Other text remains editable with an explanation that this preview supports prepared follow-ups only. It must never produce a canned decision for an unrelated prompt.
+
+The current recommendation stays prominent. Earlier turns and source details open on request. Both views share option comparison, next-step review and pending-context presentation so their authority boundaries cannot diverge. The host styling is original and generic, using Crowbo's approved fonts, palette and feather assets. No real Claude UI, agent connection, skill activation, MCP call, model reasoning or live source search is represented as running.
+
+Implementation plan: extend the existing access reducer with a bounded follow-up draft and exact prepared-intent selection; extract the existing shared comparison, action and pending-context components; add a scoped assistant presentation with source inspection; and keep view selection outside decision state. Add behavior tests for unsupported prompts, prerequisite enforcement, draft preservation and staged versus applied context. Review desktop, phone, keyboard, switching with pending context and switching after reassessment. Record build and browser receipts in the studio README. No new dependencies, storage, external requests or backend changes.
+
+The first screen should explain the question, recommended next step and deciding trade-off without requiring someone to read an entire model response.
+
+The founder's 29 September direction is to keep the experience simple, following the feedback shared from Nasem. The current synthetic Decision Studio opens with the case question, a short explanation and one recommendation card. Review recommendation is the primary action. Its unresolved conditions remain visible. Permission detail, comparisons and sources open when requested; the boxed feather network sits inside Explore the sources. Sources and People use concise records with additional detail on click. History remains a distinct page, and integration administration stays in Settings. On a phone, the recommendation comes before the explanation in both visual and keyboard order. This is an implemented local layout, not a validated usability result.
+
+Keep the case question, subject, planning period and selected version visible in the header. Show the evidence check time separately from the recommendation creation time. An old, unchanged source can still be overdue for a check. A newer recommendation is not necessarily an accepted choice.
+
+The main reading order is:
+
+1. **Proposed next step.** What to do next, why now, and the most important condition or unresolved fact. If the evidence supports asking a specific question first, make that the next step.
+2. **Options and trade-offs.** Compare the recommended option with feasible alternatives and deferral. Show expected benefit, affected commitment/exposure, effort, dependencies, displaced work and uncertainty. Mark estimates and unknowns explicitly. Today's prose alternatives do not support a reliable typed comparison table yet.
+3. **Deciding evidence.** Show the few claims that matter to this choice, their supporting and conflicting sources, and missing facts. Clicking a citation opens a side panel with the exact source revision and its limits; it should preserve the user's place in the decision.
+4. **People and next action.** Distinguish the proposer, accountable owner and delivery team. Display requested capacity separately from confirmed availability. In the current pilot, use “Record simulated choice” and “Save correction”; the backend does not authenticate an owner's authority.
+5. **History and outcome.** Show previous recommendations, reported choices, corrections and outcomes as separate entries. A version comparison should distinguish changed evidence, changed assumptions, changed advice and the user's reported choice. It must preserve the original basis.
+
+Detailed model/provider receipts and criteria definitions can sit behind “How this was produced.” The rationale should explain the deciding factors and sources; a long generation transcript does not establish why a recommendation is correct.
+
+The synthetic restore-versus-access-cleanup case is a useful paper prototype. The page should let a reviewer see the failed restore observation, the basis for the recovery deadline, the proposed engineering effort, the reason cleanup might be deferred, and the missing capacity confirmation. The example does not establish a universally correct choice.
+
+## How a person enters and corrects a case
+
+Let the user begin with an ordinary question. Offer a short, editable scope summary containing the subject, period, business objective, relevant source selection and any assumptions. Existing context may prefill these fields, but an inferred deadline or owner must remain unconfirmed until supported.
+
+Search should suggest evidence, not require the user to paste hashes. Keep the selected source titles and coverage limitations inspectable. The first pilot can let the operator choose those records explicitly. Search hits are not a complete inventory of commitments.
+
+Correction should happen where the problem appears: “This deadline is for the earlier deliverable,” “That estimate is unconfirmed,” or “This source does not support the claim.” Retain the correction and its basis independently of another model run. A successful save should say that the correction is recorded and can be used in an explicit reassessment. It should not say the system has learned a new rule.
+
+Improving the reusable decision method needs a separate interaction later. A method owner should be able to inspect a proposed criterion or evidence-weight change, compare affected cases, and choose whether to adopt it for future reviews. The first UI can show the current criteria and their version under the explanation. A correction to one case must not silently become an organisation-wide rule, and the current backend does not implement reviewed weight adaptation.
+
+A request for missing information can produce a question for the user to copy to the appropriate person. Sending messages, assigning someone else's work, changing a source and approving execution require separate capabilities and authority. They are not implied by a feedback button.
+
+## Headless use
+
+Headless means another interface calls the same decision operations. A security lead can ask in an assistant; an engineer can inspect the cited source; a programme owner can review the retained case in Crowbo. All should refer to the same result identity and version, subject to their access. Adoption need not depend on daily visits to a dashboard.
+
+The minimum useful response in a host is a compact decision card or equivalent structured text:
+
+- Question, case/version, planning period and evidence-check time.
+- Proposed next action and the main trade-off or alternative.
+- Deciding sources, material assumptions and unresolved constraints.
+- Whether this is advice, a reported choice or an observed outcome.
+- Result ID and explicit next operations: inspect, record feedback, or reassess.
+
+An authenticated deep link to the same case would be useful once a web service exists. The current MCP returns IDs and structured data; it has no hosted case URL. An agent's paraphrase should retain the result reference so the user can inspect the saved answer.
+
+The intended headless journey is:
+
+1. The host helps scope a question and select permitted evidence.
+2. Crowbo checks the selected basis, runs reasoning and saves a result.
+3. The host displays the recommendation with its unresolved facts and reference.
+4. The user records a correction or simulated choice through the same backend.
+5. A later explicit review uses current sources and that feedback, preserving the earlier record.
+
+An integration does not acquire authority merely because an agent calls it. Host identity, the human on whose behalf it acts, processing permissions and any future execution permission need distinct records. The current startup-bound reader does not provide that multiuser identity model.
+
+MCP Apps is an optional later way to render a comparison or feedback form inside a supporting host. The official extension supports interactive UI resources; this server does not implement them and host support has not been tested here. Text/structured responses remain the first interface. [MCP Apps overview](https://modelcontextprotocol.io/extensions/apps/overview)
+
+## State the user must be able to distinguish
+
+Avoid one “healthy” status that mixes evidence, advice, authority and delivery. A case can have fresh evidence, an unresolved recommendation and no confirmed capacity simultaneously.
+
+| Situation | User-facing meaning and action |
+| --- | --- |
+| Evidence is checked but coverage is partial | Explain the selected scope and known gaps; do not show “all systems covered.” |
+| Evidence changed or its check is overdue | Retain the authorised historical view with an explicit warning; refresh the source before a new current review. Automatic refresh is not currently installed. |
+| Access was revoked | Deny the derived content and clear displayed/cached protected details. A generic unavailable state must not reveal another customer's record or restricted source names. |
+| The model is running | Show a real running state and elapsed time. The current synchronous API supplies no detailed streaming stages or reliable progress percentage. |
+| Reasoning fails | Retain the question and saved feedback. Explain that retrying reasoning is a new call, while repeating identical feedback is safe. A save whose outcome is uncertain must not be presented as a guaranteed new failure. |
+| A correction is saved | Say it was recorded; offer explicit reassessment. Do not silently change the earlier recommendation. |
+| A choice is reported | Keep it distinct from confirmed owner authority and externally performed work. |
+| Delivery is reported | Show who reported it, when, and which source supports it. Keep outcome verification unresolved until qualified evidence and review exist. |
+| Linked reassessment exceeds the source limit | Explain the current 15-contributor bound. Do not silently drop prior contributors or pretend an independent review has the same history. |
+
+The backend's `decision_ready` flag should appear as “evidence checks passed,” with its scope visible. It does not mean “ready to approve,” “feasible to deliver” or “safe.” Background notifications, cancellation, work queues and reliable retry/job status need additional implementation; the UI must not imply those exist already.
+
+## Showing impact
+
+For a headless product, impact should be visible where users already work and available as a cross-case review. Every summary must link back to the supporting cases and observations.
+
+| View | Useful question | Evidence needed |
+| --- | --- | --- |
+| Decisions and follow-up | Which choices were recorded, deferred or revisited? | Exact recommendation, feedback and version references. These measure use and follow-up, not security improvement. |
+| Commitments | Did the required delivery happen, and was it accepted? | The obligation and deadline, delivery record and acceptance evidence where required. A closed task alone may be insufficient. |
+| Protection | Did the control or protection actually change? | Before/after observations for the same subject, scope and period, with verification status and limitations. |
+| Capacity and trade-offs | What work was displaced, and what effort was spent? | A recorded allocation and actual effort report. Keep estimates separate; do not infer spare capacity from calendars or PR counts. |
+| Decision usefulness | Did the recommendation help someone reach a defensible choice with less correction effort? | Reviewed cases, correction effort and fair comparisons defined in the evaluation contract. |
+| Financial consequence | What loss or benefit is estimated, and what was observed? | Attributed assumptions, units, horizon and appropriate observed financial data. A conditional annual-loss calculation is not money saved. |
+
+Separate expected benefits, reported outcomes and supported observations visually and in the data. Show the review period, coverage denominator, missing follow-ups and who assessed each outcome. Count unique cases rather than every repeated model run. An empty result is “no outcome evidence yet,” not zero risk or zero value. Do not sum Jev confidence into an impact score or attribute all subsequent improvements causally to Crowbo.
+
+## Crowbo vocabulary
+
+Current direction, 29 September 2026: use **Decisions, Sources, People and History** in product navigation. Keep the crow and feather artwork as visual identity without making people learn bird terminology. Sources contains the records used in a decision; Settings → Integrations describes the tools supplying records. Actions use plain language: Review recommendation, Compare options, Correct information and Reassess now. Saving a correction and applying it remain separate actions.
+
+The following vocabulary was selected on 28 September and is preserved as the earlier exploration. It is superseded for current navigation; internal identifiers can remain stable.
+
+| Term | Meaning | Plain explanation for first use |
+| --- | --- | --- |
+| Nest | One organisation's workspace | Workspace |
+| Flock | People, teams and connected agents, with visibly different roles | People and agents |
+| Feathers | Evidence items cited to support or challenge a decision, with source, version and date | Evidence |
+| Flight log | Recommendation versions, choices and outcomes | Decision history |
+
+Flight plan is a proposed extension for a set of priorities over a defined period. Keep its status explicit: proposed, reviewed or superseded. The founder's selection above does not establish a new scheduling or execution capability.
+
+The earlier terminology followed the journey: work in a Nest, involve the relevant Flock members, inspect the Feathers behind a recommendation, and revisit the choice and outcome in the Flight log. A history entry belongs to its decision case; it is not a second copy of that decision.
+
+Do not require the earlier vocabulary in onboarding or navigation. Keep actions direct and statuses such as "Missing information", "Access restricted" and "Proposed" explicit. Do not invent a metaphor for every button, warning or setting.
+
+Use one meaning per term. A Feather is a cited evidence item, not every internal chunk or a reward currency. Flock membership does not grant access to every source; the permissions model (`PERMISSIONS.md` in the backend worktree) still applies. Growth imagery can mark better coverage or a completed review when supported, while collecting more Feathers cannot imply greater protection. Keep model/tool field names literal and stable regardless of display wording. Palette and mascot selection remain in [the brand document](../design/BRAND.md).
+
+## Backend implications and the smallest next test
+
+The backend contracts describe six MCP tools for evidence search/inspection, a new recommendation, exact result inspection, feedback recording and feedback inspection. Decision Studio does not call them. The following are design gaps to reconcile with the owning backend contracts, not a commitment to build all of them:
+
+| UI need | Current backend | Smallest justified next capability |
+| --- | --- | --- |
+| Find my saved decisions and their follow-ups | Exact-ID inspection; caller-supplied case/version strings; no case/feedback listing | Access-filtered, paginated case and feedback discovery with an explicit rule for current recommendation versus reported choice. |
+| Inspect why an old answer changed | Exact source bindings and predecessor links; current source inspection | Authorised read of the relevant historical basis and a deterministic version diff. Never substitute today's source excerpt for yesterday's citation. |
+| Compare workflow-specific options | Access options bind required work, source quotations, conditions and alternatives; remediation and exception extensions are proposed | Qualify the smallest additional facts and criteria using the two planned non-access cases. |
+| Reuse context across decisions | Context enters individual requests | A small versioned context record only when repeated edits across cases justify it. No organisation graph service is required for the first UI. |
+| Show customer outcomes | Attributed outcome text and supporting revisions | Clear outcome review status and scoped aggregation after an observation/review contract is tested. |
+| Use the product across people and clients | Local stdio and one startup-bound reader | Authenticated user/client identity, authorised shared reads and web delivery before a multiuser UI or share links. |
+| Keep attention fresh | Explicit one-shot sync and checks during operations | Start with manual checks; add owned refresh/change notifications and durable run status only when the workflow needs them. |
+
+Use the same domain operations behind UI and MCP. Keep source acquisition separate from presenting a decision; the MCP server cannot fetch from every connector installed in its host. A web layout does not justify a new database, another reasoning engine or separate business rules in browser code.
+
+The next UI study should exercise [the planned workflow examples](#smallest-next-ui-delta) through the existing question-and-card interaction. Keep the access assistant preview as the worked host example; any later equivalent presentation must retain the same case, source and recommendation versions. Ask a GRC lead and a delivery owner to:
+
+1. Choose the relevant example and identify its next action without reading every source.
+2. Find the evidence for the deciding claim and identify what remains unconfirmed.
+3. Challenge a material fact and explain whether the staged correction has been applied yet.
+4. Explain who can commit the work and whether any work has actually happened.
+5. Revisit the case after a source change, verification result or expired condition and identify what changed without losing the original basis.
+
+Before calling the expanded demo complete, check all three workflow labels, both non-access stories, unresolved-fact branches, explicit reassessment, retained versions and the separation of recommendation, authority, execution and verified outcome. Then check desktop, phone, keyboard and motion controls. Record task completion, material misunderstandings, time to find deciding evidence and correction effort separately from engineering checks. These are proposed usability tasks; no user session or success rate is claimed. The existing synthetic scripts do not qualify the decision method.
+
+## Research basis
+
+### Implemented navigation prototype
+
+`crowbo --settings /private/path/settings.json export-decision RESULT_ID REASSESSED_ID --output /private/path/decision.html` checks current access through the backend and exports saved versions of one case. Nest shows the question, recommendation, alternatives and unresolved facts. Flock shows attributed owners and authority limits. Feathers exposes exact evidence revisions, quotations and Jev values. Flight log retains earlier advice, saved corrections and their explicit inclusion in a reassessment.
+
+The HTML uses no scripts, remote assets or new frontend dependency. Its navigation and expandable evidence/history panels work locally. It is a read-only snapshot: it cannot submit feedback, rerun reasoning or enforce permission changes after export. The live CLI and MCP remain the ways to save corrections and reassess. Real exports stay outside Git. This tests whether the backend can support an inspectable page; it does not establish user comprehension or a complete product interaction.
+
+### Interactive visual comparison
+
+The [28 September UI study](../design/decision-prototype/2026-09-28/README.md) compares three clickable layouts for deck v38's synthetic support-platform access review: a decision terminal, a recommendation-led brief and a programme queue. Each uses Nest, Flock, Feathers and Flight log, the approved Modular Crow and Packet Runner, local animation, evidence inspection, alternatives, separate correction capture and explicit scripted reassessment. This is a high-fidelity visual prototype with tab-local synthetic state, separate from the backend-connected export above. No layout has been selected by a user study. The prototype README records its browser checks and boundaries.
+
+The [React decision studio](../design/decision-studio/README.md) develops the visual study through three further review loops. It adds an interactive evidence map, accessible source and correction dialogs, keyboard search, responsive layouts, and explicit scenario-change markers. Its README owns the visual research, dependency rationale and verification receipts. The data remains synthetic and tab-local; it does not change the connected backend or its authority model.
+
+### Sources
+
+The following are primary-source descriptions and design guidance, read on 28 September 2026. The Crowbo proposal above is a synthesis, not a claim that these sources validate its market or usability.
+
+- [Linear Triage](https://linear.app/docs/triage) separates intake review from work entering a team's workflow. Transfer the distinction between an attention item and an accepted choice; do not inherit its automation or issue lifecycle as Crowbo authority.
+- [Linear Inbox](https://linear.app/docs/inbox) provides attention-focused notifications linked to underlying work. Transfer the separation between handling a notification and modifying its record.
+- [Linear project and initiative updates](https://linear.app/docs/initiative-and-project-updates) combines concise status with narrative and history across Linear and Slack. Transfer concise programme visibility with a route to its basis; a status indicator alone does not establish protection.
+- [Microsoft HAX: efficient correction](https://www.microsoft.com/en-us/haxtoolkit/guideline/support-efficient-correction/) recommends making partially wrong AI outputs easy to refine or recover from. Transfer correction at the relevant claim while retaining the original recommendation.
+- [Google PAIR patterns](https://pair.withgoogle.com/guidebook-v2/patterns) favour explanations relevant to the user's immediate decision and careful use of numeric confidence. Transfer progressive detail and explicit unknowns rather than a universal confidence badge.
+- [Google PAIR: feedback and control](https://pair.withgoogle.com/chapter/feedback-controls/) distinguishes acknowledging feedback from explaining its actual effect and timing. Transfer accurate “saved” versus “used in this reassessment” wording.
+- [LangSmith annotation queues](https://docs.langchain.com/langsmith/annotation-queues) ties focused review and rubric feedback to specific runs or threads and supports paired comparisons. Transfer version-bound review and comparison, not an engineering trace console as the everyday security UI.
+- [MCP Apps](https://modelcontextprotocol.io/extensions/apps/overview) describes interactive views rendered in supporting hosts. It is an optional distribution mechanism for a future decision view, not a prerequisite for useful headless responses.

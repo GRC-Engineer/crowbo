@@ -1,0 +1,113 @@
+.motion-review[hidden] { display: none; }
+
+html[data-variant] body { overflow-x: clip; }
+html[data-variant] .page { isolation: isolate; }
+html[data-variant] .masthead,
+html[data-variant] .statement,
+html[data-variant] .footer { position: relative; z-index: 1; }
+
+html[data-variant] .portrait-wrap {
+  position: fixed;
+  right: -8px;
+  bottom: -110px;
+  z-index: 0;
+  width: min(55vw, 760px);
+  margin: 0;
+  opacity: .55;
+  pointer-events: none;
+}
+
+html[data-variant] .portrait { background: transparent; }
+html[data-variant] .sprite,
+html[data-variant] #crow-bytes { transition: none; }
+html[data-variant] .sprite { opacity: 1; }
+html[data-variant][data-crow-ready] .sprite { opacity: .3; }
+html[data-variant][data-crow-ready] #crow-bytes { opacity: .7; filter: brightness(2.6); }
+
+html[data-variant="flock"] .portrait-wrap {
+  right: 10px;
+  bottom: 116px;
+  width: min(55vw, 720px, calc((100svh - 176px) * 1.052632));
+  pointer-events: auto;
+}
+html[data-variant="flock"] .portrait { cursor: crosshair; mask-image: none; }
+html[data-variant="flock"] .masthead { width: fit-content; max-width: 100%; }
+html[data-variant="flock"][data-crow-ready] .sprite { display: none; }
+html[data-variant="flock"][data-crow-ready] #crow-bytes { opacity: 1; filter: none; mix-blend-mode: lighten; }
+
+.motion-review {
+  position: fixed;
+  z-index: 5;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: min(720px, calc(100% - 28px));
+  border: 1px solid #38413c;
+  background: #121817;
+  color: var(--chalk);
+  font: 400 12px / 1.5 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+.review-controls { display: flex; align-items: stretch; gap: 5px; padding: 7px; }
+.effect-options { display: flex; flex: 1; gap: 3px; }
+.motion-review button {
+  min-height: 42px;
+  padding: 7px 11px;
+  border: 0;
+  background: transparent;
+  color: var(--chalk);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.effect-options button { flex: 1; }
+.motion-review button:hover { background: #1e2924; }
+.motion-review button[aria-pressed="true"] { background: var(--sage); color: var(--background); }
+.motion-review button:focus-visible { outline: 1px solid var(--sage); outline-offset: 2px; }
+.motion-review .motion-toggle { border-left: 1px solid #38413c; min-width: 65px; }
+.option-index { opacity: .6; }
+.review-meta {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 3px 14px;
+  padding: 0 14px 9px;
+  color: #9fa9a3;
+  font-size: 10px;
+}
+
+@media (max-width: 800px) {
+  html[data-variant] .page { padding-bottom: 130px; }
+  html[data-variant] .introduction { display: flex; flex: 1; flex-direction: column; align-items: stretch; gap: 32px; margin-bottom: 0; }
+  html[data-variant] .portrait-wrap {
+    position: relative;
+    align-self: flex-end;
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+    aspect-ratio: 1000 / 950;
+    right: auto;
+    bottom: auto;
+    margin: auto 0 0;
+  }
+  html[data-variant] .portrait { position: relative; right: auto; bottom: auto; mask-image: linear-gradient(#000 82%, transparent); }
+  html[data-variant] .footer { margin-top: 18px; }
+  html[data-variant="flock"] .portrait-wrap { right: auto; bottom: auto; width: 100%; max-width: 600px; }
+  html[data-variant="flock"] .portrait { mask-image: none; }
+}
+
+@media (max-width: 480px) {
+  .review-controls { gap: 2px; padding: 5px; }
+  .effect-options { gap: 2px; }
+  .motion-review { bottom: 12px; width: calc(100% - 20px); font-size: 11px; }
+  .motion-review button { padding: 6px 5px; }
+  .motion-review .review-arrow { padding: 6px 7px; }
+  .motion-review .motion-toggle { min-width: 43px; }
+  .option-index { display: none; }
+  .review-meta { padding: 0 11px 8px; }
+}
+
+@media (max-width: 380px) {
+  .effect-options button[aria-pressed="false"] { display: none; }
+}

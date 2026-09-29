@@ -18,9 +18,25 @@ The first selected proof is **buy another vulnerability tool or improve remediat
 
 Preview locally with `npx wrangler dev` (serves on 127.0.0.1). Publishing becomes automatic once the repository is connected in the Cloudflare dashboard (Workers & Pages → Create → Import a repository; no build command; deploy command `npx wrangler deploy`). Merges to `main` then deploy to crowbo.ai and other branches get preview URLs.
 
+## Frontend previews
+
+[Decision Studio](design/decision-studio/README.md) contains the React question-to-decision demo and its assistant preview. [The design index](design/README.md) links the newer homepage, brand board, mascot and feather studies, and earlier prototypes.
+
+To run the product preview from the repository root:
+
+```sh
+cd design/decision-studio
+npm ci
+npm run build
+cd ../..
+python3 -m http.server 8799 --bind 127.0.0.1 --directory design
+```
+
+Open <http://127.0.0.1:8799/decision-studio/dist/?view=ask>. Prepared examples are synthetic and keep all state in the current tab. The assistant view illustrates the interaction; it does not connect to Claude, Codex or a live Crowbo service. The build output and dependencies are excluded from Git; the lockfile, source, tests, local artwork and licences are included. These previews do not replace the deployed `site/` folder.
+
 ## Current state
 
-This repository contains the foundation documents. There is no executable prototype, completed evaluation, deployed service or validated customer outcome yet.
+This repository contains foundation documents, the static company site, and local frontend design studies. Decision Studio is an executable synthetic preview; it has no live backend connection. No completed decision-quality evaluation or validated customer outcome is claimed.
 
 Crowbo is a new software project. Earlier research and prototypes are historical inputs that may be consulted for specific questions; they do not define this repository's scope or roadmap.
 
