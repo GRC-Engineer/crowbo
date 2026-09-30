@@ -18,5 +18,9 @@
   ],
   // Branch preview URLs on *.workers.dev; the production site stays on crowbo.ai.
   "workers_dev": false,
-  "preview_urls": true
+  "preview_urls": true,
+  // Required by `wrangler preview`, the non-production branch deploy command in
+  // Workers Builds. Empty: the static site has no bindings to override. Ignored by
+  // `wrangler deploy`, so the production deploy to crowbo.ai is unchanged.
+  "previews": {}
 }
