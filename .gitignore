@@ -22,3 +22,4 @@ proof/runs/
 backend/node_modules/
 backend/.wrangler/
 backend/.dev.vars
+backend/.dev-token
