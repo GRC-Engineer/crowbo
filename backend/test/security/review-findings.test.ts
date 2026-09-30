@@ -157,3 +157,14 @@ describe("security review findings", () => {
     expect(fine instanceof Uint8Array && new TextDecoder().decode(fine)).toBe('{"a":1}');
   });
 });
+
+import { SlackReader } from "../../src/providers/slack";
+
+describe("Slack file references follow Python truthiness", () => {
+  it("an empty files list is treated as no file references, so the revision text matches the pilot", async () => {
+    const parent = { ts: "1727258400.000100", text: "parent", reply_count: 0, files: [] as unknown[] };
+    const fetchImpl = async () => new Response(JSON.stringify({ ok: true, messages: [parent], has_more: false, response_metadata: { next_cursor: "" } }), { status: 200 });
+    const snapshot = await new SlackReader(new MemoryLedger(), "x".repeat(32), fetchImpl as any).read({ channel_id: "C0123456789", message_ts: "1727258400.000100", title: "t" });
+    expect(snapshot.text).toBe('[{"text":"parent","ts":"1727258400.000100"}]');
+  });
+});

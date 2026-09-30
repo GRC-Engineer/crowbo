@@ -197,11 +197,17 @@ describe("private local files", () => {
 });
 
 describe("API credential", () => {
-  const good = "a".repeat(16);
+  const good = "a".repeat(32); // a token the server accepts (24–512 URL-safe characters)
 
   it("prefers CROWBO_TOKEN and falls back to the Keychain", () => {
     expect(apiToken({ CROWBO_TOKEN: good }, () => "unused")).toBe(good);
-    expect(apiToken({}, () => "k".repeat(2048))).toBe("k".repeat(2048));
+    expect(apiToken({}, () => "k".repeat(512))).toBe("k".repeat(512));
+  });
+
+  it("refuses tokens the server would reject (24–512 URL-safe characters) before any request", () => {
+    for (const bad of ["k".repeat(23), "k".repeat(513), "k".repeat(2048), `${"k".repeat(30)}!`]) {
+      expect(() => apiToken({}, () => bad)).toThrow("Required Crowbo API credential is unavailable");
+    }
   });
 
   it("applies the pilot's secret() validation without echoing the value", () => {

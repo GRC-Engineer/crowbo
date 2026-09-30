@@ -109,9 +109,13 @@ export function keychainToken(): string | null {
   }
 }
 
+export const BEARER_TOKEN = /^[A-Za-z0-9._~+/=-]{24,512}$/;
+
 /** The operator's API token: `CROWBO_TOKEN`, else the Keychain. Never printed. */
 export function apiToken(env: Record<string, string | undefined>, keychain: () => string | null = keychainToken): string {
   const value = env.CROWBO_TOKEN || keychain();
-  if (!validSecret(value)) throw new CrowboError("Required Crowbo API credential is unavailable");
+  // The server accepts bearer tokens of 24–512 URL-safe characters (src/app/auth.ts); refuse
+  // anything else here so a bad credential fails locally instead of as a 401.
+  if (!validSecret(value) || !BEARER_TOKEN.test(value)) throw new CrowboError("Required Crowbo API credential is unavailable");
   return value;
 }

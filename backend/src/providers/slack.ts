@@ -133,7 +133,8 @@ export class SlackReader implements ThreadReader {
         }
         const kept: Record<string, unknown> = {};
         for (const key of ["ts", "user", "bot_id", "text", "edited", "subtype"]) if (key in message) kept[key] = message[key];
-        if (message.files) {
+        // Python truthiness: an empty list, empty string, 0 or null means no file references.
+        if (message.files !== undefined && message.files !== null && message.files !== false && message.files !== 0 && message.files !== "" && !(Array.isArray(message.files) && message.files.length === 0)) {
           if (!Array.isArray(message.files) || !message.files.every((f: unknown) => f && typeof f === "object" && !Array.isArray(f))) {
             throw new SlackReadError("Slack file references are incomplete");
           }
