@@ -20,7 +20,14 @@ const readOnly = { readOnlyHint: true, destructiveHint: false, openWorldHint: tr
 export function buildServer(invoke: Invoke): McpServer {
   const server = new McpServer({ name: "Crowbo", version: "0.2.0" }, { instructions: INSTRUCTIONS });
   const call = async (operation: string, args: unknown) => {
-    const outcome = await invoke(operation, args);
+    let outcome: Awaited<ReturnType<Invoke>>;
+    try {
+      outcome = await invoke(operation, args);
+    } catch {
+      // The protocol boundary must not disclose upstream or transport error text (e.g. a
+      // Durable Object RPC failure); the SDK would otherwise return error.message verbatim.
+      outcome = { ok: false, error: "Crowbo could not complete this operation; inspect the private runtime receipt" };
+    }
     if (!outcome.ok) return { isError: true, content: [{ type: "text" as const, text: outcome.error }] };
     const result = outcome.result as Record<string, unknown>;
     return { content: [{ type: "text" as const, text: JSON.stringify(result) }], structuredContent: result };

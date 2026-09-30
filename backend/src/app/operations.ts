@@ -121,9 +121,15 @@ export const OPERATIONS = {
     const views = await engine(ctx, false).search(query, mode, limit);
     return { population_complete: false, retrieval_mode: mode, records: views.map((v) => summary(v, 1200)) };
   },
-  review: async (ctx: Context, a: unknown) => new Review(engine(ctx, false), reasoner(ctx)).run(reviewRequest.parse(a)),
+  review: async (ctx: Context, a: unknown) => {
+    const request = reviewRequest.parse(a); // validate input before resolving provider credentials
+    return new Review(engine(ctx, false), reasoner(ctx)).run(request);
+  },
   inspect_review: async (ctx: Context, a: unknown) => new Review(engine(ctx, false), null).inspect(z.strictObject({ id }).parse(a).id),
-  decide: async (ctx: Context, a: unknown) => resultSummary(await decision(ctx, engine(ctx, false), true).run(decisionRequest.parse(a))),
+  decide: async (ctx: Context, a: unknown) => {
+    const request = decisionRequest.parse(a); // validate input before resolving provider credentials
+    return resultSummary(await decision(ctx, engine(ctx, false), true).run(request));
+  },
   inspect_decision: async (ctx: Context, a: unknown) => resultSummary(await decision(ctx, engine(ctx, false), false).inspect(z.strictObject({ id }).parse(a).id)),
   record_feedback: async (ctx: Context, a: unknown) => new Feedback(engine(ctx, false)).record(feedbackRequest.parse(a)),
   inspect_feedback: async (ctx: Context, a: unknown) => new Feedback(engine(ctx, false)).inspect(z.strictObject({ id }).parse(a).id),
