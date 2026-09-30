@@ -13,6 +13,36 @@ const SECURITY_HEADERS = {
   "strict-transport-security": "max-age=31536000",
 };
 
+const MAX_BODY = 1_000_000;
+
+/**
+ * Read a request body with a hard cap, whether or not Content-Length is sent (HTTP/2 and
+ * streaming clients may omit it). A declared oversize length is refused before reading.
+ */
+export async function boundedBody(request: Request): Promise<Uint8Array | Response> {
+  const declared = Number(request.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declared) && declared > MAX_BODY) return json({ error: "Request exceeds the size limit" }, 413);
+  const reader = request.body?.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  if (reader) {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > MAX_BODY) {
+        await reader.cancel();
+        return json({ error: "Request exceeds the size limit" }, 413);
+      }
+      chunks.push(value);
+    }
+  }
+  const body = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) (body.set(chunk, offset), (offset += chunk.byteLength));
+  return body;
+}
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...SECURITY_HEADERS } });
 
@@ -46,6 +76,8 @@ export default {
     const config = authenticate(request.headers.get("authorization"), operators);
     if (!config) return json({ error: "Unauthorized" }, 401);
     const invoke = invoker(env, config);
+    const body = request.method === "GET" || request.method === "HEAD" ? new Uint8Array() : await boundedBody(request);
+    if (body instanceof Response) return body;
 
     if (url.pathname === "/mcp") {
       // Stateless: a fresh server and transport per request; identity is the bearer token.
@@ -53,7 +85,12 @@ export default {
       const server = buildServer(invoke);
       await server.connect(transport);
       try {
-        const response = await transport.handleRequest(request);
+        const buffered = new Request(request.url, {
+        method: request.method,
+        headers: request.headers,
+        body: request.method === "GET" || request.method === "HEAD" ? undefined : body,
+      });
+      const response = await transport.handleRequest(buffered);
         const headers = new Headers(response.headers);
         for (const [k, v] of Object.entries(SECURITY_HEADERS)) headers.set(k, v);
         return new Response(response.body, { status: response.status, headers });
@@ -68,8 +105,7 @@ export default {
     if (!isOperation(operation)) return json({ error: "Unknown operation" }, 404);
     let args: unknown = {};
     try {
-      const text = await request.text();
-      if (new TextEncoder().encode(text).length > 1_000_000) return json({ error: "Request exceeds the size limit" }, 413);
+      const text = new TextDecoder().decode(body);
       args = text ? JSON.parse(text) : {};
     } catch {
       return json({ error: "Request body must be JSON" }, 400);
@@ -92,7 +128,7 @@ export default {
   async scheduled(_event: ScheduledController, env: Env): Promise<void> {
     const operators = parseOperators(env.CROWBO_OPERATORS);
     for (const config of Object.values(operators)) {
-      if (!config.roles.includes("operator")) continue;
+      if (!config.roles.includes("ingestor")) continue;
       await invoker(env, config)("sync_due", {});
     }
   },

@@ -32,6 +32,11 @@ export type Context = {
   allowSyntheticGates: boolean;
 };
 
+/** Ingestion writes source grants, so only a connector identity (the `ingestor` role) may do it. */
+function requireRole(ctx: Context, role: string) {
+  if (!ctx.caller.roles.includes(role)) throw new CrowboError(`This operation requires the ${role} role`);
+}
+
 const ids = z.array(z.string().regex(/^[a-f0-9]{64}$/)).min(1).max(40);
 const id = z.string().regex(/^[a-f0-9]{64}$/);
 
@@ -107,8 +112,14 @@ export const OPERATIONS = {
     if (!ctx.ledger.experimentStatus) throw new CrowboError("Experiments are unavailable in this runtime");
     return ctx.ledger.experimentStatus();
   },
-  ingest: async (ctx: Context, a: unknown) => ({ records: await engine(ctx, true).ingest(sourceBatch.parse(a)) }),
-  resume: async (ctx: Context) => ({ records: await engine(ctx, true).resume() }),
+  ingest: async (ctx: Context, a: unknown) => {
+    requireRole(ctx, "ingestor");
+    return { records: await engine(ctx, true).ingest(sourceBatch.parse(a)) };
+  },
+  resume: async (ctx: Context) => {
+    requireRole(ctx, "ingestor");
+    return { records: await engine(ctx, true).resume() };
+  },
   list: async (ctx: Context) => ({ records: await engine(ctx, false).listCurrent() }),
   inspect: async (ctx: Context, a: unknown) => {
     const { source_ids } = z.strictObject({ source_ids: ids }).parse(a);
@@ -148,6 +159,7 @@ export const OPERATIONS = {
     const { spec, captures, force } = z
       .strictObject({ spec: slackSpec, captures: z.array(mcpCapture).nullable().default(null), force: z.boolean().default(false) })
       .parse(a);
+    requireRole(ctx, "ingestor");
     if (!captures && !ctx.slackToken) throw new CrowboError("Required provider credential is unavailable");
     const reader = captures ? new CaptureReader(captures) : new SlackReader(ctx.ledger, ctx.slackToken!);
     return new SlackSync(engine(ctx, true), spec, reader).run({ force });
@@ -155,7 +167,7 @@ export const OPERATIONS = {
   /** Register a Slack spec for scheduled polling; the Cron trigger runs due syncs as this reader. */
   sync_register: async (ctx: Context, a: unknown) => {
     const { spec } = z.strictObject({ spec: slackSpec }).parse(a);
-    if (!ctx.caller.roles.includes("operator")) throw new CrowboError("This operation requires the operator role");
+    requireRole(ctx, "ingestor");
     const key = digest(["sync_registration", ctx.caller.settings.tenant, ctx.caller.settings.reader, spec.name]);
     const previous = await ctx.store.get(key);
     const body = { kind: "sync_registration", tenant: ctx.caller.settings.tenant, reader: ctx.caller.settings.reader, spec };
@@ -164,6 +176,7 @@ export const OPERATIONS = {
   },
   /** Run every registered sync for this reader that is due. Not-due specs return immediately. */
   sync_due: async (ctx: Context) => {
+    requireRole(ctx, "ingestor");
     if (!ctx.slackToken) return { runs: [], skipped: "Slack credential is not configured" };
     const runs = [];
     for (const registration of await ctx.store.scan("sync_registration", ctx.caller.settings.reader)) {

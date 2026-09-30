@@ -50,6 +50,7 @@ export class Standing {
   /** Bind a subject to the one team whose members may see its standing decisions. */
   async registerSubject(caller: Caller, q: Question, team: string) {
     this.require(caller, "operator");
+    if (!this.teams(caller).includes(team)) throw new CrowboError("A subject can only be registered to one of your teams");
     const parsed = questionSchema.parse(q);
     const key = subjectKey(parsed);
     const id = digest(["subject", caller.settings.tenant, key]);
@@ -89,10 +90,17 @@ export class Standing {
       }
     }
     const body = { ...fact, asserted_by: caller.settings.reader };
-    const id = digest(["fact", caller.settings.tenant, body]);
-    const stored = { ...body, id, asserted_at: now() } as StoredFact;
+    // Each assertion is its own record, so re-asserting an earlier value supersedes later ones.
+    // A caller-supplied assertion_id makes retries of one assertion idempotent.
+    const id = digest(["fact", caller.settings.tenant, caller.settings.reader, fact.assertion_id ?? crypto.randomUUID()]);
     const existing = await this.store.get(id);
-    if (existing) return existing as StoredFact;
+    if (existing) {
+      const { id: _i, asserted_at: _a, sequence: _s, ...prior } = existing;
+      if (digest(prior) !== digest(body)) throw new CrowboError("Assertion ID was already used for a different fact");
+      return existing as StoredFact;
+    }
+    const sequence = (await this.store.scan("fact", fact.subject_key)).length + 1;
+    const stored = { ...body, id, asserted_at: now(), sequence } as StoredFact;
     await this.store.put(id, "fact", stored, { logicalId: fact.subject_key, insertOnly: true });
     return stored;
   }
@@ -148,6 +156,7 @@ export class Standing {
         if (!h || h.revision_id !== c.revision_id || h.withdrawn) current = false;
       }
       if (current) live.push(fact);
+      else stale.push("fact_source_changed");
     }
     // Access: every contributing source must be readable now, by this caller. No partial answers.
     const heads = [];
@@ -186,10 +195,10 @@ export class Standing {
       phase: q.kind === "exception_valid" && expires ? (expires <= today ? "after_expiry" : "before_expiry") : null,
     };
     const versionId = digest(["decision_version", caller.settings.tenant, subject.team, inputs]);
+    const pointerId = digest(["decision_latest", caller.settings.tenant, subject.team, q.kind, key]);
+    const pointer = await this.store.get(pointerId);
     let version = await this.store.get(versionId);
     if (!version) {
-      const pointerId = digest(["decision_latest", caller.settings.tenant, subject.team, q.kind, key]);
-      const pointer = await this.store.get(pointerId);
       version = {
         id: versionId,
         kind: "decision_version",
@@ -216,10 +225,13 @@ export class Standing {
         if (!(error instanceof CrowboError) || !raced) throw error;
         version = raced;
       }
-      if (pointer?.version_id !== versionId) {
-        await this.store
-          .put(pointerId, "decision_latest", { version_id: versionId, subject_key: key }, { expectedHash: pointer ? digest(pointer) : null, insertOnly: !pointer })
-          .catch(() => undefined); // the pointer is a convenience; history is recoverable from versions
+    }
+    if (pointer?.version_id !== versionId) {
+      try {
+        await this.store.put(pointerId, "decision_latest", { version_id: versionId, subject_key: key, served_at: at }, { expectedHash: pointer ? digest(pointer) : null, insertOnly: !pointer });
+      } catch (error) {
+        // Losing a concurrent pointer update is fine: another ask recorded a newer serve.
+        if (!(error instanceof CrowboError)) throw error;
       }
     }
     const freshness: Freshness = stale.length ? { status: "stale", reasons: [...new Set(stale)].sort() } : { status: "current" };
@@ -244,9 +256,20 @@ export class Standing {
     if (!subject || !this.teams(caller).includes(subject.team)) return { status: "unavailable" as const };
     const served = await this.ask(caller, q);
     if (served.status === "unavailable") return served;
-    const versions = (await this.store.scan("decision_version", key))
+    const at = now();
+    const versions = [];
+    const stored = (await this.store.scan("decision_version", key))
       .filter((v) => v.team === subject.team && v.question.kind === q.kind)
       .sort((a, b) => (micros(a.computed_at) < micros(b.computed_at) ? -1 : 1));
+    for (const v of stored) {
+      let disclosable = true;
+      for (const [source] of v.inputs.revisions as [string, string][]) {
+        const h = await this.head(source);
+        if (!h || h.withdrawn || !permits(h.grant, caller.settings.reader, at, "turbopuffer", this.teams(caller))) disclosable = false;
+      }
+      // Withheld versions keep their place in the history without revealing any derived content.
+      versions.push(disclosable ? v : { id: v.id, computed_at: v.computed_at, withheld: "contributing source withdrawn or not readable" });
+    }
     return { status: "ok" as const, versions };
   }
 
@@ -265,9 +288,14 @@ export class Standing {
 function latestPerOrigin(facts: StoredFact[]): StoredFact[] {
   const latest = new Map<string, StoredFact>();
   for (const f of facts) {
-    const origin = `${f.predicate}\u0000${f.provenance}\u0000${f.extractor ?? f.attributed_to}`;
+    // The asserting reader is part of the origin: nobody can supersede another reader's fact.
+    const origin = `${f.predicate}\u0000${f.provenance}\u0000${f.extractor ?? f.attributed_to}\u0000${f.asserted_by}`;
     const prior = latest.get(origin);
-    if (!prior || micros(prior.asserted_at as any) < micros(f.asserted_at as any)) latest.set(origin, f);
+    const newer =
+      !prior ||
+      (f.sequence ?? 0) > (prior.sequence ?? 0) ||
+      ((f.sequence ?? 0) === (prior.sequence ?? 0) && micros(prior.asserted_at as any) < micros(f.asserted_at as any));
+    if (newer) latest.set(origin, f);
   }
   return [...latest.values()];
 }

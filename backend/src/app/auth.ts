@@ -13,7 +13,7 @@ const operatorConfig = z.strictObject({
   tenant: z.string().min(1).max(100),
   reader: z.string().min(1).max(100),
   teams: z.array(z.string().min(1).max(200)).max(100).default([]),
-  roles: z.array(z.enum(["operator", "criteria_approver"])).default(["operator"]),
+  roles: z.array(z.enum(["operator", "criteria_approver", "ingestor"])).default(["operator"]),
   source_scopes: z.array(z.string()),
   query_processors: z.array(z.string()).default([]),
   experiment_id: z.string().nullable().default(null),

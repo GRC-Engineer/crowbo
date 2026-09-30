@@ -65,6 +65,8 @@ export const factAssertion = z
     extractor: z.string().min(1).max(200).nullable().default(null),
     attributed_to: z.string().min(1).max(300),
     effective_until: instant.nullable().default(null),
+    /** Optional client-chosen ID that makes retries of this one assertion idempotent. */
+    assertion_id: z.string().regex(/^[A-Za-z0-9._:-]{8,128}$/).nullable().default(null),
   })
   .superRefine((f, ctx) => {
     const fail = (message: string) => ctx.addIssue({ code: "custom", message });
@@ -73,12 +75,14 @@ export const factAssertion = z
     if (f.state !== "unknown" && f.value === null) fail("stated or conflicting facts require a value");
     if (f.provenance === "source_extraction" && f.state !== "unknown" && !f.citations.length) fail("source facts require citations");
     if (f.provenance === "source_extraction" && f.extractor === null) fail("source facts name their extractor");
+    // An extraction must cite what it asserts; retracting uses an attributed operator assertion.
+    if (f.provenance === "source_extraction" && f.state === "unknown") fail("source extraction cannot assert unknown");
     if (f.provenance === "operator_assertion" && f.citations.length) fail("operator assertions carry no source quotes");
     if (f.predicate === "expires_on" && f.value !== null && !isoDate.safeParse(f.value).success) fail("expires_on must be a date");
   });
 export type FactAssertion = z.infer<typeof factAssertion>;
 
-export type StoredFact = FactAssertion & { id: string; asserted_at: string; asserted_by: string };
+export type StoredFact = FactAssertion & { id: string; asserted_at: string; asserted_by: string; sequence: number };
 
 /** What a subject's current facts look like to criteria: one resolved state per predicate. */
 export type ResolvedFact = {

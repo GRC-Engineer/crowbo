@@ -37,7 +37,7 @@ export function fakeApi(options: { settings: () => Settings; store: Store; aiTok
     calls.push({ operation, body });
     const settings = options.settings();
     const context: Context = {
-      caller: { settings, roles: ["operator"] },
+      caller: { settings, roles: ["operator", "ingestor"] },
       store: options.store,
       ledger,
       ai: {
