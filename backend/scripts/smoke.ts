@@ -74,7 +74,7 @@ for (let i = 0; i < 20; i++) {
   if (again.version?.id !== first.version.id) check("repeat asks return the same immutable version", false, again);
 }
 warm.sort((a, b) => a - b);
-console.log(`standing_ask warm local: p50 ${warm[9].toFixed(1)} ms, p95 ${warm[18].toFixed(1)} ms (n=20, loopback, wrangler dev)`);
+console.log(`standing_ask warm, client-measured end to end: p50 ${warm[9].toFixed(1)} ms, p95 ${warm[18].toFixed(1)} ms (n=20, ${api})`);
 
 const survey = await op("standing_survey", { workflow: "access_review" });
 check("survey lists the subject", survey.rows.some((r: any) => r.subject_key === subjectKey), survey);
