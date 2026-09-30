@@ -14,6 +14,8 @@ The intended learning loop retains contextualised recommendations, accepted, rev
 
 People using Crowbo and existing assistants should be able to use the same decision capability through a UI or tools such as an API or MCP. Each interaction should refer to the same evidence and recommendation versions within the caller's permissions. Every workflow needs its own domain facts, criteria and evaluation. Control testing and reassessment are possible later applications, not a fourth initial workflow.
 
+The proposed "Continue with an agent" journey carries a reviewed next step into a chosen assistant or work environment. A person reviews the task, shared context and permitted actions before using a supported destination. Investigation, preparing a change and performing specifically approved work require different authority. This is a product direction, not an implemented launcher or a grant of execution access. [The backend plan](TECHNICAL-PLAN.md#proposed-continuation-with-an-agent) owns the bounded first proof and host qualification; [permissions](PERMISSIONS.md#proposed-agent-handoff-boundary) owns sharing and delegation.
+
 The longer-term ambition is to power agents and autonomous security programmes within customer-defined authority. The initial application remains advisory and read-only with respect to source systems. Observable execution, outcome verification and enforceable authority are additional requirements, not consequences of exposing an MCP tool.
 
 Third-party reassessment and vendor management are outside the initial scope. Crowbo is not being scoped as a TPRM product. Software upgrades can be cases within remediation or exception treatment. Investment, staffing and programme changes remain possible later applications, not a build list.
