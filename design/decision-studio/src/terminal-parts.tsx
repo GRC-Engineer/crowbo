@@ -2,6 +2,7 @@ import {
   useEffect,
   useId,
   useRef,
+  useState,
   type KeyboardEvent,
   type ReactNode,
   type RefObject,
@@ -12,6 +13,7 @@ import up from "../../crow-concepts/2026-09-24/approved-runtime/runner-up.png";
 import down from "../../crow-concepts/2026-09-24/approved-runtime/runner-down.png";
 import { FeatherGlyph, type FeatherDesign } from "./identity";
 import { providers, type Provider } from "./providers";
+import { usePurity } from "./purity";
 import {
   conditions,
   freshness,
@@ -412,6 +414,17 @@ export function Shell({
   const errorId = useId();
   const text = value ?? "";
 
+  // PROTOTYPE L2+: the line shows the primary command only; ? shows the rest.
+  const purity = usePurity();
+  const [allHints, setAllHints] = useState(false);
+  useEffect(() => setAllHints(false), [screen]);
+  const primary =
+    commands.find((entry) => entry.keys.includes("Enter")) ?? commands[0];
+  const shown =
+    purity >= 2 && !allHints && primary
+      ? commands.filter((entry) => entry === primary)
+      : commands;
+
   // A new screen takes focus: the command line where there is a keyboard,
   // the heading on touch devices so no on-screen keyboard opens.
   useEffect(() => {
@@ -440,6 +453,11 @@ export function Shell({
       return;
     }
     const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+    if ((key === "?" || key === "/") && purity >= 2) {
+      event.preventDefault();
+      setAllHints((value) => !value);
+      return;
+    }
     const command = commands.find(
       (entry) => !entry.disabled && entry.keys.includes(key),
     );
@@ -449,7 +467,7 @@ export function Shell({
   }
 
   return (
-    <div className="t-app">
+    <div className="t-app" data-purity={purity || undefined}>
       <a className="t-skip" href="#t-main">
         Skip to content
       </a>
@@ -515,7 +533,7 @@ export function Shell({
           />
         </label>
         <div className="t-hints">
-          {commands.map((command) => (
+          {shown.map((command) => (
             <button
               type="button"
               key={command.show}
@@ -526,6 +544,16 @@ export function Shell({
               {command.label}
             </button>
           ))}
+          {purity >= 2 && commands.length > 1 && (
+            <button
+              type="button"
+              aria-pressed={allHints}
+              onClick={() => setAllHints((value) => !value)}
+            >
+              <Key>?</Key>
+              {allHints ? "fewer" : "keys"}
+            </button>
+          )}
         </div>
         {error && (
           <p className="t-line-error" id={errorId} role="alert">

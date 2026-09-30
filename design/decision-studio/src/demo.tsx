@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import { useContext, useEffect, useReducer, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { DecideScreen } from "./decide-screen";
 import {
@@ -18,6 +18,7 @@ import {
   demoReducer,
   type CaseId,
 } from "./question-demo-model";
+import { PurityBar, PurityContext, usePurityState } from "./purity";
 import type { Area } from "./terminal-parts";
 import {
   HistoryScreen,
@@ -38,6 +39,16 @@ const titles: Record<Area, string> = {
 // The whole demo: the question flow and the four workspace pages share one
 // set of decisions, so a reassessment made in the flow shows in the queue.
 export default function Demo({ initialArea = "flow" }: { initialArea?: Area }) {
+  const [purity, setPurity] = usePurityState();
+  return (
+    <PurityContext.Provider value={purity}>
+      <Screens initialArea={purity === 3 ? "queue" : initialArea} />
+      <PurityBar purity={purity} onChange={setPurity} />
+    </PurityContext.Provider>
+  );
+}
+
+function Screens({ initialArea }: { initialArea: Area }) {
   const [state, dispatch] = useReducer(demoReducer, demoInitialState);
   const [area, setArea] = useState<Area>(initialArea);
   const reducedMotion = Boolean(useReducedMotion());
@@ -50,6 +61,12 @@ export default function Demo({ initialArea = "flow" }: { initialArea?: Area }) {
   useEffect(() => {
     document.title = `Crowbo · ${titles[area]}`;
   }, [area]);
+
+  // PROTOTYPE L3: there is no start screen; a question begins at home.
+  const purity = useContext(PurityContext);
+  useEffect(() => {
+    if (purity === 3 && state.kind === "welcome") dispatch({ type: "open" });
+  }, [purity, state.kind]);
 
   useEffect(() => {
     if (area !== "flow" || state.kind !== "research" || state.paused) return;

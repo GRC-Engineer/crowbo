@@ -5,6 +5,7 @@ import type { Chrome } from "./flow-screens";
 import { HandoffScreen } from "./handoff-screen";
 import { caseOwners, caseSlug, caseTrack, conditions, tidy } from "./present";
 import { providers } from "./providers";
+import { usePurity } from "./purity";
 import { familyLanes } from "./source-families";
 import type { DemoSource } from "./source-model";
 import { SourcePane } from "./source-pane";
@@ -236,6 +237,7 @@ export function DecideScreen({
     context: string;
   } | null>(null);
   const { current, pending } = decision;
+  const purity = usePurity();
   const owner = caseOwners[decision.caseId];
   const slug = caseSlug[decision.caseId];
   const checks = conditions(current.advice.condition);
@@ -377,7 +379,7 @@ export function DecideScreen({
             </section>
             <div className="t-arrive" aria-hidden="true">
               <span>
-                <Runner pose="down" width={140} bob />
+                <Runner pose="down" width={140} bob={purity === 0} />
               </span>
             </div>
             <section className="t-panel" data-proposed="true">
@@ -616,10 +618,10 @@ export function DecideScreen({
                   {checks.length === 1 ? "condition" : "conditions"} open
                 </StatusItem>
                 <StatusItem>{current.sources.length} sources read</StatusItem>
-                {current.recorded && (
+                {purity < 3 && current.recorded && (
                   <StatusItem>next step recorded</StatusItem>
                 )}
-                {decision.note && (
+                {purity < 3 && decision.note && (
                   <StatusItem tone="quiet">context added</StatusItem>
                 )}
               </>

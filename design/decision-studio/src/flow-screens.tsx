@@ -17,6 +17,7 @@ import {
   type DemoSource,
   type DemoState,
 } from "./question-demo-model";
+import { usePurity } from "./purity";
 import { familyLanes } from "./source-families";
 import { SourcePane } from "./source-pane";
 import {
@@ -63,6 +64,7 @@ export function StartScreen({
   dispatch: Dispatch<DemoAction>;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
+  const purity = usePurity();
   const choose = (key: string) => {
     dispatch({ type: "open" });
     dispatch({ type: "choose", caseId: caseOrder[Number(key) - 1] });
@@ -145,8 +147,8 @@ export function StartScreen({
             <i data-tone="sage" />
             records
           </span>
-          <div className="t-lane" data-moving="true">
-            {[0, 1.35, 2.7].map((delay) => (
+          <div className="t-lane" data-moving={purity === 0}>
+            {(purity === 0 ? [0, 1.35, 2.7] : [0]).map((delay) => (
               <span
                 key={delay}
                 className="t-lane-runner"
@@ -413,6 +415,9 @@ export function ReadScreen({
   const reached = used.slice(0, revealed(state.step, used.length));
   const read = reached.flatMap((lane) => lane.records);
   const moving = !state.paused && !reducedMotion;
+  // PROTOTYPE L1+: only the lane being read now has a runner on it.
+  const purity = usePurity();
+  const active = reached[reached.length - 1];
   const counts = (
     ["deciding", "supporting", "context", "constraint"] as const
   ).map((kind) => ({
@@ -487,7 +492,32 @@ export function ReadScreen({
             ))}
           </ol>
         </div>
-        <div className="t-read-grid">
+        {purity === 3 && (
+          <div className="t-read-bar" aria-hidden="true">
+            <div className="t-lane" data-moving={moving}>
+              <span className="t-lane-runner">
+                <MiniRunner width={52} />
+              </span>
+            </div>
+            <dl className="t-counts">
+              <div>
+                <dt>Read</dt>
+                <dd>
+                  {read.length} of {entry.sources.length}
+                </dd>
+              </div>
+              {counts
+                .filter(({ count }) => count > 0)
+                .map(({ kind, count }) => (
+                  <div key={kind} data-influence={kind}>
+                    <dt>{influenceLabel[kind]}</dt>
+                    <dd>{count}</dd>
+                  </div>
+                ))}
+            </dl>
+          </div>
+        )}
+        <div className="t-read-grid" data-pure={purity === 3}>
           <div className="t-lanes" data-moving={moving}>
             {lanes.map((lane) => {
               const live = reached.includes(lane);
@@ -537,7 +567,7 @@ export function ReadScreen({
                     </div>
                   </div>
                   <div className="t-lane" aria-hidden="true">
-                    {live && (
+                    {live && (purity === 0 || lane === active) && (
                       <span
                         className="t-lane-runner"
                         style={{
@@ -562,7 +592,7 @@ export function ReadScreen({
                 trigger.current?.focus();
               }}
             />
-          ) : (
+          ) : purity === 3 ? null : (
             <section className="t-panel t-shape" aria-live="polite">
               <div className="t-panel-head">
                 <Label>Taking shape</Label>
@@ -595,21 +625,23 @@ export function ReadScreen({
             </section>
           )}
         </div>
-        <pre className="t-log" aria-hidden="true">
-          {read.slice(-3).map((source, index, list) => (
-            <span
-              key={source.id}
-              data-tone={index === list.length - 1 ? "chalk" : "sage"}
-            >
-              {index === list.length - 1 && state.step < 2 ? "… " : "✓ "}
-              {"read   "}
-              {source.id.padEnd(20)}
-              {providers[source.provider].name.padEnd(17)}
-              {checkedOn(source)}
-              {"\n"}
-            </span>
-          ))}
-        </pre>
+        {purity === 0 && (
+          <pre className="t-log" aria-hidden="true">
+            {read.slice(-3).map((source, index, list) => (
+              <span
+                key={source.id}
+                data-tone={index === list.length - 1 ? "chalk" : "sage"}
+              >
+                {index === list.length - 1 && state.step < 2 ? "… " : "✓ "}
+                {"read   "}
+                {source.id.padEnd(20)}
+                {providers[source.provider].name.padEnd(17)}
+                {checkedOn(source)}
+                {"\n"}
+              </span>
+            ))}
+          </pre>
+        )}
       </div>
     </Shell>
   );
