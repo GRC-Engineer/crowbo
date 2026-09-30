@@ -12,13 +12,13 @@ The default question set checks whether each record explicitly supplies an oblig
 
 | File | Responsibility |
 | --- | --- |
-| [contracts.py](../src/crowbo/contracts.py) | Validate source provenance, grants, batches and typed assessments. |
-| [questions.py](../src/crowbo/questions.py) | Versioned native Jev questions and answer matching. |
-| [evidence.py](../src/crowbo/evidence.py) | Own current revisions, independent preparation, access checks and assessment binding. |
-| [providers.py](../src/crowbo/providers.py) | Call Jev through Cloudflare and the official turbopuffer SDK. Fixed destinations, timeouts, response bounds and no automatic retries. |
-| [runtime.py](../src/crowbo/runtime.py) | Private settings, credentials, request ledger, local worker lock and private reports. |
-| [review.py](../src/crowbo/review.py) | One model call over selected evidence, citation checks and retained review/history. |
-| [cli.py](../src/crowbo/cli.py) | Expose ingestion, retrieval, review and history commands. |
+| [contracts.py](https://github.com/GRC-Engineer/crowbo/blob/7f321fa/src/crowbo/contracts.py) | Validate source provenance, grants, batches and typed assessments. |
+| [questions.py](https://github.com/GRC-Engineer/crowbo/blob/7f321fa/src/crowbo/questions.py) | Versioned native Jev questions and answer matching. |
+| [evidence.py](https://github.com/GRC-Engineer/crowbo/blob/7f321fa/src/crowbo/evidence.py) | Own current revisions, independent preparation, access checks and assessment binding. |
+| [providers.py](https://github.com/GRC-Engineer/crowbo/blob/7f321fa/src/crowbo/providers.py) | Call Jev through Cloudflare and the official turbopuffer SDK. Fixed destinations, timeouts, response bounds and no automatic retries. |
+| [runtime.py](https://github.com/GRC-Engineer/crowbo/blob/7f321fa/src/crowbo/runtime.py) | Private settings, credentials, request ledger, local worker lock and private reports. |
+| [review.py](https://github.com/GRC-Engineer/crowbo/blob/7f321fa/src/crowbo/review.py) | One model call over selected evidence, citation checks and retained review/history. |
+| [cli.py](https://github.com/GRC-Engineer/crowbo/blob/7f321fa/src/crowbo/cli.py) | Expose ingestion, retrieval, review and history commands. |
 
 The Python environment is locked with uv. SQLite contains operational receipts and experiment allocations; source revisions and preparation status live in turbopuffer. A new process can recover pending preparation from those stored heads. Keep the existing runtime and ledger when creating a new experiment so earlier usage remains available.
 
@@ -53,7 +53,7 @@ Create the experiment allocation explicitly before the first provider operation.
 uv run --locked crowbo --settings /absolute/private/path/settings.json create-experiment --max-requests 600 --max-models 20
 ```
 
-Each source bundle follows [SourceBatch](../src/crowbo/contracts.py). It declares scope, partial/complete coverage and limitations. Every source contains tenant, connector, workspace, native ID, source URL, title, text, source-update and observation timestamps, real/synthetic/public basis and record kind. Optional owner, status and due date remain source assertions. Every grant separately declares readers, permitted processors, check time, expiry and revocation. Use actual checked permissions and current timestamps; changing an expired timestamp without checking access is not a refresh. Tests contain public-safe synthetic construction examples in [conftest.py](../tests/conftest.py).
+Each source bundle follows [SourceBatch](https://github.com/GRC-Engineer/crowbo/blob/7f321fa/src/crowbo/contracts.py). It declares scope, partial/complete coverage and limitations. Every source contains tenant, connector, workspace, native ID, source URL, title, text, source-update and observation timestamps, real/synthetic/public basis and record kind. Optional owner, status and due date remain source assertions. Every grant separately declares readers, permitted processors, check time, expiry and revocation. Use actual checked permissions and current timestamps; changing an expired timestamp without checking access is not a refresh. Tests contain public-safe synthetic construction examples in [conftest.py](https://github.com/GRC-Engineer/crowbo/blob/7f321fa/tests/conftest.py).
 
 The import limit is 40 source records, 200 KB total text and 40,000 characters per record. Large or unsupported inputs fail validation. This is a selected export, not a complete source connector. Operators must inspect and approve source scope before creating a bundle.
 
@@ -296,7 +296,7 @@ required = true
 
 Keep this machine-specific configuration ignored by Git. It contains paths, not credentials; existing environment or Keychain lookup supplies credentials. New tasks must load the project configuration. `codex mcp get crowbo --json` verifies discovery from the project root. The server offers `search_evidence`, `inspect_evidence`, `run_decision`, `inspect_result`, `record_feedback` and `inspect_feedback`. If the client sets `enabled_tools`, include both feedback tools to expose them.
 
-The portable [scenario client](../proof/mcp_scenarios.py) imports only the official MCP SDK and Python's standard library. It discovers tools, searches Turbopuffer, inspects selected records, pins their exact revisions, runs one case at a time and reads retained history. Private case files hold expectations separately from model requests. Each run saves resolved case inputs, results, elapsed time and deterministic checks. Use a new output filename for every run:
+The portable [scenario client](https://github.com/GRC-Engineer/crowbo/blob/7f321fa/proof/mcp_scenarios.py) imports only the official MCP SDK and Python's standard library. It discovers tools, searches Turbopuffer, inspects selected records, pins their exact revisions, runs one case at a time and reads retained history. Private case files hold expectations separately from model requests. Each run saves resolved case inputs, results, elapsed time and deterministic checks. Use a new output filename for every run:
 
 ```sh
 uv run --locked python proof/mcp_scenarios.py \
