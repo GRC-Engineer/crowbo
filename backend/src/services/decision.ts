@@ -117,7 +117,7 @@ export class Decision {
     return new Review(this.evidence, this.reasoner).runSnapshot(review, views, { decision: packet, checkSnapshot });
   }
 
-  async inspect(id: string) {
+  async inspect(id: string): Promise<Record<string, any>> {
     const result = await new Review(this.evidence, null).inspect(id);
     if (!("decision" in result)) throw new CrowboError("Decision is unavailable");
     const request = decisionRequest.parse(result.decision.request);

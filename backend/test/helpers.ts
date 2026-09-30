@@ -39,6 +39,7 @@ export function answers() {
 
 export class MemoryStore implements Store {
   rows = new Map<string, Record<string, any>>();
+  meta = new Map<string, { kind: string; logicalId: string }>();
   indexed: string[] = [];
   hits: SearchHit[] = [];
   failIndex = false;
@@ -61,6 +62,7 @@ export class MemoryStore implements Store {
       throw new CrowboError("Concurrent update");
     }
     this.rows.set(id, clone(body));
+    this.meta.set(id, { kind: _kind, logicalId: options.logicalId ?? "" });
     this.writes++;
   }
 
@@ -73,6 +75,13 @@ export class MemoryStore implements Store {
       }
     }
     return out;
+  }
+
+  async scan(kind: string, logicalId?: string) {
+    return [...this.rows.keys()]
+      .filter((id) => this.meta.get(id)?.kind === kind && (logicalId === undefined || this.meta.get(id)?.logicalId === logicalId))
+      .sort()
+      .map((id) => clone(this.rows.get(id)!));
   }
 
   async index(source: SourceRevision, _grant: Grant, _generation: number) {

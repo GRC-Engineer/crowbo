@@ -10,6 +10,8 @@ export interface Store {
    */
   put(id: string, kind: string, body: Record<string, any>, options?: PutOptions): Promise<void>;
   heads(reader: string, groups: readonly string[]): Promise<Record<string, any>[]>;
+  /** Records of one kind, optionally only those stored under `logicalId` (e.g. a subject key). */
+  scan(kind: string, logicalId?: string): Promise<Record<string, any>[]>;
   index(source: SourceRevision, grant: Grant, generation: number): Promise<void>;
   refreshIndex(source: SourceRevision, grant: Grant, generation: number): Promise<void>;
   deleteChunks(logicalId: string, generation: number): Promise<void>;

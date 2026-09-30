@@ -155,7 +155,11 @@ export function accessValidationDetails(error: z.ZodError) {
     for (const value of Object.values(node as Record<string, unknown>)) if (typeof value === "object") walk(value);
   };
   walk(schema);
-  return error.issues.slice(0, 20).map((issue) => ({
+  // Zod reports all extra keys as one issue on the parent; Pydantic reports one per key.
+  const issues: { path: PropertyKey[]; message: string }[] = error.issues.flatMap((issue) =>
+    issue.code === "unrecognized_keys" ? issue.keys.map((key) => ({ message: issue.message, path: [...issue.path, key] })) : [issue],
+  );
+  return issues.slice(0, 20).map((issue) => ({
     path: issue.path
       .slice(0, 8)
       .map((part) => ((typeof part === "string" && fields.has(part)) || (typeof part === "number" && part >= 0 && part <= 100) ? part : "unknown_field")),

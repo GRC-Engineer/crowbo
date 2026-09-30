@@ -25,7 +25,7 @@ const files = (dir: string): string[] =>
 
 const ported = new Map<string, string[]>();
 for (const file of files(join(root, "test"))) {
-  for (const match of readFileSync(file, "utf8").matchAll(/py: (tests\/test_\w+\.py::[\w\[\]\-.]+)/g)) {
+  for (const match of readFileSync(file, "utf8").matchAll(/py: (tests\/test_\w+\.py::\w+(?:\[[^\]\n]*\])?)/g)) {
     ported.set(match[1], [...(ported.get(match[1]) ?? []), file.slice(root.length + 1)]);
   }
 }

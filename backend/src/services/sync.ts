@@ -25,10 +25,14 @@ export const syncState = z.strictObject({
 });
 export type SyncState = z.infer<typeof syncState>;
 
+/** Hash of each sync state exactly as stored, for compare-and-swap on legacy rows. */
+const storedHash = new WeakMap<SyncState, string>();
+
 export async function loadState(evidence: Evidence, id: string): Promise<SyncState | null> {
   const raw = await evidence.store.get(id);
   if (!raw) return null;
   const state = syncState.parse(raw);
+  storedHash.set(state, digest(raw));
   if (state.tenant !== evidence.settings.tenant || state.reader !== evidence.settings.reader) {
     throw new CrowboError("Sync scope is unavailable to this reader");
   }
@@ -85,10 +89,12 @@ export class SlackSync {
 
   private async save(state: SyncState, previous: SyncState | null): Promise<SyncState> {
     await this.evidence.store.put(this.identifier, "sync", state, {
-      expectedHash: previous ? digest(previous) : null,
+      expectedHash: previous ? (storedHash.get(previous) ?? digest(previous)) : null,
       insertOnly: previous === null,
     });
-    return syncState.parse(state);
+    const saved = syncState.parse(state);
+    storedHash.set(saved, digest(state));
+    return saved;
   }
 
   async status() {

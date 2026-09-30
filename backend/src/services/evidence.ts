@@ -26,6 +26,10 @@ const grantHash = (g: Grant) => digest(g);
 
 /** Owns revision binding, current grants and resumable preparation for one operator. */
 export class Evidence {
+  /** Hash of each head's body exactly as stored when read (Python: `exclude_unset=True`), so
+   * compare-and-swap also works on legacy rows that predate newer defaulted fields. */
+  private readonly storedHash = new WeakMap<Head, string>();
+
   constructor(
     readonly settings: Settings,
     readonly store: Store,
@@ -56,6 +60,7 @@ export class Evidence {
     const data = await this.store.get(headId(logical));
     const h = data ? headSchema.parse(data) : null;
     if (h && h.logical_id !== logical) throw new CrowboError("Source head identity mismatch");
+    if (h) this.storedHash.set(h, digest(data));
     return h;
   }
 
@@ -67,10 +72,12 @@ export class Evidence {
       readers: closed ? [] : h.grant.readers,
       readerGroups: closed ? [] : h.grant.reader_groups,
       expiresAt: h.grant.expires_at,
-      expectedHash: previous ? digest(previous) : null,
+      expectedHash: previous ? (this.storedHash.get(previous) ?? digest(previous)) : null,
       insertOnly: previous === null,
     });
-    return headSchema.parse(h);
+    const saved = headSchema.parse(h);
+    this.storedHash.set(saved, digest(h));
+    return saved;
   }
 
   private async current(h: Head, processor: string | null = null): Promise<void> {
@@ -243,7 +250,11 @@ export class Evidence {
   async resume(): Promise<Record<string, any>[]> {
     const rows = await this.store.heads(this.settings.reader, this.groups());
     const out = [];
-    for (const row of rows) out.push(await this.prepareSafely(headSchema.parse(row)));
+    for (const row of rows) {
+      const h = headSchema.parse(row);
+      this.storedHash.set(h, digest(row));
+      out.push(await this.prepareSafely(h));
+    }
     return out;
   }
 
