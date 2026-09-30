@@ -27,7 +27,7 @@ Always write a plan before generating or modifying code. Note the security consi
 
 Prefer the smallest complete decision loop. Avoid broad integrations, multiple services, generic frameworks and a large imported note corpus before the first proof is useful.
 
-Explain code and CLI work at a junior Python developer level when helpful. State what an important command reads or changes, explain unfamiliar terms in context, and connect implementation decisions to the security outcome.
+Explain code and CLI work at a junior TypeScript developer level when helpful. State what an important command reads or changes, explain unfamiliar terms in context, and connect implementation decisions to the security outcome.
 
 Verify the actual changed behaviour with appropriate checks. For documentation, check the content and links. Report implementation, test results, deployment, user acceptance and commercial evidence separately.
 

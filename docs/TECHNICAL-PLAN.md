@@ -4,6 +4,23 @@ Updated 29 September 2026. The existing implementation uses one backend, Turbopu
 
 [Foundation](FOUNDATION.md) owns the objective. [Data contract](DECISION-DATA-MODEL.md) owns record meaning. [Storage design](ARCHITECTURE-COMPARISON.md) owns layout. [Evaluation](EVALUATION.md) owns judgment qualification.
 
+## TypeScript backend, 30 September 2026
+
+The backend is now TypeScript on Cloudflare Workers ([ADR 0001](adr/0001-typescript-on-workers-with-tenant-durable-objects.md), [backend README](../backend/README.md)). The sections below describe the pilot's behaviour. It was ported faithfully, and its identities are byte-identical, enforced by golden vectors generated from the Python code. The storage and runtime notes that mention Python, uv, the local SQLite ledger file and the file lock describe the retired pilot.
+
+| Concern | Now |
+| --- | --- |
+| System of record | One SQLite Durable Object per tenant in the `eu` jurisdiction. Heads, revisions, assessments, reviews, feedback, sync state, standing facts, decision versions and the request ledger live there. The services run inside the object, so their integrity re-reads are local. |
+| Search | Turbopuffer `-chunks` namespace only (BM25 plus native Voyage embeddings), rebuildable from records. |
+| Allowance ledger | The same reservation rules as the pilot, in the tenant object's SQLite. A reservation commits before the call; experiments keep immutable allocations. |
+| Interfaces | Bearer-token HTTP API (`POST /v1/operations/<name>`), streamable-HTTP MCP at `/mcp`, and the operator CLI (`backend/src/cli`). All three share one operation table. |
+| Identity | Operator credentials come from an administrator secret. Team membership comes only from that secret, with a lease of under one hour per request. |
+| Standing decisions | Source-bound facts, eval-gated criteria and pure rules for access retain, finding close and exception validity. Answers are immutable input-addressed versions. Currency, conflicts and team access are derived at read. |
+| Sync | Registered Slack specs run on a Cron trigger; each run keeps the pilot's resumable reconciliation rules. |
+| Dependencies | `zod` (boundary validation), the official Turbopuffer and MCP TypeScript SDKs, and the Workers runtime. Development only: `vitest`, `wrangler`, `typescript`. |
+
+The TypeScript suite covers every Python test in the pre-migration baseline (`backend/scripts/parity.ts`). Latency and cost targets are not yet measured on deployed infrastructure.
+
 ## One application, two paths
 
 Preparation stores a permitted source revision in Turbopuffer, asks Jev the configured questions and writes text for native Voyage embedding. Assessment and indexing have independent completion states. Either can retry without losing the source.

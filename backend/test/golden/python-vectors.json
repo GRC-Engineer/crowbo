@@ -1,0 +1,249 @@
+{
+ "revisions": {
+  "legacy_source_update": {
+   "input": {
+    "tenant": "synthetic",
+    "connector": "fixture",
+    "workspace": "public",
+    "native_id": "issue-1",
+    "source_url": "https://example.org/issues/1",
+    "title": "Synthetic access review",
+    "text": "An invented development example. Owner requests an access review; no obligation is stated. Ünïcode — “quotes” 🐦",
+    "updated_at": "2026-09-23T08:15:30.123456+00:00",
+    "observed_at": "2026-09-25T10:00:00Z",
+    "basis": "synthetic",
+    "kind": "issue"
+   },
+   "dump": {
+    "fingerprint_version": 1,
+    "tenant": "synthetic",
+    "connector": "fixture",
+    "workspace": "public",
+    "native_id": "issue-1",
+    "source_url": "https://example.org/issues/1",
+    "title": "Synthetic access review",
+    "text": "An invented development example. Owner requests an access review; no obligation is stated. Ünïcode — “quotes” 🐦",
+    "updated_at": "2026-09-23T08:15:30.123456Z",
+    "observed_at": "2026-09-25T10:00:00Z",
+    "timestamp_basis": "source_update",
+    "basis": "synthetic",
+    "kind": "issue",
+    "owner": null,
+    "status": null,
+    "due_date": null,
+    "limitations": []
+   },
+   "revision_id": "13a4846aeb4fb3bcb7f3220265062372eca5e01bb4f740d969e138ca744d0554",
+   "logical_id": "2586663c7bb166475095042a7c0aac29b4bf30ed647ed038d94a07a2884317c8",
+   "head_id": "1add13e5407dfce28dfb5f53508136609356e2f624bb9e30dd92af1fb4d1f6f4"
+  },
+  "explicit_observation": {
+   "input": {
+    "tenant": "synthetic",
+    "connector": "fixture",
+    "workspace": "public",
+    "native_id": "issue-1",
+    "source_url": "https://example.org/issues/1",
+    "title": "Synthetic access review",
+    "text": "An invented development example. Owner requests an access review; no obligation is stated. Ünïcode — “quotes” 🐦",
+    "updated_at": "2026-09-25T10:00:00Z",
+    "observed_at": "2026-09-25T10:00:00Z",
+    "basis": "synthetic",
+    "kind": "issue",
+    "timestamp_basis": "observation"
+   },
+   "dump": {
+    "fingerprint_version": 1,
+    "tenant": "synthetic",
+    "connector": "fixture",
+    "workspace": "public",
+    "native_id": "issue-1",
+    "source_url": "https://example.org/issues/1",
+    "title": "Synthetic access review",
+    "text": "An invented development example. Owner requests an access review; no obligation is stated. Ünïcode — “quotes” 🐦",
+    "updated_at": "2026-09-25T10:00:00Z",
+    "observed_at": "2026-09-25T10:00:00Z",
+    "timestamp_basis": "observation",
+    "basis": "synthetic",
+    "kind": "issue",
+    "owner": null,
+    "status": null,
+    "due_date": null,
+    "limitations": []
+   },
+   "revision_id": "4ffefdd7d71b8007a8a9774a08a8ccb8d5ea33bf4d5740f3b5ad0f3c22a25468",
+   "logical_id": "2586663c7bb166475095042a7c0aac29b4bf30ed647ed038d94a07a2884317c8",
+   "head_id": "1add13e5407dfce28dfb5f53508136609356e2f624bb9e30dd92af1fb4d1f6f4"
+  },
+  "fingerprint_v2": {
+   "input": {
+    "tenant": "synthetic",
+    "connector": "slack",
+    "workspace": "acme",
+    "native_id": "C0123456789:1727258400.000100",
+    "source_url": "https://acme.slack.com/archives/C0123456789/p1727258400000100",
+    "title": "Synthetic access review",
+    "text": "An invented development example. Owner requests an access review; no obligation is stated. Ünïcode — “quotes” 🐦",
+    "updated_at": "2026-09-25T10:00:00Z",
+    "observed_at": "2026-09-25T10:00:00Z",
+    "basis": "real",
+    "kind": "thread",
+    "fingerprint_version": 2,
+    "timestamp_basis": "observation",
+    "limitations": [
+     "Selected thread only; files are referenced, not fetched.",
+     "Acquisition method: slack_api."
+    ]
+   },
+   "dump": {
+    "fingerprint_version": 2,
+    "tenant": "synthetic",
+    "connector": "slack",
+    "workspace": "acme",
+    "native_id": "C0123456789:1727258400.000100",
+    "source_url": "https://acme.slack.com/archives/C0123456789/p1727258400000100",
+    "title": "Synthetic access review",
+    "text": "An invented development example. Owner requests an access review; no obligation is stated. Ünïcode — “quotes” 🐦",
+    "updated_at": "2026-09-25T10:00:00Z",
+    "observed_at": "2026-09-25T10:00:00Z",
+    "timestamp_basis": "observation",
+    "basis": "real",
+    "kind": "thread",
+    "owner": null,
+    "status": null,
+    "due_date": null,
+    "limitations": [
+     "Selected thread only; files are referenced, not fetched.",
+     "Acquisition method: slack_api."
+    ]
+   },
+   "revision_id": "6328cfa75e6fc8f4a0b132022520b41877b84ca29aec9ed8fa14e0f2ab0d2a4c",
+   "logical_id": "8b1622162e3f5efecd6536494eb389b183b4b641f67655e4a1dbc124d48e3437",
+   "head_id": "bd13bad6f30a4c422e720d921292e91f30e2f6fced684804d87a26318c7351d6"
+  },
+  "offset_and_optional": {
+   "input": {
+    "tenant": "synthetic",
+    "connector": "fixture",
+    "workspace": "public",
+    "native_id": "issue-1",
+    "source_url": "https://example.org",
+    "title": "Synthetic access review",
+    "text": "An invented development example. Owner requests an access review; no obligation is stated. Ünïcode — “quotes” 🐦",
+    "updated_at": "2026-09-24T12:00:00+02:00",
+    "observed_at": "2026-09-25T10:00:00Z",
+    "basis": "synthetic",
+    "kind": "issue",
+    "owner": "alice@example.org",
+    "status": "open",
+    "due_date": "2026-10-01"
+   },
+   "dump": {
+    "fingerprint_version": 1,
+    "tenant": "synthetic",
+    "connector": "fixture",
+    "workspace": "public",
+    "native_id": "issue-1",
+    "source_url": "https://example.org/",
+    "title": "Synthetic access review",
+    "text": "An invented development example. Owner requests an access review; no obligation is stated. Ünïcode — “quotes” 🐦",
+    "updated_at": "2026-09-24T12:00:00+02:00",
+    "observed_at": "2026-09-25T10:00:00Z",
+    "timestamp_basis": "source_update",
+    "basis": "synthetic",
+    "kind": "issue",
+    "owner": "alice@example.org",
+    "status": "open",
+    "due_date": "2026-10-01",
+    "limitations": []
+   },
+   "revision_id": "248513b2d8714cb0180f51dc4de0fe229bdc238d26db1bd28a3ca979959d2d19",
+   "logical_id": "2586663c7bb166475095042a7c0aac29b4bf30ed647ed038d94a07a2884317c8",
+   "head_id": "1add13e5407dfce28dfb5f53508136609356e2f624bb9e30dd92af1fb4d1f6f4"
+  }
+ },
+ "digests": {
+  "unicode": {
+   "value": {
+    "b": "é🐦",
+    "a": [
+     1,
+     2.5,
+     null,
+     true
+    ],
+    "z": {
+     "y": "x"
+    }
+   },
+   "digest": "1ad718e868ca74da398531f2aa505eb16564e082c1e8d99dc37175e7a3f3dad9",
+   "json": "{\"a\":[1,2.5,null,true],\"b\":\"é🐦\",\"z\":{\"y\":\"x\"}}"
+  },
+  "ints": {
+   "value": [
+    0,
+    -3,
+    1000000000000
+   ],
+   "digest": "4a3bf77a74e013508eeba2b45e0c3abbc2828d3201c9f65ec03628f4582cdf7e",
+   "json": "[0,-3,1000000000000]"
+  },
+  "empty": {
+   "value": {},
+   "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+   "json": "{}"
+  },
+  "floats": {
+   "value": [
+    0.1,
+    0.99,
+    1e-05,
+    1.5e+20
+   ],
+   "digest": "58247905fa3ce8e9c48fd2a976df94ced803fddfbb51f0b2779e934a0f5f2a10",
+   "json": "[0.1,0.99,1e-05,1.5e+20]"
+  },
+  "nested_list": {
+   "value": [
+    [
+     "review",
+     {
+      "k": "v"
+     }
+    ]
+   ],
+   "digest": "e05d029fc7ccc0a599d76734d26511653e4642a1211fbf6f0f2021676d4dd28e",
+   "json": "[[\"review\",{\"k\":\"v\"}]]"
+  }
+ },
+ "questions": {
+  "commitment_version": "commitment-evidence-v1",
+  "commitment_hash": "cb5cea5e31291f300df565ff64ff8f3eb6a83f36d6ff2ca7800d36f97d04fe9b",
+  "access_subject": {
+   "system": "aws-prod",
+   "account_id": "svc-deploy",
+   "scope": "AdministratorAccess"
+  },
+  "access_version": "access-context-v1",
+  "access_fingerprint": "f8acc9acc91ea4b12b9504378662d28007130ae8535ee1de04209b7a95d8b00e",
+  "assessment_id_default": "e048a034c149f5d8b0045eda016c2d2c8728e20e910092fef8e10f88242e781b",
+  "context_assessment_id": "4d69b572436943e17a8be98309fed4a5a5a6a1b17cdf8bcec38ed637b936952e",
+  "assessor_contract": "cloudflare/typesafe/jev:access-context-v1"
+ },
+ "grant": {
+  "dump": {
+   "readers": [
+    "operator"
+   ],
+   "reader_groups": [],
+   "processors": [
+    "turbopuffer",
+    "jev"
+   ],
+   "checked_at": "2026-09-25T09:55:00Z",
+   "expires_at": "2026-09-25T11:00:00Z",
+   "revoked": false
+  },
+  "digest": "f47a900bbb54cab16a29364cbb9a7c54215b0a3bbe9b83c335c0d75f2ea5613c"
+ }
+}

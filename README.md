@@ -5,7 +5,7 @@ Security decision infrastructure. Crowbo brings permitted evidence, business con
 ## Start here
 
 - [Foundation](docs/FOUNDATION.md) owns the product direction and initial workflows.
-- [Backend brief](docs/TECHNICAL-PLAN.md), [data contract](docs/DECISION-DATA-MODEL.md) and [permissions](docs/PERMISSIONS.md) describe the connected Python implementation.
+- [Backend brief](docs/TECHNICAL-PLAN.md), [data contract](docs/DECISION-DATA-MODEL.md) and [permissions](docs/PERMISSIONS.md) describe the backend contracts. The [backend README](backend/README.md) and [ADR 0001](docs/adr/0001-typescript-on-workers-with-tenant-durable-objects.md) describe the TypeScript implementation; the [glossary](GLOSSARY.md) fixes the terms.
 - [Interaction model](docs/INTERACTION-MODEL.md) and [Decision Studio](design/decision-studio/README.md) describe the product experience and synthetic frontend demo.
 - [Evaluation contract](docs/EVALUATION.md) and [measurement plan](docs/MEASUREMENT-PLAN.md) separate engineering checks from judgment quality.
 - [Brand guide](design/BRAND.md) owns the visual identity. [Contributor instructions](AGENTS.md) govern repository work.
@@ -15,19 +15,22 @@ Security decision infrastructure. Crowbo brings permitted evidence, business con
 The public website includes a company landing page and a synthetic frontend demo; the backend is a separate deliverable:
 
 - **Website and frontend:** [crowbo.ai](https://crowbo.ai) opens the approved two-paragraph company page with Modular Crow and the feather network. The unlinked `/demo/` page opens the question-first Decision Studio; `/demo/?view=workspace` opens its full workspace. Both are built from [design/decision-studio](design/decision-studio/README.md) into `site/`. The demo uses synthetic data, is not connected to the backend, does not call a model and does not change a security system. The demo sends `noindex, nofollow` directives to search engines. No sign-in exists yet; both pages remain accessible by URL. Earlier prototypes remain under `design/` as history.
-- **Backend:** the Python CLI and local MCP interface import permitted source bundles, prepare Jev assessments, retrieve evidence with Turbopuffer and retain recommendations, feedback and reassessment. [The pilot guide](docs/PILOT.md) records its scope and observed checks. It is not a hosted multiuser service.
+- **Backend:** a TypeScript API on Cloudflare Workers ([backend/](backend/README.md)). Each tenant's records live in one SQLite Durable Object in the EU jurisdiction; Turbopuffer holds search chunks only. It imports permitted source bundles, prepares Jev assessments, serves standing decisions (access retain, finding close, exception validity) from source-bound facts and eval-gated criteria, runs checked reasoning for novel questions, and retains recommendations, feedback and reassessment. It is reachable through an authenticated HTTP API, MCP and the operator CLI. [The pilot guide](docs/PILOT.md) records the earlier Python pilot's scope and observed checks; those results stay historical. It is not yet a customer-facing multiuser service.
 - **Earlier proof:** [the offline programme experiment](proof/README.md) preserves the synthetic control and investment decision loop and its historical results.
 
 The initial workflow portfolio is remediation tracking, access reviews, and issues and exceptions management. Access is the most developed experiment; the other workflows still need their own cases and implementation. No comparative decision-quality advantage, customer acceptance or commercial result follows from the engineering tests.
 
 ## Run locally
 
-Backend, using [uv](https://docs.astral.sh/uv/):
+Backend, using [Bun](https://bun.sh):
 
 ```sh
-uv sync --locked
-uv run --locked pytest -q
-uv run --locked crowbo --help
+cd backend
+bun install
+bunx tsc --noEmit
+bunx vitest run
+bun scripts/parity.ts
+bun src/cli/main.ts --help
 ```
 
 Frontend:
@@ -46,7 +49,7 @@ Credentials, authorised source inputs and runtime outputs stay outside Git. Foll
 
 ## Review backend changes
 
-Run `uv run --locked ruff check src tests proof/mcp_scenarios.py` and `uv run --locked ruff format --check src tests proof/mcp_scenarios.py` alongside the tests. Follow the [GitHub checkpoint workflow](AGENTS.md#github-checkpoints) to commit, push and review each bounded change.
+Run `bunx tsc --noEmit`, `bunx vitest run` and `bun scripts/parity.ts` in `backend/`. Follow the [GitHub checkpoint workflow](AGENTS.md#github-checkpoints) to commit, push and review each bounded change.
 
 ## Website deployment
 

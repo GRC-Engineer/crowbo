@@ -1,0 +1,27 @@
+{
+  "name": "crowbo-backend",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "dev": "wrangler dev",
+    "deploy:staging": "wrangler deploy --env staging",
+    "crowbo": "bun src/cli/main.ts",
+    "parity": "bun scripts/parity.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1",
+    "@turbopuffer/turbopuffer": "^2",
+    "zod": "^4"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.22",
+    "@cloudflare/workers-types": "^5.20260930.1",
+    "@types/bun": "^1.4.2",
+    "typescript": "^5.9",
+    "vitest": "^4.1",
+    "wrangler": "^4"
+  }
+}

@@ -202,7 +202,7 @@ The earlier question asked what GRC and security engineering should prioritise o
 
 ### Connected implementation direction
 
-The architecture starts from one small Python backend, Turbopuffer with native Voyage embeddings, Jev through Cloudflare, and a reasoning model. Existing historical experiments are not design inputs. The [backend brief](TECHNICAL-PLAN.md) records why each dependency remains.
+The architecture is one small TypeScript backend on Cloudflare Workers with one EU Durable Object per tenant as the system of record, Turbopuffer with native Voyage embeddings as the search index, Jev through Cloudflare, and a reasoning model ([ADR 0001](adr/0001-typescript-on-workers-with-tenant-durable-objects.md)). Existing historical experiments are not design inputs. The [backend brief](TECHNICAL-PLAN.md) records why each dependency remains.
 
 The source preparation and retrieval path is implemented. The new review operation accepts explicit evidence IDs and a model configuration; its engineering tests do not qualify the recommendation's professional judgment. No recurring schedule, hosted service or production authentication is selected.
 

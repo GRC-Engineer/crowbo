@@ -19,3 +19,7 @@ build/
 *.sqlite3-wal
 *.sqlite3-shm
 proof/runs/
+backend/node_modules/
+backend/.wrangler/
+backend/.dev.vars
+backend/.dev-token

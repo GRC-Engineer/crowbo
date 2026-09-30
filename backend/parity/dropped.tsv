@@ -1,0 +1,4 @@
+test_id	reason
+tests/test_providers.py::test_batch_lookup_is_bounded_and_checks_returned_ids[duplicate]	Records moved from a Turbopuffer namespace to Durable Object SQLite (SqlStore); a primary-key lookup cannot return duplicate rows from a remote provider, so there is no returned-identity check to test
+tests/test_providers.py::test_batch_lookup_is_bounded_and_checks_returned_ids[unexpected]	Records moved from a Turbopuffer namespace to Durable Object SQLite (SqlStore); a primary-key lookup cannot return rows for unrequested IDs from a remote provider, so there is no returned-identity check to test
+tests/test_runtime.py::test_runtime_lock_prevents_concurrent_local_workers	No local worker lock by design: the CLI only calls the API and the tenant Durable Object serialises writes; atomic reservations are covered by test_concurrent_reservations_cannot_overspend_one_remaining_request.
