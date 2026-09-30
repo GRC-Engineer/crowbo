@@ -13,7 +13,6 @@ import up from "../../crow-concepts/2026-09-24/approved-runtime/runner-up.png";
 import down from "../../crow-concepts/2026-09-24/approved-runtime/runner-down.png";
 import { FeatherGlyph, type FeatherDesign } from "./identity";
 import { providers, type Provider } from "./providers";
-import { usePurity } from "./purity";
 import {
   conditions,
   freshness,
@@ -414,14 +413,13 @@ export function Shell({
   const errorId = useId();
   const text = value ?? "";
 
-  // PROTOTYPE L2+: the line shows the primary command only; ? shows the rest.
-  const purity = usePurity();
+  // The line shows the primary command; ? shows the rest of the keys.
   const [allHints, setAllHints] = useState(false);
   useEffect(() => setAllHints(false), [screen]);
   const primary =
     commands.find((entry) => entry.keys.includes("Enter")) ?? commands[0];
   const shown =
-    purity >= 2 && !allHints && primary
+    !allHints && primary
       ? commands.filter((entry) => entry === primary)
       : commands;
 
@@ -453,7 +451,7 @@ export function Shell({
       return;
     }
     const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
-    if ((key === "?" || key === "/") && purity >= 2) {
+    if (key === "?" || key === "/") {
       event.preventDefault();
       setAllHints((value) => !value);
       return;
@@ -467,7 +465,7 @@ export function Shell({
   }
 
   return (
-    <div className="t-app" data-purity={purity || undefined}>
+    <div className="t-app">
       <a className="t-skip" href="#t-main">
         Skip to content
       </a>
@@ -544,7 +542,7 @@ export function Shell({
               {command.label}
             </button>
           ))}
-          {purity >= 2 && commands.length > 1 && (
+          {commands.length > 1 && (
             <button
               type="button"
               aria-pressed={allHints}

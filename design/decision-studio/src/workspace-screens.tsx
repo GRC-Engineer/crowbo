@@ -13,13 +13,11 @@ import {
   tidy,
 } from "./present";
 import { providers, type Provider } from "./providers";
-import { usePurity } from "./purity";
 import type { CaseId } from "./question-demo-model";
 import type { DemoSource } from "./source-model";
 import { SourcePane } from "./source-pane";
 import type { FeatherDesign } from "./identity";
 import {
-  Key,
   Label,
   Runner,
   Shell,
@@ -67,15 +65,6 @@ export function QueueScreen({
   const [selected, setSelected] = useState(0);
   const [filter, setFilter] = useState<CaseId | "all">("all");
   const rows = caseOrder.filter((id) => filter === "all" || filter === id);
-  // PROTOTYPE L3: the inbox opens with counts instead of filters.
-  const purity = usePurity();
-  const all = caseOrder.map((id) => decisions[id]);
-  const strip = [
-    ["Need you", all.filter((d) => !d.current.recorded).length],
-    ["Staged", all.filter((d) => d.pending !== null).length],
-    ["Handed off", all.filter((d) => d.current.recorded).length],
-    ["Versions", all.reduce((sum, d) => sum + d.previous.length + 1, 0)],
-  ] as const;
   const index = Math.min(selected, rows.length - 1);
   const move = (by: number) =>
     setSelected(Math.max(0, Math.min(rows.length - 1, index + by)));
@@ -114,40 +103,29 @@ export function QueueScreen({
               Decisions
             </h1>
           </div>
-          {purity === 3 ? (
-            <dl className="t-strip">
-              {strip.map(([name, count]) => (
-                <div key={name} data-on={count > 0}>
-                  <dd>{count}</dd>
-                  <dt>{name}</dt>
-                </div>
-              ))}
-            </dl>
-          ) : (
-            <div
-              className="t-filters"
-              role="group"
-              aria-label="Filter by workflow"
+          <div
+            className="t-filters"
+            role="group"
+            aria-label="Filter by workflow"
+          >
+            <button
+              type="button"
+              aria-pressed={filter === "all"}
+              onClick={() => setFilter("all")}
             >
+              All
+            </button>
+            {caseOrder.map((id) => (
               <button
                 type="button"
-                aria-pressed={filter === "all"}
-                onClick={() => setFilter("all")}
+                key={id}
+                aria-pressed={filter === id}
+                onClick={() => setFilter(id)}
               >
-                All
+                {decisions[id].label}
               </button>
-              {caseOrder.map((id) => (
-                <button
-                  type="button"
-                  key={id}
-                  aria-pressed={filter === id}
-                  onClick={() => setFilter(id)}
-                >
-                  {decisions[id].label}
-                </button>
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
         </div>
         <div className="t-table">
           <div className="t-table-head" aria-hidden="true">
@@ -335,7 +313,7 @@ export function SourcesScreen({
           </div>
         ) : (
           <div className="t-tools">
-            {used.map((provider, index) => {
+            {used.map((provider) => {
               const mine = records.filter(
                 ({ source }) => source.provider === provider,
               );
@@ -356,7 +334,6 @@ export function SourcesScreen({
                       size={56}
                     />
                     <span>
-                      <Key>{index + 1}</Key>
                       {mine.length} {mine.length === 1 ? "record" : "records"}
                     </span>
                   </span>

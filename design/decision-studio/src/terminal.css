@@ -840,20 +840,9 @@
 .t-start-art img {
   max-width: 100%;
 }
-.t-boot {
-  padding: 16px 48px 18px;
-  font: 13px/1.55 var(--mono);
-  color: var(--muted);
-  white-space: pre;
-  overflow: hidden;
-}
-.t-boot span[data-tone="chalk"],
-.t-log span[data-tone="chalk"],
 .t-cli span[data-tone="chalk"] {
   color: var(--chalk);
 }
-.t-boot span[data-tone="sage"],
-.t-log span[data-tone="sage"],
 .t-cli span[data-tone="sage"] {
   color: var(--sage);
 }
@@ -907,6 +896,9 @@
   flex: 1;
   max-width: 520px;
   height: 34px;
+}
+.t-start-lane .t-lane-runner {
+  left: 46%;
 }
 
 /* A lane: one line, with small runners travelling along it. */
@@ -979,6 +971,9 @@
   gap: 12px;
   font: 11px/1.4 var(--mono);
   color: var(--ink-200);
+}
+.t-case-number {
+  color: var(--fog);
 }
 .t-case strong {
   font: 600 24px/1.15 var(--display);
@@ -1240,14 +1235,6 @@ button.t-chip:hover:not(:disabled) {
 .t-shape-next p {
   font-size: 15px;
   color: var(--fog);
-}
-.t-log {
-  min-height: 60px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
-  font: 12px/1.6 var(--mono);
-  white-space: pre;
-  overflow: hidden;
 }
 
 /* ───────────────────────── panes beside the decision */
@@ -2354,10 +2341,6 @@ button.t-chip:hover:not(:disabled) {
   .t-start-copy p {
     font-size: 16px;
   }
-  .t-boot {
-    padding: 14px 20px;
-    font-size: 12px;
-  }
   .t-start-lane {
     display: none;
   }
@@ -2443,165 +2426,4 @@ button.t-chip:hover:not(:disabled) {
   .t-table > button > :nth-child(4) {
     display: none;
   }
-}
-
-/* ───────────────────────── PROTOTYPE: purity levels
-   Every rule below is scoped to [data-purity]; level 0 renders as shipped.
-   L1 removes motion, L2 removes secondary controls and art, L3 removes
-   structure. Each level includes the ones before it. */
-.t-proto {
-  position: fixed;
-  right: 16px;
-  bottom: 80px;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 8px 6px 12px;
-  border: 1px solid var(--oxide);
-  background: var(--ink-900);
-  font: 11px/1 var(--mono);
-  color: var(--fog);
-  box-shadow: var(--shadow-hard);
-}
-.t-proto span {
-  margin-right: 8px;
-  white-space: nowrap;
-}
-.t-proto b {
-  color: var(--oxide-300);
-}
-.t-proto button {
-  min-height: 28px;
-  padding: 0 8px;
-  border: 1px solid var(--slate);
-  font: 11px/1 var(--mono);
-  color: var(--muted);
-}
-.t-proto button[aria-pressed="true"] {
-  border-color: var(--oxide);
-  background: var(--ink-700);
-  color: var(--chalk);
-}
-
-/* L1 · calm */
-[data-purity] .t-bob,
-[data-purity] .t-runner.t-bob[data-flip="true"] {
-  animation: none;
-}
-[data-purity] .t-arrive span {
-  animation: none;
-}
-[data-purity] .t-start-lane .t-lane[data-moving="false"] .t-lane-runner {
-  animation: none;
-  left: 46%;
-}
-[data-purity] .t-start-lane .t-lane[data-moving="false"] .t-mini img {
-  animation: none;
-}
-
-/* L2 · quiet */
-[data-purity="2"] .t-page-art,
-[data-purity="3"] .t-page-art,
-[data-purity="2"] .t-boot,
-[data-purity="3"] .t-boot,
-[data-purity="2"] .t-main .t-key,
-[data-purity="3"] .t-main .t-key {
-  display: none;
-}
-[data-purity="2"] .t-keys button,
-[data-purity="3"] .t-keys button {
-  padding-left: 0;
-}
-[data-purity="2"] .t-start-actions > span,
-[data-purity="3"] .t-start-actions > span {
-  display: none;
-}
-
-/* L3 · pure */
-[data-purity="3"] .t-home .t-page-head p,
-[data-purity="3"] .t-case-text,
-[data-purity="3"] .t-read .t-lane-row > .t-lane,
-[data-purity="3"] .t-read .t-lane-name span,
-[data-purity="3"] .t-keys span,
-[data-purity="3"] .t-record-action p,
-[data-purity="3"] .t-record-kicker,
-[data-purity="3"] .t-start-lane {
-  display: none;
-}
-[data-purity="3"] .t-read-grid[data-pure="true"] {
-  grid-template-columns: minmax(0, 1fr);
-}
-[data-purity="3"] .t-read-grid[data-pure="true"]:has(.t-pane) {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 560px);
-}
-[data-purity="3"] .t-read-bar {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-  padding: 8px 0 16px;
-  border-bottom: 1px solid var(--line);
-}
-[data-purity="3"] .t-read-bar .t-lane {
-  position: relative;
-  flex: 1 1 240px;
-  height: 26px;
-  border-bottom: 1px solid var(--slate);
-}
-[data-purity="3"] .t-read-bar .t-lane-runner {
-  margin-top: -13px;
-}
-[data-purity="3"] .t-read-bar .t-counts {
-  flex-direction: row;
-  gap: 20px;
-  padding-top: 0;
-  border-top: 0;
-}
-[data-purity="3"] .t-read-bar .t-counts div {
-  gap: 8px;
-  font-size: 13px;
-}
-[data-purity="3"] .t-lane-row {
-  grid-template-columns: minmax(0, 1fr);
-}
-[data-purity="3"] .t-keys {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 20px;
-  border-top: 1px solid var(--line);
-}
-[data-purity="3"] .t-keys li {
-  flex: 0 0 auto;
-}
-[data-purity="3"] .t-keys button {
-  width: auto;
-  border-top: 0;
-}
-[data-purity="3"] .t-keys strong {
-  font-weight: 500;
-  color: var(--sage);
-}
-[data-purity="3"] .t-strip {
-  display: flex;
-  gap: 28px;
-}
-[data-purity="3"] .t-strip div {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 72px;
-  padding-left: 10px;
-  border-left: 2px solid var(--slate);
-}
-[data-purity="3"] .t-strip div[data-on="true"] {
-  border-left-color: var(--oxide);
-}
-[data-purity="3"] .t-strip dd {
-  font: 600 22px/1 var(--display);
-  color: var(--chalk);
-}
-[data-purity="3"] .t-strip dt {
-  font: 11px/1 var(--mono);
-  letter-spacing: 0.04em;
-  color: var(--muted);
 }

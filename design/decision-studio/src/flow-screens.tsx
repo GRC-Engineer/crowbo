@@ -1,13 +1,7 @@
 import { useRef, useState, type Dispatch } from "react";
 import { caseGuides } from "./case-guides";
 import type { DecisionView } from "./decision-view";
-import {
-  caseOwners,
-  caseRecords,
-  caseTrack,
-  checkedOn,
-  influenceLabel,
-} from "./present";
+import { caseOwners, caseRecords, caseTrack, influenceLabel } from "./present";
 import { providers, type Provider } from "./providers";
 import {
   demoCases,
@@ -17,17 +11,14 @@ import {
   type DemoSource,
   type DemoState,
 } from "./question-demo-model";
-import { usePurity } from "./purity";
 import { familyLanes } from "./source-families";
 import { SourcePane } from "./source-pane";
 import {
   Freshness,
-  Key,
   Label,
   MarkChip,
   MiniRunner,
   ModularCrow,
-  Runner,
   Shell,
   SourceFeather,
   Track,
@@ -64,7 +55,6 @@ export function StartScreen({
   dispatch: Dispatch<DemoAction>;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
-  const purity = usePurity();
   const choose = (key: string) => {
     dispatch({ type: "open" });
     dispatch({ type: "choose", caseId: caseOrder[Number(key) - 1] });
@@ -113,9 +103,8 @@ export function StartScreen({
                   className="t-primary"
                   onClick={() => dispatch({ type: "open" })}
                 >
-                  Start <Key>↵</Key>
+                  Start
                 </button>
-                <span>or press 1, 2 or 3 for a prepared question</span>
               </div>
             </div>
             <div className="t-start-art" aria-hidden="true">
@@ -123,14 +112,6 @@ export function StartScreen({
             </div>
           </div>
           <div className="t-start-bottom">
-            <pre className="t-boot" aria-hidden="true">
-              <span data-tone="chalk">› crowbo start</span>
-              {"\n"}
-              {"  workspace   Acme\n"}
-              {"  questions   remediation · access review · exception\n"}
-              {"  sources     9 tools, read-only\n"}
-              <span data-tone="sage">{"  ✓ ready"}</span>
-            </pre>
             <div className="t-start-tools">
               <Label tone="quiet">Reads from</Label>
               <div>
@@ -147,16 +128,10 @@ export function StartScreen({
             <i data-tone="sage" />
             records
           </span>
-          <div className="t-lane" data-moving={purity === 0}>
-            {(purity === 0 ? [0, 1.35, 2.7] : [0]).map((delay) => (
-              <span
-                key={delay}
-                className="t-lane-runner"
-                style={{ animationDelay: `${delay}s` }}
-              >
-                <MiniRunner />
-              </span>
-            ))}
+          <div className="t-lane">
+            <span className="t-lane-runner">
+              <MiniRunner />
+            </span>
           </div>
           <span>
             <i data-tone="socket" />
@@ -221,9 +196,6 @@ export function HomeScreen({
               records behind it.
             </p>
           </div>
-          <div className="t-page-art" aria-hidden="true">
-            <Runner pose="up" width={190} />
-          </div>
         </div>
         <div className="t-cases">
           {caseOrder.map((caseId, index) => {
@@ -237,7 +209,7 @@ export function HomeScreen({
                 onClick={() => choose(caseId)}
               >
                 <span className="t-case-top">
-                  <Key>{index + 1}</Key>
+                  <span className="t-case-number">{index + 1}</span>
                   <span>
                     {entry.sources.length} sources ·{" "}
                     {decision.branches.length - 1} prepared updates
@@ -364,14 +336,14 @@ export function ConfirmScreen({
         </div>
         <div className="t-actions">
           <button type="button" className="t-primary" onClick={start}>
-            Start reading <Key>↵</Key>
+            Start reading
           </button>
           <button
             type="button"
             className="t-secondary"
             onClick={() => dispatch({ type: "question" })}
           >
-            Edit question <Key>esc</Key>
+            Edit question
           </button>
         </div>
       </div>
@@ -415,8 +387,7 @@ export function ReadScreen({
   const reached = used.slice(0, revealed(state.step, used.length));
   const read = reached.flatMap((lane) => lane.records);
   const moving = !state.paused && !reducedMotion;
-  // PROTOTYPE L1+: only the lane being read now has a runner on it.
-  const purity = usePurity();
+  // Only the lane being read now carries a runner; the others sit still.
   const active = reached[reached.length - 1];
   const counts = (
     ["deciding", "supporting", "context", "constraint"] as const
@@ -492,32 +463,7 @@ export function ReadScreen({
             ))}
           </ol>
         </div>
-        {purity === 3 && (
-          <div className="t-read-bar" aria-hidden="true">
-            <div className="t-lane" data-moving={moving}>
-              <span className="t-lane-runner">
-                <MiniRunner width={52} />
-              </span>
-            </div>
-            <dl className="t-counts">
-              <div>
-                <dt>Read</dt>
-                <dd>
-                  {read.length} of {entry.sources.length}
-                </dd>
-              </div>
-              {counts
-                .filter(({ count }) => count > 0)
-                .map(({ kind, count }) => (
-                  <div key={kind} data-influence={kind}>
-                    <dt>{influenceLabel[kind]}</dt>
-                    <dd>{count}</dd>
-                  </div>
-                ))}
-            </dl>
-          </div>
-        )}
-        <div className="t-read-grid" data-pure={purity === 3}>
+        <div className="t-read-grid">
           <div className="t-lanes" data-moving={moving}>
             {lanes.map((lane) => {
               const live = reached.includes(lane);
@@ -567,7 +513,7 @@ export function ReadScreen({
                     </div>
                   </div>
                   <div className="t-lane" aria-hidden="true">
-                    {live && (purity === 0 || lane === active) && (
+                    {live && lane === active && (
                       <span
                         className="t-lane-runner"
                         style={{
@@ -592,7 +538,7 @@ export function ReadScreen({
                 trigger.current?.focus();
               }}
             />
-          ) : purity === 3 ? null : (
+          ) : (
             <section className="t-panel t-shape" aria-live="polite">
               <div className="t-panel-head">
                 <Label>Taking shape</Label>
@@ -625,23 +571,6 @@ export function ReadScreen({
             </section>
           )}
         </div>
-        {purity === 0 && (
-          <pre className="t-log" aria-hidden="true">
-            {read.slice(-3).map((source, index, list) => (
-              <span
-                key={source.id}
-                data-tone={index === list.length - 1 ? "chalk" : "sage"}
-              >
-                {index === list.length - 1 && state.step < 2 ? "… " : "✓ "}
-                {"read   "}
-                {source.id.padEnd(20)}
-                {providers[source.provider].name.padEnd(17)}
-                {checkedOn(source)}
-                {"\n"}
-              </span>
-            ))}
-          </pre>
-        )}
       </div>
     </Shell>
   );

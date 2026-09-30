@@ -2,6 +2,18 @@
 
 React design study, updated 29 September 2026 in the main checkout. Since 29 September 2026 its production build supplies the company landing page and `/demo/` at [crowbo.ai](https://crowbo.ai); see [Publication as the website](#publication-as-the-website--29-september). The [earlier identity pass](DESIGN-PASS.md) records the Clay research, twelve-feather system, provider marks and three new review loops. Synthetic Acme evidence only. This study preserves the earlier [three-layout prototype](../decision-prototype/2026-09-28/README.md).
 
+## Quiet pass, 30 September
+
+After the terminal redesign went live, the owner compared four levels of the same demo on the canvas (as shipped; calm; quiet; pure) and chose **quiet**. This pass removes noise and adds nothing:
+
+- Reading: one Packet Runner flies, on the family being read; the other lanes hold still. The read log under the lanes is gone.
+- Start: one runner rests on the wire instead of three travelling; the boot log block is gone.
+- Command line: only the primary command is listed. `?` (or `/`) on an empty line shows every key; the list resets on each screen.
+- Key badges no longer appear inside pages, only on the command line. Buttons and pane lists read as plain text.
+- The crow over Home and the runner over the decision are gone. The arriving runner on a staged update no longer bobs.
+
+Every screen, pane and key still exists; what changed is what is drawn at once. The other two levels were not shipped; their boards stay on the canvas.
+
 ## Terminal redesign, 29 September
 
 The demo at `/demo/` was rebuilt from the redesign canvas reviewed on 29 September. The sections below this one describe earlier passes. The component files they name were replaced by the files in this table.

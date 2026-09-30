@@ -2,13 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { checkedOn, tidy } from "./present";
 import { providers } from "./providers";
 import { resolveSourceLink, type DemoSource } from "./source-model";
-import {
-  Influence,
-  Key,
-  Label,
-  SourceFeather,
-  finePointer,
-} from "./terminal-parts";
+import { Influence, Label, SourceFeather, finePointer } from "./terminal-parts";
 
 // A source opens beside the decision, never on top of it. Following a
 // connected record keeps a trail, so the way back is one step.
@@ -53,7 +47,7 @@ export function SourcePane({
           · {context}
         </Label>
         <button type="button" className="t-close" onClick={onClose}>
-          Close <Key>esc</Key>
+          Close{" "}
         </button>
       </div>
       {trail.length > 1 && (
@@ -112,7 +106,6 @@ export function SourcePane({
                     <strong>{link.label}</strong>
                     <small>{link.identity}</small>
                   </span>
-                  <Key>→</Key>
                 </button>
               </li>
             ))}
