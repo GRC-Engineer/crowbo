@@ -2,6 +2,8 @@
 
 Updated 28 September 2026. This document records how to run the implemented CLI and what was observed. The [backend brief](TECHNICAL-PLAN.md) owns architecture and build order; the [measurement plan](MEASUREMENT-PLAN.md) owns decision-usefulness evaluation.
 
+> **Retired runtime, 30 September 2026.** This guide records the Python pilot, and its observed results remain historical evidence. The backend is now TypeScript on Cloudflare Workers ([backend README](../backend/README.md)). Command equivalents: `uv run --locked crowbo --settings S <command> ...` becomes `bun backend/src/cli/main.ts --api URL <command> ...`, with the credential taken from `CROWBO_TOKEN` or the Keychain item `crowbo/api` instead of a settings file. `crowbo-mcp` over stdio becomes the authenticated `/mcp` endpoint, and `proof/mcp_scenarios.py` becomes `backend/scripts/scenarios.ts`.
+
 ## What works
 
 One Python process imports a small private bundle. It stores each source revision in the customer's turbopuffer records namespace, then independently prepares a Jev assessment and native Voyage search chunks. A mutable source head identifies the current revision and access grant. Retrieval resolves that head again before returning content and its assessment. An assessment is an interpretation bound to a source revision and criteria hash, not a priority or calibrated risk score.
