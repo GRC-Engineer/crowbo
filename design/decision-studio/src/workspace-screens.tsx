@@ -18,7 +18,6 @@ import type { DemoSource } from "./source-model";
 import { SourcePane } from "./source-pane";
 import type { FeatherDesign } from "./identity";
 import {
-  Key,
   Label,
   Runner,
   Shell,
@@ -314,7 +313,7 @@ export function SourcesScreen({
           </div>
         ) : (
           <div className="t-tools">
-            {used.map((provider, index) => {
+            {used.map((provider) => {
               const mine = records.filter(
                 ({ source }) => source.provider === provider,
               );
@@ -335,7 +334,6 @@ export function SourcesScreen({
                       size={56}
                     />
                     <span>
-                      <Key>{index + 1}</Key>
                       {mine.length} {mine.length === 1 ? "record" : "records"}
                     </span>
                   </span>

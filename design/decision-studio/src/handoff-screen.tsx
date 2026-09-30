@@ -13,7 +13,6 @@ import type { DecisionView } from "./decision-view";
 import type { Chrome } from "./flow-screens";
 import { conditions } from "./present";
 import {
-  Key,
   Label,
   Runner,
   Shell,
@@ -297,14 +296,14 @@ export function HandoffScreen({
               {state.kind === "configure" ? (
                 <>
                   <button type="button" className="t-primary" onClick={run}>
-                    Hand over <Key>↵</Key>
+                    Hand over{" "}
                   </button>
                   <button
                     type="button"
                     className="t-secondary"
                     onClick={myself}
                   >
-                    I’ll do it myself <Key>m</Key>
+                    I’ll do it myself{" "}
                   </button>
                 </>
               ) : state.kind === "running" ? (
@@ -313,26 +312,25 @@ export function HandoffScreen({
                   className="t-secondary"
                   onClick={() => dispatch({ type: "finish" })}
                 >
-                  Show the response <Key>↵</Key>
+                  Show the response{" "}
                 </button>
               ) : (
                 <>
                   <button type="button" className="t-primary" onClick={onBack}>
-                    Back to decision <Key>↵</Key>
+                    Back to decision{" "}
                   </button>
                   <button
                     type="button"
                     className="t-secondary"
                     onClick={onTryAnother}
                   >
-                    New question <Key>n</Key>
+                    New question{" "}
                   </button>
                 </>
               )}
               {state.kind !== "manual" && state.kind !== "running" && (
                 <button type="button" className="t-secondary" onClick={copy}>
-                  {copied === "copied" ? "Brief copied" : "Copy brief"}{" "}
-                  <Key>y</Key>
+                  {copied === "copied" ? "Brief copied" : "Copy brief"}
                 </button>
               )}
             </div>

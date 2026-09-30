@@ -12,7 +12,6 @@ import {
   DecisionRecord,
   Freshness,
   Influence,
-  Key,
   Label,
   Runner,
   Shell,
@@ -92,7 +91,7 @@ function PaneFrame({
       <div className="t-pane-head">
         <Label>{label}</Label>
         <button type="button" className="t-close" onClick={onClose}>
-          Close <Key>esc</Key>
+          Close{" "}
         </button>
       </div>
       <h2 ref={heading} tabIndex={-1}>
@@ -136,12 +135,11 @@ function FrameworksPane({
         </div>
       </dl>
       <div className="t-frameworks">
-        {(Object.keys(frameworks) as Framework[]).map((id, index) => {
+        {(Object.keys(frameworks) as Framework[]).map((id) => {
           const mapping = guide.mappings[id];
           return id === framework ? (
             <section key={id} data-open="true" aria-live="polite">
               <p>
-                <Key>{index + 1}</Key>
                 <strong>{frameworks[id].label}</strong>
                 <small>{frameworks[id].edition}</small>
               </p>
@@ -160,7 +158,6 @@ function FrameworksPane({
             </section>
           ) : (
             <button type="button" key={id} onClick={() => onFramework(id)}>
-              <Key>{index + 1}</Key>
               <strong>{frameworks[id].label}</strong>
               <span>{mapping.reference}</span>
             </button>
@@ -377,7 +374,7 @@ export function DecideScreen({
             </section>
             <div className="t-arrive" aria-hidden="true">
               <span>
-                <Runner pose="down" width={140} bob />
+                <Runner pose="down" width={140} />
               </span>
             </div>
             <section className="t-panel" data-proposed="true">
@@ -427,14 +424,14 @@ export function DecideScreen({
               className="t-primary"
               onClick={decision.reassess}
             >
-              Reassess with this update <Key>↵</Key>
+              Reassess with this update
             </button>
             <button
               type="button"
               className="t-secondary"
               onClick={decision.discard}
             >
-              Keep v{current.number} <Key>k</Key>
+              Keep v{current.number}
             </button>
             {pending.added.map((source) => (
               <button
@@ -574,9 +571,6 @@ export function DecideScreen({
               {decision.question}
             </h1>
           </div>
-          <div className="t-page-art" aria-hidden="true">
-            <Runner pose="glide" width={150} heading="left" />
-          </div>
         </div>
         <div className="t-decide-grid" data-pane={open ? "source" : pane}>
           <DecisionRecord
@@ -604,7 +598,7 @@ export function DecideScreen({
                   className="t-primary"
                   onClick={() => setHandoff(true)}
                 >
-                  Take the next step <Key>↵</Key>
+                  Take the next step
                 </button>
                 <p>Yourself, or as a brief for an agent.</p>
               </div>
@@ -672,7 +666,6 @@ export function DecideScreen({
                 {keys.map(({ key, pane: target, name, note }) => (
                   <li key={key}>
                     <button type="button" onClick={() => show(target)}>
-                      <Key>{key}</Key>
                       <strong>{name}</strong>
                       <span>{note}</span>
                     </button>
@@ -760,7 +753,6 @@ export function DecideScreen({
                       {update.label
                         .replace(/^Try (an? )?/i, "")
                         .replace(/^./, (c) => c.toUpperCase())}
-                      <Key>→</Key>
                     </button>
                   ))}
                 </div>

@@ -840,20 +840,9 @@
 .t-start-art img {
   max-width: 100%;
 }
-.t-boot {
-  padding: 16px 48px 18px;
-  font: 13px/1.55 var(--mono);
-  color: var(--muted);
-  white-space: pre;
-  overflow: hidden;
-}
-.t-boot span[data-tone="chalk"],
-.t-log span[data-tone="chalk"],
 .t-cli span[data-tone="chalk"] {
   color: var(--chalk);
 }
-.t-boot span[data-tone="sage"],
-.t-log span[data-tone="sage"],
 .t-cli span[data-tone="sage"] {
   color: var(--sage);
 }
@@ -907,6 +896,9 @@
   flex: 1;
   max-width: 520px;
   height: 34px;
+}
+.t-start-lane .t-lane-runner {
+  left: 46%;
 }
 
 /* A lane: one line, with small runners travelling along it. */
@@ -979,6 +971,9 @@
   gap: 12px;
   font: 11px/1.4 var(--mono);
   color: var(--ink-200);
+}
+.t-case-number {
+  color: var(--fog);
 }
 .t-case strong {
   font: 600 24px/1.15 var(--display);
@@ -1240,14 +1235,6 @@ button.t-chip:hover:not(:disabled) {
 .t-shape-next p {
   font-size: 15px;
   color: var(--fog);
-}
-.t-log {
-  min-height: 60px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
-  font: 12px/1.6 var(--mono);
-  white-space: pre;
-  overflow: hidden;
 }
 
 /* ───────────────────────── panes beside the decision */
@@ -2353,10 +2340,6 @@ button.t-chip:hover:not(:disabled) {
   }
   .t-start-copy p {
     font-size: 16px;
-  }
-  .t-boot {
-    padding: 14px 20px;
-    font-size: 12px;
   }
   .t-start-lane {
     display: none;

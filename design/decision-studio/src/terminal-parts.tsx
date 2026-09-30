@@ -2,6 +2,7 @@ import {
   useEffect,
   useId,
   useRef,
+  useState,
   type KeyboardEvent,
   type ReactNode,
   type RefObject,
@@ -412,6 +413,16 @@ export function Shell({
   const errorId = useId();
   const text = value ?? "";
 
+  // The line shows the primary command; ? shows the rest of the keys.
+  const [allHints, setAllHints] = useState(false);
+  useEffect(() => setAllHints(false), [screen]);
+  const primary =
+    commands.find((entry) => entry.keys.includes("Enter")) ?? commands[0];
+  const shown =
+    !allHints && primary
+      ? commands.filter((entry) => entry === primary)
+      : commands;
+
   // A new screen takes focus: the command line where there is a keyboard,
   // the heading on touch devices so no on-screen keyboard opens.
   useEffect(() => {
@@ -440,6 +451,11 @@ export function Shell({
       return;
     }
     const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+    if (key === "?" || key === "/") {
+      event.preventDefault();
+      setAllHints((value) => !value);
+      return;
+    }
     const command = commands.find(
       (entry) => !entry.disabled && entry.keys.includes(key),
     );
@@ -515,7 +531,7 @@ export function Shell({
           />
         </label>
         <div className="t-hints">
-          {commands.map((command) => (
+          {shown.map((command) => (
             <button
               type="button"
               key={command.show}
@@ -526,6 +542,16 @@ export function Shell({
               {command.label}
             </button>
           ))}
+          {commands.length > 1 && (
+            <button
+              type="button"
+              aria-pressed={allHints}
+              onClick={() => setAllHints((value) => !value)}
+            >
+              <Key>?</Key>
+              {allHints ? "fewer" : "keys"}
+            </button>
+          )}
         </div>
         {error && (
           <p className="t-line-error" id={errorId} role="alert">
