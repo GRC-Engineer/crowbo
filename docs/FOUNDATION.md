@@ -22,7 +22,7 @@ The intended evidence includes operational observations, business commitments, t
 
 ### Narrative and long-term ambition
 
-Crowbo is the decision engine for security. It brings evidence from the company's tools together with business context to guide what to fix, fund, build or drop. The long-term ambition is to codify good security judgement so people and agents can apply it across security, at scale and in real time.
+Crowbo is the decision engine for GRC teams. It helps them move from recording compliance to steering security, bringing security telemetry from the company's tools together with business context so they can prioritise risk, justify investment and decide what to fix, fund, build or drop. The long-term ambition is to codify good security judgement so people and agents can apply it across security, at scale and in real time.
 
 The founder's thesis is that GRC should connect risk, controls and business priorities to security decisions. Much of its tooling has concentrated on streamlining audit- and compliance-adjacent workflows. Crowbo starts with GRC to deliver that broader decision-making role. GRC provides a buyer, an existing budget and a view across security domains. The security-wide purpose defines Crowbo from the outset.
 
@@ -32,7 +32,7 @@ Codifying judgement means making expert criteria, evidence assessment and decisi
 
 The long-term company ambition is the decision infrastructure that powers the security programme. The same engine could eventually direct agents and headless security tools, enabling autonomous security work within the customer's explicit policies and authority. That requires observable execution and outcome checks as well as sound recommendations. This extends the vision beyond guidance while leaving the initial read-only application and simulated proof unchanged. Orchestration and autonomous programmes are future capabilities to build and evaluate.
 
-On 25 September 2026, the founder replaced the brief "AI CISO" framing with this ambition. The role label risks implying executive replacement or commoditisation and obscuring Crowbo's relationship with its buyers. Keep the security decision engine as the company definition. "In real time" describes the ambition to apply current context when a decision is needed and revisit guidance as relevant facts change. Latency, source freshness and decision quality remain to be measured.
+On 25 September 2026, the founder replaced the brief "AI CISO" framing with this ambition. The role label risks implying executive replacement or commoditisation and obscuring Crowbo's relationship with its buyers. On 6 October 2026, the founder narrowed the company line to "the decision engine for GRC teams", matching the investor deck and the public homepage. GRC teams are the named audience; the security-wide ambition above is unchanged. "In real time" describes the ambition to apply current context when a decision is needed and revisit guidance as relevant facts change. Latency, source freshness and decision quality remain to be measured.
 
 The narrative should follow this order:
 
@@ -151,7 +151,8 @@ Keep the pitch and current grilling at the company-vision level. Lead with the c
 | --- | --- | --- |
 | Crowbo is the name and new working home | Founder direction, 21 September 2026 | Work in the existing Crowbo checkout and its GitHub repository. |
 | Security decision infrastructure is the working descriptor | Founder direction | Build reusable software and domain concepts for decisions. |
-| Codify good security judgement for application across security, at scale and in real time | Founder refinement, 25 September 2026, superseding the brief AI-CISO framing | Keep the security decision engine as the company definition. Extend practitioners' expertise to people and agents, starting with GRC and Security Assurance teams and contextual control decisions. |
+| Codify good security judgement for application across security, at scale and in real time | Founder refinement, 25 September 2026, superseding the brief AI-CISO framing | Keep security decision infrastructure as the ambition; the company line names GRC teams (see below). Extend practitioners' expertise to people and agents, starting with GRC and Security Assurance teams and contextual control decisions. |
+| The decision engine for GRC teams is the company line | Founder direction, 6 October 2026, aligning the investor deck and crowbo.ai | Name GRC teams as the audience in public copy. The security-wide ambition and the initial portfolio are unchanged. |
 | Shared core: indexed security-team knowledge, expert-defined evidence assessment, and LLM reasoning | Founder clarification, 22 September 2026 | Keep the underlying vision above independent of the first application; providers and weighting methods remain candidates. |
 | Intended buyers include both programme-wide security leaders and individual security domain leaders | Explicit founder clarification, 22 September 2026 | Support decisions within a domain and across the programme using the shared method and organisational context. |
 | Vendor commissions and paid recommendation placement are ruled out for now | Explicit founder confirmation, 22 September 2026 | Exclude referral commissions and paid placement involving vendors Crowbo evaluates. Keep the revenue plan customer-funded. |
