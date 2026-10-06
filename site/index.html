@@ -10,9 +10,9 @@
     />
     <meta
       name="description"
-      content="We’re building Crowbo to help humans and agents make and explain security decisions in the context of their business."
+      content="Crowbo is the decision engine for GRC teams: security telemetry plus business context, so they can prioritise risk, justify investment and decide what to fix, fund, build or drop."
     />
-    <title>Crowbo · The decision engine for security teams</title>
+    <title>Crowbo · The decision engine for GRC teams</title>
     <link
       rel="icon"
       type="image/png"
@@ -26,9 +26,9 @@
     />
     <link
       rel="preload"
-      href="./assets/GeistPixel-Square-B0mEoKr8.woff2"
+      href="./assets/BricolageGrotesque-IeJf__1j.ttf"
       as="font"
-      type="font/woff2"
+      type="font/ttf"
       crossorigin
     />
     <link
@@ -38,37 +38,29 @@
       type="font/ttf"
       crossorigin
     />
-    <script type="module" crossorigin src="./assets/index-DxuCGmS5.js"></script>
-    <link rel="modulepreload" crossorigin href="./assets/tokens-CAk-Cgx8.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-DSR5wQY2.css">
     <link rel="stylesheet" crossorigin href="./assets/tokens-Btc5G391.css">
-    <link rel="stylesheet" crossorigin href="./assets/index-pJItorGo.css">
   </head>
   <body>
     <div class="page">
       <header class="masthead">
-        <h1 class="wordmark">crowbo</h1>
-        <p class="positioning">The decision engine for security teams.</p>
-        <div class="masthead-crow" aria-hidden="true">
-          <img
-            src="./assets/crowbo-modular-homepage-v1-rWRwcL6u.png"
-            width="1254"
-            height="1254"
-            alt=""
-            draggable="false"
-          />
-        </div>
+        <p class="wordmark">crowbo</p>
       </header>
 
       <main class="introduction">
         <div class="statement">
-          <p>
-            Security teams have no shortage of information. The challenge is
-            knowing what deserves their time and resources.
+          <h1 class="headline">
+            The decision engine for
+            <span class="headline-accent">GRC teams</span>
+          </h1>
+          <p class="lead">
+            We help GRC teams move from recording compliance to steering
+            security.
           </p>
-          <p>
-            We’re building Crowbo to help humans and agents make and explain
-            those choices in the context of their business, and revisit them as
-            things change.
+          <p class="detail">
+            Security telemetry plus business context, so they can prioritise
+            risk, justify investment and decide what to fix, fund, build or
+            drop.
           </p>
           <div class="contact">
             <a class="contact-link" href="mailto:enquiries@crowbo.ai"
@@ -77,66 +69,51 @@
           </div>
         </div>
 
-        <figure class="portrait-wrap">
-          <button
-            class="portrait"
-            id="portrait"
-            type="button"
-            aria-label="Briefly reveal the crow in bytes"
-            disabled
-          >
-            <span class="sprite">
-              <img
-                id="crow-source"
-                src="./assets/crowbo-modular-homepage-v1-rWRwcL6u.png"
-                width="1254"
-                height="1254"
-                alt="Crowbo’s Modular Crow, with chalk circuit glasses, sage eyes and oxide terminals."
-                draggable="false"
-                fetchpriority="high"
-              />
-            </span>
-            <canvas
-              id="crow-bytes"
-              width="800"
-              height="760"
-              aria-hidden="true"
-            ></canvas>
-          </button>
-          <div
-            class="network"
-            id="network"
-            role="group"
-            aria-label="Explore the crow network"
-            hidden
-          >
-            <div class="network-question" hidden></div>
-            <div class="network-art">
-              <svg
-                class="network-lines"
-                viewBox="0 0 800 760"
-                aria-hidden="true"
-              ></svg>
-              <div class="network-stage"></div>
+        <!-- Decorative: three Packet Runners carry packets into the quarter's
+             decisions. The panel shows the four kinds of decision, no data. -->
+        <div class="flight" aria-hidden="true">
+          <div class="route route-top"><span class="packet"></span></div>
+          <div class="route route-middle"><span class="packet"></span></div>
+          <div class="route route-bottom"><span class="packet"></span></div>
+
+          <img
+            class="runner runner-top"
+            src="./assets/runner-glide-g1pPnpve.png"
+            width="1774"
+            height="887"
+            alt=""
+            draggable="false"
+          />
+          <img
+            class="runner runner-middle"
+            src="./assets/runner-up-CjhHdcUT.png"
+            width="1685"
+            height="934"
+            alt=""
+            draggable="false"
+          />
+          <img
+            class="runner runner-bottom"
+            src="./assets/runner-glide-g1pPnpve.png"
+            width="1774"
+            height="887"
+            alt=""
+            draggable="false"
+          />
+
+          <div class="quarter">
+            <div class="quarter-bar">
+              <span class="quarter-dots"><i></i><i></i><i></i></span>
+              <span>this quarter</span>
             </div>
-            <div class="network-caption" id="network-caption" role="status">
-              <span class="network-label">Records a decision draws on</span>
-              <span class="network-detail"
-                >Explore a crow to follow its connections</span
-              >
-            </div>
-            <button
-              class="network-motion-toggle"
-              id="network-motion-toggle"
-              data-motion-toggle
-              type="button"
-              aria-label="Pause animation"
-              hidden
-            >
-              Pause
-            </button>
+            <ul class="quarter-rows">
+              <li><span>fix</span><i></i></li>
+              <li><span>fund</span><i></i></li>
+              <li><span>build</span><i></i></li>
+              <li><span>drop</span><i></i></li>
+            </ul>
           </div>
-        </figure>
+        </div>
       </main>
 
       <footer class="footer">
@@ -144,105 +121,5 @@
         <span><span class="glyph">©</span> 2026 Crowbo</span>
       </footer>
     </div>
-
-    <nav
-      class="motion-review"
-      id="motion-review"
-      aria-label="Crow motion studies"
-      hidden
-    >
-      <div class="review-controls">
-        <button
-          class="review-arrow"
-          id="previous-effect"
-          type="button"
-          aria-label="Previous effect"
-        >
-          ←
-        </button>
-        <div class="effect-options" role="group" aria-label="Continuous effect">
-          <button type="button" data-variant="scan" aria-pressed="false">
-            <span class="option-index">01</span> Scan
-          </button>
-          <button type="button" data-variant="stream" aria-pressed="false">
-            <span class="option-index">02</span> Stream
-          </button>
-          <button type="button" data-variant="rebuild" aria-pressed="false">
-            <span class="option-index">03</span> Rebuild
-          </button>
-          <button type="button" data-variant="flock" aria-pressed="false">
-            <span class="option-index">04</span> Flock
-          </button>
-          <button type="button" data-variant="network" aria-pressed="false">
-            <span class="option-index">05</span> Network
-          </button>
-        </div>
-        <button
-          class="review-arrow"
-          id="next-effect"
-          type="button"
-          aria-label="Next effect"
-        >
-          →
-        </button>
-        <button
-          class="motion-toggle"
-          id="motion-toggle"
-          data-motion-toggle
-          type="button"
-          aria-label="Pause animation"
-        >
-          Pause
-        </button>
-      </div>
-      <div class="review-meta">
-        <span id="effect-description" role="status"></span
-        ><span id="effect-treatment">70% terminal · 45% transparent</span>
-      </div>
-      <div class="network-sizing" id="network-sizing" hidden>
-        <span id="network-note">Importance</span>
-        <div class="size-options" role="group" aria-label="Compare node sizes">
-          <button type="button" data-sizing="equal" aria-pressed="false">
-            Equal
-          </button>
-          <button type="button" data-sizing="weighted" aria-pressed="true">
-            Weighted
-          </button>
-        </div>
-        <span>Hover · click to pin</span>
-      </div>
-      <div class="network-comparison" id="network-comparison" hidden>
-        <div
-          class="motif-options"
-          role="group"
-          aria-label="Compare network motifs"
-        >
-          <button type="button" data-motif="original" aria-pressed="true">
-            Original
-          </button>
-          <button type="button" data-motif="crows" aria-pressed="false">
-            Crows
-          </button>
-          <button type="button" data-motif="feathers" aria-pressed="false">
-            Feathers
-          </button>
-        </div>
-        <div
-          class="question-choice"
-          id="network-question-choice"
-          role="group"
-          aria-label="Question"
-          hidden
-        >
-          <span>Question</span>
-          <button type="button" data-question="control" aria-pressed="true">
-            Control
-          </button>
-          <button type="button" data-question="response" aria-pressed="false">
-            Response
-          </button>
-        </div>
-      </div>
-    </nav>
   </body>
 </html>

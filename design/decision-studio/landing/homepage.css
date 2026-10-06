@@ -6,6 +6,13 @@
   font-display: swap;
 }
 @font-face {
+  font-family: Bricolage;
+  src: url("../../typography/2026-09-21/fonts/BricolageGrotesque.ttf")
+    format("truetype");
+  font-weight: 200 800;
+  font-display: swap;
+}
+@font-face {
   font-family: SpaceGrotesk;
   src: url("../../typography/2026-09-21/fonts/SpaceGrotesk.ttf")
     format("truetype");
@@ -43,54 +50,66 @@ body {
   width: min(100%, 1504px);
   min-height: 100svh;
   margin: 0 auto;
-  padding: clamp(38px, 4.4vw, 72px) clamp(26px, 6vw, 96px) 28px;
+  padding: clamp(38px, 4.4vw, 64px) clamp(26px, 6vw, 96px) 28px;
   display: flex;
   flex-direction: column;
 }
 
+/* The deck's supporting-slide masthead: the wordmark small, top left. */
 .wordmark {
-  margin: 0 0 25px;
-  width: fit-content;
-  font:
-    400 clamp(90px, 14.2vw, 208px) / 0.9 GeistPixel,
-    monospace;
-  letter-spacing: -0.04em;
-}
-
-.positioning {
   margin: 0;
-  color: var(--sage);
-  font:
-    400 17px / 1.5 Departure,
-    ui-monospace,
-    monospace;
-  letter-spacing: -0.025em;
+  width: fit-content;
+  font: 400 clamp(28px, 2.6vw, 36px) / 1 var(--pixel);
+  letter-spacing: -0.04em;
 }
 
 .introduction {
   display: grid;
-  grid-template-columns: 1.12fr 1fr;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
   align-items: center;
   gap: clamp(32px, 5vw, 80px);
-  margin: 48px 0 32px;
+  margin: clamp(48px, 6vw, 88px) 0 40px;
 }
 
 .statement {
-  max-width: 530px;
-  padding-top: 8px;
+  max-width: 640px;
 }
 
-.statement p {
-  margin: 0 0 23px;
-  font:
-    400 clamp(18px, 1.55vw, 21px) / 1.62 SpaceGrotesk,
-    "Helvetica Neue",
-    sans-serif;
+.headline {
+  margin: 0;
+  font: 600 clamp(48px, 5.6vw, 84px) / 1.02 var(--display);
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+/* The audience is the second line, in sage, as on the title slide. */
+.headline-accent {
+  display: block;
+  margin-top: 0.06em;
+  color: var(--sage);
+  font-size: 1.2em;
+}
+
+.lead {
+  margin: clamp(32px, 3.4vw, 48px) 0 0;
+  font: 500 clamp(22px, 2vw, 28px) / 1.3 var(--body);
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+
+.detail {
+  margin: 18px 0 0;
+  max-width: 560px;
+  color: var(--fog);
+  font: 400 clamp(18px, 1.5vw, 21px) / 1.5 var(--body);
   text-wrap: pretty;
 }
 
 .contact {
-  margin-top: 45px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 40px;
+  margin-top: clamp(28px, 3vw, 44px);
 }
 
 .contact-link {
@@ -100,10 +119,7 @@ body {
   min-height: 44px;
   padding: 4px 0;
   color: var(--chalk);
-  font:
-    400 14px / 1.5 Departure,
-    ui-monospace,
-    monospace;
+  font: 400 14px / 1.5 var(--mono);
   text-decoration: underline;
   text-decoration-color: var(--ink-200);
   text-underline-offset: 6px;
@@ -121,69 +137,179 @@ body {
   text-decoration-color: var(--oxide);
 }
 .contact-link:focus-visible {
-  outline: 1px solid var(--sage);
-  outline-offset: 8px;
+  outline: 2px solid var(--oxide);
+  outline-offset: 6px;
 }
 
-.portrait-wrap {
-  width: min(100%, 370px);
-  margin: -38px -8px -12px 0;
+/*
+ * The flight: three Packet Runners carry packets along routes into the
+ * quarter's decisions, after the deck's "what we do" slide. The drawing is
+ * authored on a 540 × 600 grid; --u is one grid unit at the current width,
+ * so the whole figure scales as one piece.
+ */
+.flight {
+  position: relative;
+  container-type: inline-size;
+  width: min(100%, 540px);
+  aspect-ratio: 540 / 600;
   justify-self: end;
 }
+.flight * {
+  --u: calc(100cqw / 540);
+}
 
-.portrait {
-  display: block;
-  position: relative;
-  isolation: isolate;
-  width: 100%;
-  aspect-ratio: 1000 / 950;
-  padding: 0;
-  border: 0;
-  background: var(--background);
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+.route {
+  position: absolute;
+  left: 0;
+  height: 1px;
+  background: var(--charcoal);
+  transform-origin: 0 0;
+}
+.route-top {
+  top: calc(var(--u) * 60);
+  width: calc(var(--u) * 361);
+  transform: rotate(41.63deg);
+}
+.route-middle {
+  top: calc(var(--u) * 300);
+  width: calc(var(--u) * 270);
+}
+.route-bottom {
+  top: calc(var(--u) * 540);
+  width: calc(var(--u) * 361);
+  transform: rotate(-41.63deg);
+}
+
+.packet {
+  position: absolute;
+  left: 0;
+  top: calc(var(--u) * -5);
+  width: calc(var(--u) * 11);
+  height: calc(var(--u) * 11);
+  background: var(--oxide);
+  --run: calc(var(--u) * 341);
+  animation: run 2.2s linear infinite;
+}
+.route-middle .packet {
+  --run: calc(var(--u) * 250);
+  animation-duration: 2.7s;
+  animation-delay: 0.35s;
+}
+.route-bottom .packet {
+  animation-duration: 3.2s;
+  animation-delay: 0.7s;
+}
+
+@keyframes run {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  10%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(var(--run));
+    opacity: 0;
+  }
+}
+
+.runner {
+  position: absolute;
+  width: calc(var(--u) * 150);
+  height: auto;
+  image-rendering: pixelated;
   user-select: none;
 }
-
-.portrait:disabled {
-  cursor: default;
+/* The glide pose faces left in its source; mirror it to fly into the panel. */
+.runner-top {
+  left: calc(var(--u) * 55);
+  top: calc(var(--u) * 100);
+  transform: rotate(42deg) scaleX(-1);
 }
-.portrait:focus-visible {
-  outline: 1px solid var(--sage);
-  outline-offset: 12px;
+.runner-middle {
+  left: calc(var(--u) * 60);
+  top: calc(var(--u) * 262);
+}
+.runner-bottom {
+  left: calc(var(--u) * 55);
+  top: calc(var(--u) * 424);
+  transform: rotate(-42deg) scaleX(-1);
 }
 
-.sprite,
-#crow-bytes {
+.quarter {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  pointer-events: none;
-  transition: opacity 160ms ease;
+  right: 0;
+  top: calc(var(--u) * 170);
+  width: calc(var(--u) * 250);
+  border: 1px solid var(--line);
+  background: var(--ink-900);
+}
+.quarter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--ink);
+  color: var(--muted);
+  font: 400 11px / 1 var(--mono);
+}
+.quarter-dots {
+  display: flex;
+  gap: 5px;
+}
+.quarter-dots i {
+  width: 8px;
+  height: 8px;
+  background: var(--charcoal);
+}
+.quarter-dots i:last-child {
+  background: var(--oxide);
+}
+.quarter-rows {
+  margin: 0;
+  padding: 6px 16px 12px;
+  list-style: none;
+}
+.quarter-rows li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: calc(var(--u) * 48);
+  border-top: 1px solid var(--line);
+  color: var(--fog);
+  font: 400 12px / 1 var(--mono);
+}
+.quarter-rows li:first-child {
+  border-top: 0;
+}
+/* A decision lands on each row in turn as the packets arrive. */
+.quarter-rows i {
+  width: 10px;
+  height: 10px;
+  background: var(--charcoal);
+  animation: land 4s steps(1) infinite;
+}
+.quarter-rows li:nth-child(2) i {
+  animation-delay: 1s;
+}
+.quarter-rows li:nth-child(3) i {
+  animation-delay: 2s;
+}
+.quarter-rows li:nth-child(4) i {
+  animation-delay: 3s;
 }
 
-.sprite {
-  mix-blend-mode: lighten;
-}
-.sprite img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-#crow-bytes {
-  opacity: 0;
-  filter: brightness(1.45);
-}
-.portrait.is-decoding .sprite {
-  opacity: 0;
-}
-.portrait.is-decoding #crow-bytes {
-  opacity: 1;
+@keyframes land {
+  0% {
+    background: var(--oxide);
+  }
+  50% {
+    background: var(--charcoal);
+  }
 }
 
 .footer {
@@ -193,98 +319,50 @@ body {
   margin-top: auto;
   padding-top: 22px;
   color: var(--muted);
-  font:
-    400 11px / 1.6 Departure,
-    ui-monospace,
-    monospace;
+  font: 400 11px / 1.6 var(--mono);
+}
+.glyph {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 
-@media (min-width: 1504px) {
-  .introduction {
-    margin-top: 76px;
-  }
-  .portrait-wrap {
-    width: 430px;
-  }
-}
-
-@media (max-width: 800px) {
-  .page {
-    padding: 42px 36px 24px;
-  }
-  .wordmark {
-    font-size: clamp(86px, 19vw, 150px);
-  }
+@media (max-width: 900px) {
   .introduction {
     grid-template-columns: 1fr;
-    gap: 34px;
-    margin: 43px 0 34px;
+    gap: 40px;
+    margin: 44px 0 34px;
   }
-  .statement {
-    max-width: 540px;
-    padding: 0;
-  }
-  .statement p {
-    font-size: 21px;
-  }
-  .contact {
-    margin-top: 28px;
-  }
-  .portrait-wrap {
-    width: min(65%, 330px);
-    margin: 0 -8px -8px 0;
+  .flight {
+    width: min(100%, 420px);
+    justify-self: start;
   }
 }
 
 @media (max-width: 480px) {
   .page {
-    padding: 34px 26px 22px;
+    padding: 30px 20px 22px;
   }
-  .wordmark {
-    font-size: clamp(72px, 21vw, 101px);
-    margin-bottom: 24px;
+  .headline {
+    font-size: clamp(40px, 11vw, 48px);
   }
-  .positioning {
-    font-size: 13px;
-    letter-spacing: -0.04em;
+  .lead {
+    font-size: 21px;
   }
-  .introduction {
-    margin-top: 38px;
-    gap: 25px;
-  }
-  .statement p {
-    font-size: 19px;
-    line-height: 1.6;
-    margin-bottom: 18px;
-  }
-  .contact {
-    margin-top: 22px;
-  }
-  .portrait-wrap {
-    width: 80%;
-    max-width: 285px;
+  .detail {
+    font-size: 18px;
   }
   .footer {
     flex-wrap: wrap;
     gap: 7px 20px;
     padding-top: 18px;
-    font-size: 11px;
   }
 }
 
+/* Motion stops entirely; the packets rest at the start of their routes. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
+    animation: none !important;
     transition: none !important;
   }
-}
-
-.contact {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 40px;
-}
-.glyph {
-  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
 }

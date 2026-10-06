@@ -51,6 +51,12 @@ The authored records and the case packets in `fixtures/` keep their full text, i
 
 Validation: type check, production build and 38 tests pass. Checked in a browser at 1440 by 900 and 375 by 812: every screen in the flow for all three cases, a staged update and reassessment, each pane, the hand-off, and the four workspace pages. The console reported no errors. This is a local interface check. It is not an accessibility audit or a user study.
 
+## Deck-aligned homepage — 6 October
+
+`index.html` and `landing/homepage.css` were rebuilt from the investor deck's title and "what we do" slides; [the brand guide](../BRAND.md#deck-aligned-homepage--6-october-2026) owns the decision. The page now has a small wordmark, the headline "The decision engine for GRC teams" in Bricolage Grotesque, the slide 3 explanation, the contact link, and a CSS-only illustration of three Packet Runners carrying packets into fix, fund, build and drop. The homepage loads no script; `landing/homepage.js`, `network.js`, `flock.js` and their stylesheets are no longer used by the page, so the `?variant=` motion previews at the root no longer work.
+
+Validation: type check, production build and 38 tests pass, including the brand token rules. Checked in a local browser from the rebuilt `site/` at 1440×900 and 390×844: all four fonts load, no horizontal scroll, no console errors. This is a local visual check, not an accessibility audit or user feedback.
+
 ## Publication as the website — 29 September
 
 The public root is the approved two-paragraph company homepage, with Modular Crow, the boxed feather network, contact information. There is no public homepage link to the demo. The existing React walkthrough lives at `/demo/`; its full workspace is at `/demo/?view=workspace`. The demo wordmark returns to the company homepage. The earlier Command Room is retained as design history.

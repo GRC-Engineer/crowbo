@@ -79,6 +79,14 @@ The default illustration uses twelve pixel feather designs inside the restored b
 
 The [company homepage prototype](homepage-mockups/2026-09-21/homepage-prototype/README.md) owns the full copy, feather mappings and visual checks. The user supplied `enquiries@crowbo.ai` for the contact link. On 24 September the local homepage was updated to the selected four-colour identity: Modular Crow at the top right of the masthead above the boxed network, matching dark feather artwork, a new head favicon, sage connections and oxide interaction accents. Portrait and Flock previews also use the standalone Modular Crow source. This remains a local preview, not a deployment.
 
+### Deck-aligned homepage — 6 October 2026
+
+The user asked for the public homepage to follow the investor deck's current copy and visual approach. The tagline is now "The decision engine for GRC teams", with "GRC teams" in sage on its own line, as on the deck's title slide. The explanation is the deck's "what we do" slide: "We help GRC teams move from recording compliance to steering security." followed by "Security telemetry plus business context, so they can prioritise risk, justify investment and decide what to fix, fund, build or drop." The headline is set in Bricolage Grotesque; the wordmark moves to a small masthead, as on the deck's supporting slides.
+
+The illustration follows the same slide: three Packet Runners carry oxide packets along charcoal routes into a "this quarter" panel listing fix, fund, build and drop. It is decorative, carries no figures and stops under reduced motion. Modular Crow, the feather network and the motion-study controls leave the homepage; their files stay in `decision-studio/landing/` as history. The deck's provider logos, partner names, quotes, market figures and pricing are not on the public page.
+
+The company definition in the [foundation](../docs/FOUNDATION.md) still reads "the decision engine for security"; the homepage now names the first audience, GRC teams.
+
 ## Decision Studio application
 
 The [29 September product study](decision-studio/README.md) applies this identity to Decisions, Sources, People and History. Navigation uses plain language; the crow and feathers carry the visual identity. Modular Crow anchors the expandable boxed source network; Packet Runner appears in the upper-right of page headings, facing inward. Six source families from the twelve-feather library appear in the map, collection, inspector and people context. Their authored circuits illustrate relationships, not measured weights or live data movement.
