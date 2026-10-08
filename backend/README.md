@@ -12,6 +12,7 @@ The decision API: TypeScript on Cloudflare Workers. [ADR 0001](../docs/adr/0001-
 | Storage | `src/storage/sql-store.ts` | The tenant's records and request ledger in Durable Object SQLite. |
 | Providers | `src/providers/` | Jev and reasoning over Cloudflare AI, the Turbopuffer search index, Slack. Every HTTP client is pinned to one host, never follows redirects and caps response size. |
 | Programme prioritisation | `src/programme/` | Which improvements fit the capacity a team actually has, given evidence prerequisites and named commitments. A port of the frozen proof (`proof/crowbo.py`) whose record IDs match the proof's recorded results, exposed as four read-only MCP tools. |
+| Engine prototype | `src/engine/` | The [engine architecture](../docs/ENGINE.md) at micro scale: connectors, quoted facts, visible weights, context graph, deterministic next moves by risk removed, hash-chained decision memory. Synthetic company only; served by the local MCP server. |
 | Interfaces | `src/worker.ts`, `src/app/` | Bearer-token API (`POST /v1/operations/<name>`), MCP at `/mcp`, the Cron-driven sync, and one operation table shared with the CLI (`src/cli/`). |
 
 Each tenant is one SQLite Durable Object in the `eu` jurisdiction, and the services run inside it. Turbopuffer holds rebuildable search chunks only.
