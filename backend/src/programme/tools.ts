@@ -30,7 +30,7 @@ export function registerProgrammeTools(server: McpServer, data: any): void {
   const tenant: string = data.tenant;
   const caseIds = Object.keys(data.cases) as [string, ...string[]];
   const caseId = z.enum(caseIds).describe("A dated snapshot of the programme; see programme_overview");
-  const principal = z.enum(data.principals as [string, ...string[]]).default(data.owner).describe("Whose access applies");
+  const principal = z.enum(data.principals as [string, ...string[]]).default(data.owner).describe("Simulated viewpoint inside the fictional company (not your identity): whose evidence access to apply");
   const basis = (c: string, p: string) => packet(data, c, tenant, p, data.cases[c].as_of);
   const guard = <A>(fn: (args: A) => unknown) => (args: A) => {
     try {

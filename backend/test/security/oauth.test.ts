@@ -148,3 +148,41 @@ describe("Claude connector OAuth", () => {
     expect((await listTools(s, TOKEN)).status).toBe(200);
   });
 });
+
+describe("security review fixes (8 Oct 2026)", () => {
+  it("loopback redirects must be /callback with no query or fragment", async () => {
+    const s = setup();
+    expect((await register(s.fetch, "http://localhost:3000/redirect?to=https://evil.example")).status).toBe(400);
+    expect((await register(s.fetch, "http://localhost:3000/callback#x")).status).toBe(400);
+    expect((await register(s.fetch, "http://localhost:3000/callback")).status).toBe(201);
+  });
+
+  it("the consent page names the destination, allows the redirect in form-action, and warns", async () => {
+    const s = setup();
+    const res = await s.fetch("/oauth/register", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ client_name: "Totally Claude", redirect_uris: [CALLBACK], token_endpoint_auth_method: "none" }),
+    });
+    const { client_id } = (await res.json()) as { client_id: string };
+    const shown = await s.fetch(`/authorize${authorizeQuery(client_id)}`);
+    const html = await shown.text();
+    expect(shown.headers.get("content-security-policy")).toContain("form-action 'self' https://claude.ai");
+    expect(html).toContain("Claude (claude.ai)");
+    expect(html).not.toContain("Totally Claude");
+    expect(html).toContain("Only continue if you started connecting Crowbo");
+  });
+
+  it("refuses an authorization request without S256 PKCE", async () => {
+    const s = setup();
+    const { client_id } = (await (await register(s.fetch)).json()) as { client_id: string };
+    const q = `?${new URLSearchParams({ response_type: "code", client_id, redirect_uri: CALLBACK, state: "s" })}`;
+    expect((await s.fetch(`/authorize${q}`)).status).toBe(400);
+  });
+
+  it("caps the sign-in form body even without Content-Length", async () => {
+    const s = setup();
+    const big = new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode("q=?" + "x".repeat(20_000))); c.close(); } });
+    const res = await s.fetch("/authorize", { method: "POST", headers: { origin: ORIGIN }, body: big, duplex: "half" } as RequestInit);
+    expect(res.status).toBe(413);
+  });
+});
