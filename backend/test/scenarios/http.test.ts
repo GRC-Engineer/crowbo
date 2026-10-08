@@ -74,7 +74,7 @@ describe("MCP scenario runner over HTTP", () => {
     const connect = httpConnector(async (url, init) => {
       const req = new Request(url, init);
       if (req.headers.get("authorization") === `Bearer ${TOKEN}`) authorized++;
-      return worker.fetch(req, env);
+      return worker.fetch(req, env, {} as ExecutionContext);
     });
     const printed: string[] = [];
     const status = await run({ url: "https://crowbo.test/mcp", tokenFile, cases, output }, connect, (line) => printed.push(line));
@@ -103,7 +103,7 @@ describe("MCP scenario runner over HTTP", () => {
     expect(item.source.title).toBe(report.calls.find((c: any) => c.tool === "inspect_evidence").result.structuredContent.records[0].title);
 
     // A wrong token never reaches the operations.
-    const denied = await worker.fetch(new Request("https://crowbo.test/mcp", { method: "POST", headers: { authorization: "Bearer wrong-token-0123456789abcdef" } }), env);
+    const denied = await worker.fetch(new Request("https://crowbo.test/mcp", { method: "POST", headers: { authorization: "Bearer wrong-token-0123456789abcdef" } }), env, {} as ExecutionContext);
     expect(denied.status).toBe(401);
   });
 });

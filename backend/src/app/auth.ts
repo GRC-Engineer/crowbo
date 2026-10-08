@@ -66,3 +66,15 @@ export function callerFor(config: OperatorConfig, account: string, gateway: stri
     }),
   };
 }
+
+/** Find the operator for a stored token hash (from an OAuth grant), in constant time. */
+export function operatorByHash(hash: unknown, operators: Record<string, OperatorConfig>): OperatorConfig | null {
+  if (typeof hash !== "string" || !/^[a-f0-9]{64}$/.test(hash)) return null;
+  const presented = Buffer.from(hash, "hex");
+  let found: OperatorConfig | null = null;
+  for (const [known, config] of Object.entries(operators)) {
+    const k = Buffer.from(known, "hex");
+    if (k.length === presented.length && timingSafeEqual(k, presented)) found = config;
+  }
+  return found;
+}
