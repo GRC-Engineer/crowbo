@@ -23,6 +23,10 @@
       "workers_dev": true,
       "vars": { "AI_GATEWAY": "default", "ALLOW_SYNTHETIC_GATES": "true" },
       "durable_objects": { "bindings": [{ "name": "TENANT", "class_name": "TenantStore" }] },
+      // OAuth clients and grants for Claude connectors (src/app/oauth.ts). Staging only: without
+      // this binding the Worker accepts operator bearer tokens alone. Wrangler creates the
+      // namespace on first deploy.
+      "kv_namespaces": [{ "binding": "OAUTH_KV" }],
       "triggers": { "crons": [] }
     }
   }

@@ -11,6 +11,7 @@ The decision API: TypeScript on Cloudflare Workers. [ADR 0001](../docs/adr/0001-
 | Standing decisions | `src/standing/` | Source-bound facts, eval-gated criteria, pure rules per workflow, immutable input-addressed versions, and team-scoped currency and access derived at read. |
 | Storage | `src/storage/sql-store.ts` | The tenant's records and request ledger in Durable Object SQLite. |
 | Providers | `src/providers/` | Jev and reasoning over Cloudflare AI, the Turbopuffer search index, Slack. Every HTTP client is pinned to one host, never follows redirects and caps response size. |
+| Programme prioritisation | `src/programme/` | Which improvements fit the capacity a team actually has, given evidence prerequisites and named commitments. A port of the frozen proof (`proof/crowbo.py`) whose record IDs match the proof's recorded results, exposed as four read-only MCP tools. |
 | Interfaces | `src/worker.ts`, `src/app/` | Bearer-token API (`POST /v1/operations/<name>`), MCP at `/mcp`, the Cron-driven sync, and one operation table shared with the CLI (`src/cli/`). |
 
 Each tenant is one SQLite Durable Object in the `eu` jurisdiction, and the services run inside it. Turbopuffer holds rebuildable search chunks only.
@@ -25,6 +26,8 @@ bun scripts/parity.ts
 ```
 
 `scripts/parity.ts` proves the TypeScript suite covers every test from the Python baseline. Each Python test ID must be tagged on a ported test, or listed in `parity/dropped.tsv` with a reason.
+
+Query the synthetic programme from Claude Code: the repo's `.mcp.json` starts `scripts/mcp-local.ts` over stdio. It has no network access, credentials or storage, and serves only the synthetic Northstar fixture.
 
 Local API:
 

@@ -1,3 +1,4 @@
+import type { OAuthHelpers } from "@cloudflare/workers-oauth-provider";
 import type { TenantStore } from "./tenant";
 
 export interface Env {
@@ -12,6 +13,10 @@ export interface Env {
   SLACK_API_TOKEN?: string;
   /** "true" only outside production: lets synthetic fixture gates activate criteria. */
   ALLOW_SYNTHETIC_GATES?: string;
+  /** OAuth grants and clients for Claude connectors. Bound only where OAuth is enabled (staging). */
+  OAUTH_KV?: KVNamespace;
+  /** Injected by the OAuth provider into its default handler. */
+  OAUTH_PROVIDER?: OAuthHelpers;
   /** Local development only: "none" disables the EU jurisdiction, which workerd cannot emulate. */
   DO_JURISDICTION?: string;
 }

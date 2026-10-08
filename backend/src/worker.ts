@@ -2,6 +2,7 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import { authenticate, callerFor, type OperatorConfig, parseOperators } from "./app/auth";
 import type { Env } from "./app/env";
 import { buildServer } from "./app/mcp";
+import { oauthProvider } from "./app/oauth";
 import { isOperation } from "./app/operations";
 
 export { TenantStore } from "./app/tenant";
@@ -43,6 +44,12 @@ export async function boundedBody(request: Request): Promise<Uint8Array | Respon
   return body;
 }
 
+function withSecurityHeaders(response: Response): Response {
+  const headers = new Headers(response.headers);
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) if (!headers.has(k)) headers.set(k, v);
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...SECURITY_HEADERS } });
 
@@ -62,8 +69,60 @@ function invoker(env: Env, config: OperatorConfig) {
   return async (operation: string, args: unknown): Promise<Outcome> => (await stub.operate(caller, operation, args)) as Outcome;
 }
 
+/** Serve an authenticated operator's request: MCP at /mcp, operations at /v1/operations/<name>. */
+async function serve(request: Request, env: Env, config: OperatorConfig): Promise<Response> {
+  const url = new URL(request.url);
+  const invoke = invoker(env, config);
+  const body = request.method === "GET" || request.method === "HEAD" ? new Uint8Array() : await boundedBody(request);
+  if (body instanceof Response) return body;
+
+  if (url.pathname === "/mcp") {
+    // Stateless: a fresh server and transport per request; identity is the bearer token.
+    const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
+    const server = buildServer(invoke, { synthetic: env.ALLOW_SYNTHETIC_GATES === "true" });
+    await server.connect(transport);
+    try {
+      const buffered = new Request(request.url, {
+      method: request.method,
+      headers: request.headers,
+      body: request.method === "GET" || request.method === "HEAD" ? undefined : body,
+    });
+    const response = await transport.handleRequest(buffered);
+      const headers = new Headers(response.headers);
+      for (const [k, v] of Object.entries(SECURITY_HEADERS)) headers.set(k, v);
+      return new Response(response.body, { status: response.status, headers });
+    } finally {
+      await server.close();
+    }
+  }
+
+  const match = /^\/v1\/operations\/([a-z_]+)$/.exec(url.pathname);
+  if (!match || request.method !== "POST") return json({ error: "Not found" }, 404);
+  const operation = match[1];
+  if (!isOperation(operation)) return json({ error: "Unknown operation" }, 404);
+  let args: unknown = {};
+  try {
+    const text = new TextDecoder().decode(body);
+    args = text ? JSON.parse(text) : {};
+  } catch {
+    return json({ error: "Request body must be JSON" }, 400);
+  }
+  const outcome = await invoke(operation, args);
+  if (outcome.ok && operation === "export_decision") {
+    const html = (outcome.result as { html: string }).html;
+    return new Response(html, {
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+        "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'",
+        ...SECURITY_HEADERS,
+      },
+    });
+  }
+  return outcome.ok ? json(outcome.result) : json({ error: outcome.error }, 422);
+}
+
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/health") return json({ ok: true, service: "crowbo-api" });
 
@@ -73,55 +132,13 @@ export default {
     } catch {
       return json({ error: "Operator configuration is invalid" }, 500);
     }
+    // An operator's own bearer token (CLI, Claude Code, scripts) is served directly.
     const config = authenticate(request.headers.get("authorization"), operators);
-    if (!config) return json({ error: "Unauthorized" }, 401);
-    const invoke = invoker(env, config);
-    const body = request.method === "GET" || request.method === "HEAD" ? new Uint8Array() : await boundedBody(request);
-    if (body instanceof Response) return body;
-
-    if (url.pathname === "/mcp") {
-      // Stateless: a fresh server and transport per request; identity is the bearer token.
-      const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
-      const server = buildServer(invoke);
-      await server.connect(transport);
-      try {
-        const buffered = new Request(request.url, {
-        method: request.method,
-        headers: request.headers,
-        body: request.method === "GET" || request.method === "HEAD" ? undefined : body,
-      });
-      const response = await transport.handleRequest(buffered);
-        const headers = new Headers(response.headers);
-        for (const [k, v] of Object.entries(SECURITY_HEADERS)) headers.set(k, v);
-        return new Response(response.body, { status: response.status, headers });
-      } finally {
-        await server.close();
-      }
-    }
-
-    const match = /^\/v1\/operations\/([a-z_]+)$/.exec(url.pathname);
-    if (!match || request.method !== "POST") return json({ error: "Not found" }, 404);
-    const operation = match[1];
-    if (!isOperation(operation)) return json({ error: "Unknown operation" }, 404);
-    let args: unknown = {};
-    try {
-      const text = new TextDecoder().decode(body);
-      args = text ? JSON.parse(text) : {};
-    } catch {
-      return json({ error: "Request body must be JSON" }, 400);
-    }
-    const outcome = await invoke(operation, args);
-    if (outcome.ok && operation === "export_decision") {
-      const html = (outcome.result as { html: string }).html;
-      return new Response(html, {
-        headers: {
-          "content-type": "text/html; charset=utf-8",
-          "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'",
-          ...SECURITY_HEADERS,
-        },
-      });
-    }
-    return outcome.ok ? json(outcome.result) : json({ error: outcome.error }, 422);
+    if (config) return serve(request, env, config);
+    // Where OAuth is bound (staging), everything else goes through the OAuth provider: Claude's
+    // discovery and registration, /authorize, token exchange, and /mcp with an OAuth token.
+    if (env.OAUTH_KV) return withSecurityHeaders(await oauthProvider(url.origin, serve).fetch(request, env, ctx));
+    return json({ error: "Unauthorized" }, 401);
   },
 
   /** Cron: run every registered, due Slack sync as the operator who registered it. */
