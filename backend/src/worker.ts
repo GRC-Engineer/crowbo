@@ -82,7 +82,7 @@ export default {
     if (url.pathname === "/mcp") {
       // Stateless: a fresh server and transport per request; identity is the bearer token.
       const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
-      const server = buildServer(invoke);
+      const server = buildServer(invoke, { synthetic: env.ALLOW_SYNTHETIC_GATES === "true" });
       await server.connect(transport);
       try {
         const buffered = new Request(request.url, {

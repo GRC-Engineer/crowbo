@@ -1,9 +1,11 @@
 // Exercise the programme tools through a real MCP client, the way Claude Code calls them.
+vi.mock("cloudflare:workers", () => ({ DurableObject: class {} }));
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import fixture from "../../../proof/fixtures/programme.json";
+import { buildServer } from "../../src/app/mcp";
 import { registerProgrammeTools } from "../../src/programme/tools";
 
 async function connect() {
@@ -51,6 +53,18 @@ describe("programme MCP tools", () => {
     });
     expect(r.later.record_id).toBe("5b7d31c8fca677052e37180d307242cf30e32edda15035d9092ec515bb0e268f");
     expect(r.later.changes.owner_choice_now_needs_review).toBe(true);
+  });
+
+  it("the Worker's MCP server serves programme tools only where synthetic material is allowed", async () => {
+    const names = async (synthetic: boolean) => {
+      const server = buildServer(async () => ({ ok: false, error: "unused" }), { synthetic });
+      const [a, b] = InMemoryTransport.createLinkedPair();
+      const client = new Client({ name: "test", version: "0" });
+      await Promise.all([server.connect(a), client.connect(b)]);
+      return (await client.listTools()).tools.map((t) => t.name);
+    };
+    expect((await names(false)).some((n) => n.startsWith("programme_"))).toBe(false);
+    expect((await names(true)).filter((n) => n.startsWith("programme_"))).toHaveLength(4);
   });
 
   it("rejects an owner choice that skips the evidence prerequisite", async () => {
