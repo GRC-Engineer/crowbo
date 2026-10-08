@@ -6,6 +6,7 @@ Security decision infrastructure. Crowbo brings permitted evidence, business con
 
 - [Foundation](docs/FOUNDATION.md) owns the product direction and initial workflows.
 - [Backend brief](docs/TECHNICAL-PLAN.md), [data contract](docs/DECISION-DATA-MODEL.md) and [permissions](docs/PERMISSIONS.md) describe the backend contracts. The [backend README](backend/README.md) and [ADR 0001](docs/adr/0001-typescript-on-workers-with-tenant-durable-objects.md) describe the TypeScript implementation; the [glossary](GLOSSARY.md) fixes the terms.
+- [The engine](docs/ENGINE.md) is the target architecture for the decision engine (ingest, classify and weight, context graph, decision memory) and the brief for the engineers building it; [ADR 0002](docs/adr/0002-deterministic-risk-arithmetic-decides.md) records why the decision is arithmetic, not a model call. A micro-prototype runs in `backend/src/engine/`.
 - [Interaction model](docs/INTERACTION-MODEL.md) and [Decision Studio](design/decision-studio/README.md) describe the product experience and synthetic frontend demo.
 - [Evaluation contract](docs/EVALUATION.md) and [measurement plan](docs/MEASUREMENT-PLAN.md) separate engineering checks from judgment quality.
 - [Brand guide](design/BRAND.md) owns the visual identity. [Contributor instructions](AGENTS.md) govern repository work.

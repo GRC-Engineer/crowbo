@@ -33,3 +33,17 @@
 **Assessment**: Jev's typed answers to named questions about one source revision. It is an interpretation, never a priority or risk score.
 
 **Simulated**: advice that grants no authority and changes no system. Every recommendation and decision version is simulated.
+
+**Next move**: one recommended action of four kinds (fix, fund, build or drop) with the risk it removes, its cost, owner, due date and cited evidence. It is simulated.
+
+**Drop**: a next move that stops work which does not change the risk, giving its hours back. It is proposed only when the risk it adds stays within the company's tolerance.
+
+**Scenario**: something bad that could happen, with frequency and loss-per-event ranges and the basis for each. _Avoid_: risk score.
+
+**Risk removed**: the expected annual loss an action takes away, as a range: expected loss × reduction × evidence confidence.
+
+**Source weight**: how much a company trusts one source, from 0 to 5. It is visible and editable, and every change is kept in decision memory.
+
+**Context graph**: the relationships between people, teams, launches, controls and systems, each derived from quoted source revisions.
+
+**Decision memory**: the append-only record of every decision, call, exception, weight change and tuning proposal.
