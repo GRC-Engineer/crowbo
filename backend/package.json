@@ -12,6 +12,7 @@
     "parity": "bun scripts/parity.ts"
   },
   "dependencies": {
+    "@cloudflare/workers-oauth-provider": "1.0.0",
     "@modelcontextprotocol/sdk": "^1",
     "@turbopuffer/turbopuffer": "^2",
     "zod": "^4"

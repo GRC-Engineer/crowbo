@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "crowbo": {
+      "type": "stdio",
+      "command": "bun",
+      "args": ["backend/scripts/mcp-local.ts"]
+    }
+  }
+}

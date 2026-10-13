@@ -5,6 +5,7 @@
     "": {
       "name": "crowbo-backend",
       "dependencies": {
+        "@cloudflare/workers-oauth-provider": "1.0.0",
         "@modelcontextprotocol/sdk": "^1",
         "@turbopuffer/turbopuffer": "^2",
         "zod": "^4",
@@ -35,6 +36,8 @@
     "@cloudflare/workerd-linux-arm64": ["@cloudflare/workerd-linux-arm64@1.20260926.1", "", { "os": "linux", "cpu": "arm64" }, "sha512-28bdfQDIFcpaKXMPisADy8BchpIsX+tEAhD+bhfEBXukFGFr8F3ouyiG3HzN3CqAh/OYvifJizzFZtptUPCy7w=="],
 
     "@cloudflare/workerd-windows-64": ["@cloudflare/workerd-windows-64@1.20260926.1", "", { "os": "win32", "cpu": "x64" }, "sha512-ehdL3ataKdEmlnW9oom6OZUR8n3XsTL/zl8+KGREpLi5sMSW0mek0PrF4wK9SX51f3Alnlu8tF8eKBg+mc3xFw=="],
+
+    "@cloudflare/workers-oauth-provider": ["@cloudflare/workers-oauth-provider@1.0.0", "", {}, "sha512-gVlV0UowYiSYZbNYIu8hjd4gUP5dH/Lz2iIWss0hqvQFMEMw9LPLEfDMDJNUsJ9f9jT/aZKTsQzzVEp3gL+cUA=="],
 
     "@cloudflare/workers-types": ["@cloudflare/workers-types@5.20260930.1", "", {}, "sha512-ZUHwK/kG4GD6owwHY+Le+QYq/LO+R0f8b51cE3+IXe4bcKefKWIVYYqsUrKwSTo9su1LSIxKEfqui4r7LrxU1Q=="],
 

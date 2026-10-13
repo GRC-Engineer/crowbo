@@ -1,6 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import fixture from "../../../proof/fixtures/programme.json";
 import { decisionRequest } from "../domain/decision-request";
+import { PROGRAMME_INSTRUCTIONS, registerProgrammeTools } from "../programme/tools";
 import { question, WORKFLOWS } from "../standing/model";
 
 export type Invoke = (operation: string, args: unknown) => Promise<{ ok: true; result: unknown } | { ok: false; error: string }>;
@@ -16,9 +18,15 @@ const INSTRUCTIONS =
 const sourceIds = z.array(z.string().regex(/^[a-f0-9]{64}$/)).min(1).max(15);
 const readOnly = { readOnlyHint: true, destructiveHint: false, openWorldHint: true } as const;
 
-/** The MCP surface over the same operations as the API and CLI. Identity is bound per request. */
-export function buildServer(invoke: Invoke): McpServer {
-  const server = new McpServer({ name: "Crowbo", version: "0.2.0" }, { instructions: INSTRUCTIONS });
+/**
+ * The MCP surface over the same operations as the API and CLI. Identity is bound per request.
+ * `synthetic` adds the programme tools over the synthetic Northstar fixture; only environments
+ * that allow synthetic material (staging, local) pass it, so production never serves fiction.
+ */
+export function buildServer(invoke: Invoke, options: { synthetic?: boolean } = {}): McpServer {
+  const instructions = options.synthetic ? `${INSTRUCTIONS} ${PROGRAMME_INSTRUCTIONS}` : INSTRUCTIONS;
+  const server = new McpServer({ name: "Crowbo", version: "0.3.0" }, { instructions });
+  if (options.synthetic) registerProgrammeTools(server, structuredClone(fixture));
   const call = async (operation: string, args: unknown) => {
     let outcome: Awaited<ReturnType<Invoke>>;
     try {
