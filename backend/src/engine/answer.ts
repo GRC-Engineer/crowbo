@@ -24,6 +24,10 @@ export interface Source {
   stale_reason?: string;
   conflicts_with?: number[];
   fact_id: string;
+  /** The company's trust in this source, 0 to 5: the weight the risk arithmetic uses. */
+  weight: number;
+  /** Whether the decision used it: fresh and weighted at least MIN_WEIGHT. Stale is shown, not used. */
+  used: boolean;
 }
 
 export interface Answer {
@@ -87,7 +91,9 @@ class Numbering {
       const own = this.facts.filter((f) => f.source.record === id);
       const claimFact = own.find((f) => r.format === "prose") ?? this.facts.find((f) => f.kind === "derived" && recordsOf(f).includes(id)) ?? own[0];
       const stale = own.find((f) => f.freshness === "stale");
+      const weight = this.engine.weightsTable().find((w) => w.connector === r.connector)?.weight ?? 0;
       return {
+        weight, used: !stale && weight >= MIN_WEIGHT,
         n: i + 1, connector: r.connector, label: this.engine.label(id), record: id, claim: claimFact?.quote ?? "",
         read_at: this.engine.readAt.get(r.connector) ?? null,
         coverage: r.coverage && r.coverage.days_with_data < r.coverage.window_days ? "partial" : "full",

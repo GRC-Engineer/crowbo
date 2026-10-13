@@ -22,6 +22,7 @@ const first = await call("engine_decide", { question: "Who should still have bil
 recorded.engine_decide = first;
 const labels = first.sources.map((s: any) => `${s.label}:${s.freshness}:${s.coverage}`);
 check("five sources, register stale, billing partial", JSON.stringify(labels) === JSON.stringify(["Okta:fresh:full", "Billing apps:fresh:partial", "Vendor docs:fresh:full", "Linear:fresh:full", "Risk register:stale:full"]), labels);
+check("each source carries its weight and whether it was used", JSON.stringify(first.sources.map((s: any) => [s.label, s.weight, s.used])) === JSON.stringify([["Okta", 5, true], ["Billing apps", 4, true], ["Vendor docs", 3, true], ["Linear", 3, true], ["Risk register", 3, false]]), first.sources.map((s: any) => [s.label, s.weight, s.used]));
 check("register conflicts with Okta", JSON.stringify(first.sources[4].conflicts_with) === "[1]", first.sources[4].conflicts_with);
 const deciding = first.answer.finding.filter((f: any) => f.deciding).map((f: any) => f.text);
 check("40 holders and 31 unused, computed across sources", deciding[0].startsWith("40 people hold") && deciding[1].startsWith("31 of 40 holders"), deciding);
