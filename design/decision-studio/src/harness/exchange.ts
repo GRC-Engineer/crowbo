@@ -3,7 +3,7 @@
 //
 // The engine side is recorded output from the real stdio MCP server
 // (engine-recorded.json, a snapshot of docs/demo/engine-demo-recorded.json on
-// the backend branch feat/engine-demo, commit 1451a4c). The types below are
+// the backend branch feat/engine-demo, commit 241625a). The types below are
 // the contract agreed with the backend session on 13 October 2026. Only the
 // two things the person types in the harness are written here; every number,
 // claim, owner and date comes from the recording. Demo data built on a case a

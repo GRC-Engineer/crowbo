@@ -219,8 +219,7 @@ export default function Harness() {
                       <Mark provider="slack" size={12} /> draft to {draft.to}
                     </span>
                     <span>
-                      {draft.text}
-                      {cite(draft.cites)}
+                      <DraftText text={draft.text} onFocus={setLit} />
                     </span>
                   </li>
                 ))}
@@ -338,27 +337,53 @@ function Cites({
 }) {
   return (
     <span className="h-nowrap">
-      {[...ns]
-        .sort((a, b) => a - b)
-        .map((n) => {
-          const source = decide.sources.find((item) => item.n === n);
-          return (
-            <button
-              key={n}
-              type="button"
-              className="h-cite"
-              onMouseEnter={() => onFocus(n)}
-              onMouseLeave={() => onFocus(null)}
-              onFocus={() => onFocus(n)}
-              onBlur={() => onFocus(null)}
-              aria-label={`Source ${n}: ${source?.label}, ${source?.claim}`}
-            >
-              [{n}]
-            </button>
-          );
-        })}
+      {ns.map((n) => (
+        <Cite key={n} n={n} onFocus={onFocus} />
+      ))}
     </span>
   );
+}
+
+function Cite({
+  n,
+  onFocus,
+}: {
+  n: number;
+  onFocus: (n: number | null) => void;
+}) {
+  const source = decide.sources.find((item) => item.n === n);
+  return (
+    <button
+      type="button"
+      className="h-cite"
+      onMouseEnter={() => onFocus(n)}
+      onMouseLeave={() => onFocus(null)}
+      onFocus={() => onFocus(n)}
+      onBlur={() => onFocus(null)}
+      aria-label={`Source ${n}: ${source?.label}, ${source?.claim}`}
+    >
+      [{n}]
+    </button>
+  );
+}
+
+// A draft is the text that would be posted to Slack, citations inline. Its
+// [n] markers become citation buttons in place; nothing is shown twice.
+function DraftText({
+  text,
+  onFocus,
+}: {
+  text: string;
+  onFocus: (n: number | null) => void;
+}) {
+  return text.split(/(\[\d+\])/).map((part, index) => {
+    const marker = /^\[(\d+)\]$/.exec(part);
+    return marker ? (
+      <Cite key={index} n={Number(marker[1])} onFocus={onFocus} />
+    ) : (
+      part
+    );
+  });
 }
 
 // The engine's estimates, shown only when the tool output carries them.

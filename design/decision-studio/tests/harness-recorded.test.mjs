@@ -34,6 +34,15 @@ test("every citation points at a source the engine read", () => {
   );
 });
 
+test("each draft's inline markers are exactly its citations", () => {
+  for (const draft of drafts.drafts) {
+    const inline = [...draft.text.matchAll(/\[(\d+)\]/g)].map(([, n]) =>
+      Number(n),
+    );
+    assert.deepEqual([...new Set(inline)].sort(), [...draft.cites].sort());
+  }
+});
+
 test("stale evidence carries its reason and is left open", () => {
   const stale = decide.sources.filter((source) => source.freshness === "stale");
   assert.ok(stale.length > 0);
