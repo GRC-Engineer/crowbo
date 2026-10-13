@@ -61,7 +61,7 @@ check("stale register is unresolved, not used", first.answer.unresolved.length =
 // 6. The weekly brief renders the moves, the call and the hours back.
 const brief = await call("engine_weekly_brief");
 recorded.engine_weekly_brief = brief;
-check("weekly brief", brief.markdown.includes("Move the 27 unused billing admins") && brief.markdown.includes("Hours back this quarter:** 21 security") && brief.markdown.includes("grc-lead (via MCP): override"), brief.markdown.split("\n").slice(0, 6).join(" | "));
+check("weekly brief", brief.markdown.includes("Move the 27 unused billing admins") && brief.markdown.includes("Hours back this quarter:** 21 security") && brief.markdown.includes("Overridden: Move the 27 unused") && !/fictional|synthetic|group:|sheets:/.test(brief.markdown) && brief.markdown.includes("Risk register says 12 for billing-admins holders; last updated 4 Mar, 223 days old. Not used."), brief.markdown.split("\n").slice(0, 6).join(" | "));
 
 await client.close();
 const out = process.argv.indexOf("--record");
