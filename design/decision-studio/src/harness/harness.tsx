@@ -139,7 +139,7 @@ export default function Harness() {
                     <Sentence
                       key={index}
                       part={part}
-                      strong={part.strong}
+                      strong={part.deciding}
                       onFocus={setFocus}
                       end={joiner(decide.answer.finding[index + 1]?.text)}
                     />

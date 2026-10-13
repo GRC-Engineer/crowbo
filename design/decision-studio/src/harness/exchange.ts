@@ -34,8 +34,8 @@ export type Cited = { text: string; cites: number[] };
 export type Range = { low: number; high: number };
 
 export type Answer = {
-  /** Sentences of the finding; strong ones are the facts the move rests on. */
-  finding: (Cited & { strong?: boolean })[];
+  /** Parts of the finding; deciding parts are the facts the move depends on. */
+  finding: (Cited & { deciding: boolean })[];
   move: {
     title: string;
     mode: "fix" | "fund" | "build" | "drop";
@@ -47,7 +47,8 @@ export type Answer = {
   decides: string;
   delivers: string;
   /** When, and the source that sets the deadline. */
-  due: Cited;
+  /** ISO date from the engine; the fixture leaves it out rather than invent one. */
+  due: Cited & { date?: string };
   conditions: string[];
   unresolved: string[];
 };
@@ -141,11 +142,16 @@ export const exchange: Exchange = {
     ],
     answer: {
       finding: [
-        { text: "40 people hold admin to billing", cites: [1], strong: true },
-        { text: "and 31 have not used it in 90 days", cites: [2], strong: true },
+        { text: "40 people hold admin to billing", cites: [1], deciding: true },
+        {
+          text: "and 31 have not used it in 90 days",
+          cites: [2],
+          deciding: true,
+        },
         {
           text: "The register scored it high in March and nobody has touched it since",
           cites: [3],
+          deciding: false,
         },
       ],
       move: {
