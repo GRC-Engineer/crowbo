@@ -1,4 +1,5 @@
 import type { Edge, Fact } from "./model";
+import { isRelation } from "./predicates";
 
 /**
  * Layer 03, the context graph: people, teams, launches, controls, systems and evidence, linked.
@@ -6,14 +7,12 @@ import type { Edge, Fact } from "./model";
  * real backend this is an edges table in the tenant's SQLite Durable Object, not a graph database.
  */
 
-export const RELATIONS = new Set(["owned_by", "member_of", "leads", "governed_by", "depends_on"]);
-
 export class ContextGraph {
   private edges = new Map<string, Edge>();
 
   constructor(facts: Fact[]) {
     for (const f of facts) {
-      if (!RELATIONS.has(f.predicate) || typeof f.value !== "string") continue;
+      if (!isRelation(f.predicate) || typeof f.value !== "string") continue;
       const key = `${f.subject}|${f.predicate}|${f.value}`;
       const contributor = `${f.source.record}@${f.source.revision}`;
       const edge = this.edges.get(key) ?? { from: f.subject, rel: f.predicate, to: f.value, contributors: [] };
@@ -26,9 +25,10 @@ export class ContextGraph {
     return [...this.edges.values()];
   }
 
-  /** The first node reached from `from` along `rel`. */
+  /** The one node reached from `from` along `rel`; null when there is none or the sources disagree. */
   follow(from: string, rel: string): string | null {
-    return this.all().find((e) => e.from === from && e.rel === rel)?.to ?? null;
+    const targets = [...new Set(this.all().filter((e) => e.from === from && e.rel === rel).map((e) => e.to))];
+    return targets.length === 1 ? targets[0] : null;
   }
 
   /** Nodes with an edge `rel` pointing at `to`. */

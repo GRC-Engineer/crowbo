@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import fixture from "../../../proof/fixtures/programme.json";
 import { decisionRequest } from "../domain/decision-request";
+import { CROW_ICON_URL } from "../engine/tools";
 import { PROGRAMME_INSTRUCTIONS, registerProgrammeTools } from "../programme/tools";
 import { question, WORKFLOWS } from "../standing/model";
 
@@ -25,7 +26,7 @@ const readOnly = { readOnlyHint: true, destructiveHint: false, openWorldHint: tr
  */
 export function buildServer(invoke: Invoke, options: { synthetic?: boolean } = {}): McpServer {
   const instructions = options.synthetic ? `${INSTRUCTIONS} ${PROGRAMME_INSTRUCTIONS}` : INSTRUCTIONS;
-  const server = new McpServer({ name: "Crowbo", version: "0.3.0" }, { instructions });
+  const server = new McpServer({ name: "Crowbo", version: "0.3.0", icons: [CROW_ICON_URL] }, { instructions });
   if (options.synthetic) registerProgrammeTools(server, structuredClone(fixture));
   const call = async (operation: string, args: unknown) => {
     let outcome: Awaited<ReturnType<Invoke>>;

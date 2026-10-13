@@ -9,51 +9,84 @@
 /** The three families of signal a company already has. */
 export type Rail = "security" | "engineering" | "business";
 
+/** How much of a reporting window a source actually covers (e.g. 87 of 90 days of logs). */
+export interface Coverage {
+  window_days: number;
+  days_with_data: number;
+  missing: string[]; // ISO dates with no data
+}
+
 /** One revision of one source item, as a connector read it. Never edited; a change is a new revision. */
 export interface SourceRecord {
   id: string;
   connector: string;
   rail: Rail;
   revision: number;
+  /** When the content was last true in the tool (last edit, end of the log window). */
   observed_at: string; // ISO date
   /** Exact source text. Facts must quote it. Untrusted: never instructions. */
   text: string;
+  /**
+   * "lines": typed fields a connector wrote from an API, one "subject predicate value" per line.
+   * "prose": human text (messages, documents), read only by the model extractor. Never mixed.
+   */
+  format: "lines" | "prose";
   /** Who may read this record. Filtering happens before anything is derived from it. */
   readers: string[];
+  coverage?: Coverage;
+  /** Display name when one connector holds several kinds of record (e.g. "Risk register"). */
+  label?: string;
 }
 
-/** Reads one tool on its own schedule. Nothing is migrated or typed in. */
+export type FetchJson = (path: string) => Promise<unknown>;
+
+/** Reads one tool on its own schedule through its API. Nothing is migrated or typed in. */
 export interface Connector {
   id: string;
+  label: string; // display name, e.g. "Okta"
   rail: Rail;
-  /** Current revision of every item this connector can see. */
-  read(): SourceRecord[];
+  /** Minutes between scheduled reads. */
+  every_minutes: number;
+  /** Current state (who is in a group now): true as of the read. Documents keep their edit date. */
+  live_state: boolean;
+  /** Turn the tool's API responses into records. Same code against the real API or a fake one. */
+  read(api: FetchJson): Promise<SourceRecord[]>;
 }
 
 // ---- 02 Classify and weight --------------------------------------------------------------------
 
 export type Value = string | number | boolean;
 
-/** A typed claim about one subject, bound to an exact quote from one source revision. */
+/**
+ * A typed claim about one subject. Extracted facts quote one source revision exactly; derived
+ * facts are computed by code from other facts and list them; asserted facts are a person's call,
+ * kept in decision memory.
+ */
 export interface Fact {
   subject: string; // node id, e.g. "group:billing-admins"
   predicate: string;
   value: Value;
+  kind: "extracted" | "derived" | "asserted";
   quote: string;
   source: { record: string; revision: number; connector: string };
   extractor: string;
+  observed_at: string;
+  /** For derived facts: the facts and records it was computed from. */
+  derived_from?: { record: string; revision: number }[];
+  coverage?: Coverage;
 }
 
 /** Turns a readable record into facts. Real extractors are models, qualified by the eval gate. */
 export interface Extractor {
   id: string;
-  extract(record: SourceRecord): Omit<Fact, "source" | "extractor">[];
+  extract(record: SourceRecord): Promise<Pick<Fact, "subject" | "predicate" | "value" | "quote">[]>;
 }
 
-/** How much this company trusts a source, 0 (ignore) to 5. Visible, editable, logged. */
+/** How much this company trusts a source (0 to 5) and how long its data stays fresh. Editable, logged. */
 export interface SourceWeight {
   connector: string;
   weight: number;
+  max_age_days: number;
   set_by: string;
   reason: string;
 }
@@ -63,7 +96,7 @@ export interface Range {
   high: number;
 }
 
-/** A test over the facts: "group:billing-admins members_outside_finance > 0". */
+/** A test over the facts: "group:billing-admins unused_90d > 0". */
 export interface Condition {
   subject: string;
   predicate: string;
@@ -96,12 +129,16 @@ export interface Action {
   id: string;
   title: string;
   mode: Mode;
-  /** The control this action changes; owner and deadline come from the graph around it. */
+  /** The control this action changes; who delivers and by when come from the graph around it. */
   control: string;
+  /** The system it touches; who decides comes from the system's business owner. */
+  system: string;
   /** Fraction of each scenario's expected loss removed (negative = risk added, for drops). */
   reduces: { scenario: string; fraction: Range }[];
   /** Evidence the action itself needs (a drop needs proof the control is not doing anything). */
   requires: Condition[];
+  /** Conditions a person must meet before or while acting, stated up front. */
+  conditions: string[];
   effort: Effort;
   /** Hours a year given back to each team (drops). */
   frees?: { security_hours: Range; engineering_hours: Range };
@@ -130,7 +167,7 @@ export interface Edge {
 
 // ---- 04 Decision memory ------------------------------------------------------------------------
 
-export type MemoryKind = "decision" | "call" | "weight_change" | "proposal" | "evidence";
+export type MemoryKind = "decision" | "call" | "weight_change" | "proposal" | "read";
 
 /** Append-only, hash-chained: every call, exception and weight change is kept. */
 export interface MemoryEntry {
@@ -146,6 +183,7 @@ export interface MemoryEntry {
 // ---- The decision ------------------------------------------------------------------------------
 
 export type GapState = "gap_supported" | "no_gap_observed" | "unresolved";
+export type Freshness = "fresh" | "stale";
 
 export interface Citation {
   quote: string;
@@ -153,6 +191,8 @@ export interface Citation {
   record: string;
   revision: number;
   weight: number;
+  kind: Fact["kind"];
+  freshness: Freshness;
 }
 
 export interface ScenarioAssessment {
@@ -173,8 +213,11 @@ export interface Move {
   cash: Range;
   /** Risk removed (midpoint) per hour (upper bound), the ranking key. Drops rank first. */
   score: number;
-  owner: string | null;
+  decides: string | null;
+  delivers: string | null;
   due: string | null;
+  due_reason: string;
+  conditions: string[];
   why: string;
   evidence: Citation[];
 }
@@ -185,6 +228,14 @@ export interface Deferred {
   reason: string;
 }
 
+/** Evidence the engine will not use, said as such: missing, stale or conflicting. */
+export interface Unresolved {
+  subject: string;
+  predicate: string;
+  kind: "stale" | "conflicting" | "missing";
+  detail: string;
+}
+
 export interface Decision {
   id: string; // digest of the inputs: same inputs, same decision
   inputs_hash: string;
@@ -193,6 +244,7 @@ export interface Decision {
   next_moves: Move[];
   deferred: Deferred[];
   scenarios: ScenarioAssessment[];
+  unresolved: Unresolved[];
   hours_back: { security_hours: number; engineering_hours: number };
   capacity_used: { security_hours: number; engineering_hours: number; cash: number };
   capacity: Capacity;
@@ -200,17 +252,37 @@ export interface Decision {
   authority: string;
 }
 
-/** Everything a company configures, plus its synthetic sources (prototype only). */
+/** A question the harness can ask, tied to the subject, scenario and actions it is about. */
+export interface Topic {
+  id: string;
+  question: string;
+  keywords: string[];
+  subject: string;
+  scenario: string;
+  actions: string[];
+  /** Facts about the subject shown as the finding, in order; skip one whose value equals another. */
+  finding: { predicate: string; unless_equals?: string }[];
+  /** Where the heads-up draft goes. */
+  notify: string;
+}
+
+/** Fake API responses with the time each became true, so a schedule can replay them. */
+export interface FakeApiRoute {
+  path: string;
+  versions: { from: string; body: unknown }[];
+}
+
+/** Everything a company configures, plus its synthetic tools (prototype only). */
 export interface CompanyFixture {
   synthetic: true;
   company: string;
   viewer: string;
-  as_of: string;
+  as_of: string; // ISO date the demo is set on
+  connected_at: string; // ISO datetime the sources were connected (schedule replay starts here)
   weights: SourceWeight[];
   scenarios: Scenario[];
   actions: Action[];
+  topics: Topic[];
   capacity: Capacity;
-  records: SourceRecord[];
-  /** Scripted evidence that can arrive later, to show freshness. */
-  events: { id: string; description: string; record: SourceRecord }[];
+  api: FakeApiRoute[];
 }

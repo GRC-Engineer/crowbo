@@ -125,6 +125,8 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/health") return json({ ok: true, service: "crowbo-api" });
+    // Claude shows a connector's favicon: point it at the crow on the public site.
+    if (url.pathname === "/favicon.ico") return Response.redirect("https://crowbo.ai/assets/favicon-32.png", 301);
 
     let operators;
     try {
