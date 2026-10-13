@@ -5,11 +5,16 @@ import {
   BookOpen,
   Check,
   Feather,
+  History,
   LockKeyhole,
   RotateCcw,
+  Users,
 } from "../pixel-icons";
-import { exchange, type Cited, type Connector, type Source } from "./exchange";
+import { exchange, type Range, type Source } from "./exchange";
 import "../harness.css";
+
+const { decide, drafts } = exchange;
+const { answer } = decide;
 
 // The exchange plays as a sequence of beats. Each beat reveals one more part
 // of the window; with reduced motion the page opens on the last beat.
@@ -23,11 +28,12 @@ const beats = [
   "drafts",
 ] as const;
 type Beat = (typeof beats)[number];
+const READ_EACH = 520;
 const pause: Record<Beat, number> = {
   question: 900,
-  reading: 520,
+  reading: READ_EACH * decide.sources.length,
   read: 700,
-  answer: 1800,
+  answer: 2200,
   request: 900,
   drafting: 1100,
   drafts: 0,
@@ -48,23 +54,18 @@ function useBeats(reduced: boolean) {
     const next = () => {
       step += 1;
       setAt(step);
-      // "reading" holds once per source so the reads land one by one.
-      const hold =
-        beats[step] === "reading"
-          ? pause.reading * exchange.decide.sources.length
-          : pause[beats[step]];
-      if (step < last) timer = window.setTimeout(next, hold);
+      if (step < last) timer = window.setTimeout(next, pause[beats[step]]);
     };
     timer = window.setTimeout(next, pause.question);
     return () => window.clearTimeout(timer);
   }, [reduced, run, last]);
   const reached = (beat: Beat) => at >= beats.indexOf(beat);
-  return { at, reached, replay: () => setRun((value) => value + 1) };
+  return { reached, replay: () => setRun((value) => value + 1) };
 }
 
 // How many sources have landed while the call is reading.
 function useSourcesRead(reading: boolean, done: boolean) {
-  const total = exchange.decide.sources.length;
+  const total = decide.sources.length;
   const [count, setCount] = useState(done ? total : 0);
   useEffect(() => {
     if (done) return setCount(total);
@@ -72,12 +73,30 @@ function useSourcesRead(reading: boolean, done: boolean) {
     setCount(0);
     const timer = window.setInterval(
       () => setCount((value) => Math.min(total, value + 1)),
-      pause.reading,
+      READ_EACH,
     );
     return () => window.clearInterval(timer);
   }, [reading, done, total]);
   return count;
 }
+
+const day = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+const clock = new Intl.DateTimeFormat("en-GB", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "UTC",
+});
+const money = (value: number) =>
+  Math.abs(value) >= 1000 ? `$${Math.round(value / 1000)}k` : `$${value}`;
+const span = (range: Range, unit: (value: number) => string) =>
+  range.low === range.high
+    ? unit(range.low)
+    : `${unit(range.low)}–${unit(range.high)}`;
 
 export default function Harness() {
   const reduced = useReducedMotion() ?? false;
@@ -86,8 +105,8 @@ export default function Harness() {
     reached("reading") && !reached("read"),
     reached("read"),
   );
-  const [focus, setFocus] = useState<number | null>(null);
-  const { decide, followup } = exchange;
+  const [lit, setLit] = useState<number | null>(null);
+  const cite = (ns: number[]) => <Cites ns={ns} onFocus={setLit} />;
 
   return (
     <main className="h-page">
@@ -112,7 +131,7 @@ export default function Harness() {
 
         <div className="h-body">
           <div className="h-chat" aria-live="polite">
-            <Prompt>{decide.question}</Prompt>
+            <Prompt>{exchange.ask}</Prompt>
 
             {reached("reading") && (
               <ToolLine
@@ -121,11 +140,7 @@ export default function Harness() {
                 call={`decide ${decide.topic}`}
                 status={
                   reached("read")
-                    ? `read ${decide.sources.length} sources${
-                        decide.elapsed_ms
-                          ? ` · ${(decide.elapsed_ms / 1000).toFixed(1)}s`
-                          : ""
-                      }`
+                    ? `read ${decide.sources.length} sources · lookup ${decide.lookup_ms} ms`
                     : `reading ${read} of ${decide.sources.length}`
                 }
                 busy={!reached("read")}
@@ -133,51 +148,63 @@ export default function Harness() {
             )}
 
             {reached("answer") && (
-              <div className="h-answer">
-                <p>
-                  {decide.answer.finding.map((part, index) => (
-                    <Sentence
-                      key={index}
-                      part={part}
-                      strong={part.deciding}
-                      onFocus={setFocus}
-                      end={joiner(decide.answer.finding[index + 1]?.text)}
-                    />
+              <div className="h-result">
+                {decide.summary.text && (
+                  <p className="h-summary">{decide.summary.text}</p>
+                )}
+
+                <ul className="h-findings">
+                  {answer.finding.map((part) => (
+                    <li key={part.fact_id} data-deciding={part.deciding}>
+                      {part.deciding ? <strong>{part.text}</strong> : part.text}
+                      {cite(part.cites)}
+                    </li>
                   ))}
+                </ul>
+
+                <div className="h-move">
+                  <span className="h-mode">{answer.move.mode}</span>
+                  <p>
+                    <strong>{answer.move.title}</strong>
+                    {cite(answer.move.cites)}
+                  </p>
+                  <p className="h-why">{answer.move.why}</p>
+                  <Figures />
+                </div>
+
+                <p className="h-who">
+                  <b>{answer.decides}</b> decides · <b>{answer.delivers}</b>{" "}
+                  delivers · {answer.due.text}
+                  {answer.due.date &&
+                    `, ${day.format(new Date(answer.due.date))}`}
+                  {cite(answer.due.cites)}
                 </p>
-                <p>
-                  <strong>{decide.answer.move.title}</strong>{" "}
-                  {decide.answer.move.why.map((part, index) => (
-                    <Sentence key={index} part={part} onFocus={setFocus} />
-                  ))}{" "}
-                  <span className="h-who">
-                    {decide.answer.decides} decides,{" "}
-                    {decide.answer.delivers} delivers,{" "}
-                    {decide.answer.due.text}
-                  </span>
-                  <span className="h-nowrap">
-                    {decide.answer.due.cites.map((n) => (
-                      <Cite key={n} n={n} onFocus={setFocus} />
-                    ))}
-                    .
-                  </span>{" "}
-                  Two things must hold:{" "}
-                  {decide.answer.conditions.join(", and ")}.
-                </p>
-                <Figures />
+
+                {answer.conditions.length > 0 && (
+                  <div className="h-conditions">
+                    <span className="h-small">Must hold</span>
+                    <ol>
+                      {answer.conditions.map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
               </div>
             )}
 
-            {reached("request") && <Prompt>{followup.request}</Prompt>}
+            {reached("request") && <Prompt>{exchange.followup}</Prompt>}
 
             {reached("drafting") && (
               <ToolLine
                 icon={<Mark provider="slack" size={16} />}
-                tool="slack"
-                call={`draft ${followup.channel}`}
+                tool="crowbo"
+                call={`draft followups · ${drafts.channel}`}
                 status={
                   reached("drafts")
-                    ? `${followup.drafts.length} drafts · nothing sent`
+                    ? `${drafts.drafts.length} drafts${
+                        drafts.sent === false ? " · nothing sent" : ""
+                      }`
                     : "drafting"
                 }
                 busy={!reached("drafts")}
@@ -185,29 +212,19 @@ export default function Harness() {
             )}
 
             {reached("drafts") && (
-              <div className="h-answer">
-                <p>
-                  Three drafts are in {followup.channel}, one per owner, with
-                  the role change and the test date. Nothing goes out until you
-                  say so.
-                </p>
-                <ol className="h-drafts">
-                  {followup.drafts.map((draft) => (
-                    <li key={draft.to} className="h-draft">
-                      <span className="h-draft-to">
-                        <Mark provider="slack" size={12} /> draft to{" "}
-                        {draft.to}
-                      </span>
-                      <span>
-                        {draft.text}
-                        {draft.cites.map((n) => (
-                          <Cite key={n} n={n} onFocus={setFocus} />
-                        ))}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
+              <ol className="h-drafts">
+                {drafts.drafts.map((draft) => (
+                  <li key={draft.to} className="h-draft">
+                    <span className="h-draft-to">
+                      <Mark provider="slack" size={12} /> draft to {draft.to}
+                    </span>
+                    <span>
+                      {draft.text}
+                      {cite(draft.cites)}
+                    </span>
+                  </li>
+                ))}
+              </ol>
             )}
 
             <div className="h-input" aria-hidden="true">
@@ -220,7 +237,7 @@ export default function Harness() {
             <ul className="h-progress">
               <Step done={reached("read")}>Read five sources</Step>
               <Step done={reached("answer")}>
-                Match usage to the vendor's new role
+                Match usage to the Billing Operator role
               </Step>
               <Step done={reached("drafts")}>Draft the owner notes in Slack</Step>
             </ul>
@@ -232,38 +249,49 @@ export default function Harness() {
                   key={source.n}
                   source={source}
                   landed={source.n <= read}
-                  lit={focus === source.n}
+                  lit={lit === source.n}
                 />
               ))}
             </ol>
 
-            {reached("answer") && decide.answer.unresolved.length > 0 && (
+            {reached("answer") && answer.unresolved.length > 0 && (
               <>
                 <h2 className="h-rail-title">Left open</h2>
                 <ul className="h-open">
-                  {decide.answer.unresolved.map((line) => (
+                  {answer.unresolved.map((line) => (
                     <li key={line}>{line}</li>
                   ))}
                 </ul>
               </>
             )}
 
-            <h2 className="h-rail-title">Context</h2>
-            <span className="h-context">
-              <Feather size={14} /> Crowbo over MCP
+            <h2 className="h-rail-title">Models</h2>
+            <dl className="h-models">
+              <div>
+                <dt>routing</dt>
+                <dd>{decide.models.routing}</dd>
+              </div>
+              <div>
+                <dt>summary</dt>
+                <dd>{decide.summary.generated_by}</dd>
+              </div>
+              <div>
+                <dt>drafts</dt>
+                <dd>{drafts.generated_by}</dd>
+              </div>
+              <div>
+                <dt>ingestion</dt>
+                <dd>{decide.models.ingestion.join(", ")}</dd>
+              </div>
+            </dl>
+            <span className="h-decision">
+              decision {decide.decision_id.slice(0, 12)}
             </span>
           </aside>
         </div>
       </section>
     </main>
   );
-}
-
-// Parts of the finding run on with a space when the next part continues the
-// sentence (starts lower case) and end with a full stop otherwise.
-function joiner(next?: string) {
-  if (next === undefined) return ".";
-  return next[0] === next[0].toLowerCase() ? " " : ". ";
 }
 
 function Prompt({ children }: { children: ReactNode }) {
@@ -301,72 +329,48 @@ function ToolLine({
   );
 }
 
-function Sentence({
-  part,
-  strong,
-  end = " ",
+function Cites({
+  ns,
   onFocus,
 }: {
-  part: Cited;
-  strong?: boolean;
-  end?: string;
+  ns: number[];
   onFocus: (n: number | null) => void;
 }) {
-  const text = strong ? <strong>{part.text}</strong> : part.text;
-  // The citations and the stop that follows them never wrap apart.
-  const stop = end.trimEnd();
   return (
-    <>
-      {text}
-      <span className="h-nowrap">
-        {part.cites.map((n) => (
-          <Cite key={n} n={n} onFocus={onFocus} />
-        ))}
-        {stop}
-      </span>
-      {end.slice(stop.length)}
-    </>
-  );
-}
-
-function Cite({
-  n,
-  onFocus,
-}: {
-  n: number;
-  onFocus: (n: number | null) => void;
-}) {
-  const source = exchange.decide.sources.find((item) => item.n === n);
-  return (
-    <button
-      type="button"
-      className="h-cite"
-      onMouseEnter={() => onFocus(n)}
-      onMouseLeave={() => onFocus(null)}
-      onFocus={() => onFocus(n)}
-      onBlur={() => onFocus(null)}
-      aria-label={`Source ${n}: ${source?.label}, ${source?.claim}`}
-    >
-      [{n}]
-    </button>
+    <span className="h-nowrap">
+      {[...ns]
+        .sort((a, b) => a - b)
+        .map((n) => {
+          const source = decide.sources.find((item) => item.n === n);
+          return (
+            <button
+              key={n}
+              type="button"
+              className="h-cite"
+              onMouseEnter={() => onFocus(n)}
+              onMouseLeave={() => onFocus(null)}
+              onFocus={() => onFocus(n)}
+              onBlur={() => onFocus(null)}
+              aria-label={`Source ${n}: ${source?.label}, ${source?.claim}`}
+            >
+              [{n}]
+            </button>
+          );
+        })}
+    </span>
   );
 }
 
 // The engine's estimates, shown only when the tool output carries them.
 function Figures() {
-  const { move } = exchange.decide.answer;
-  const money = (value: number) =>
-    value >= 1000 ? `$${Math.round(value / 1000)}k` : `$${value}`;
+  const { move } = answer;
   const rows = [
     move.risk_removed_per_year && [
       "Risk removed a year",
-      `${money(move.risk_removed_per_year.low)}–${money(move.risk_removed_per_year.high)}`,
+      span(move.risk_removed_per_year, money),
     ],
-    move.hours && ["Hours", `${move.hours.low}–${move.hours.high}`],
-    move.cash && [
-      "Cash",
-      `${money(move.cash.low)}–${money(move.cash.high)}`,
-    ],
+    move.hours && ["Hours", span(move.hours, String)],
+    move.cash && ["Cash", span(move.cash, money)],
   ].filter((row): row is string[] => Boolean(row));
   if (rows.length === 0) return null;
   return (
@@ -393,13 +397,22 @@ function Step({ done, children }: { done: boolean; children: ReactNode }) {
   );
 }
 
-const marks: Record<Connector, ReactNode> = {
-  okta: <Mark provider="okta" size={14} />,
-  linear: <Mark provider="linear" size={14} />,
-  billing: <LockKeyhole size={14} />,
-  register: <BookOpen size={14} />,
-  vendor: <BookOpen size={14} />,
-};
+function SourceMark({ connector }: { connector: string }) {
+  switch (connector) {
+    case "okta":
+    case "linear":
+    case "slack":
+      return <Mark provider={connector} size={14} />;
+    case "billing":
+      return <LockKeyhole size={14} />;
+    case "memory":
+      return <History size={14} />;
+    case "workday":
+      return <Users size={14} />;
+    default:
+      return <BookOpen size={14} />;
+  }
+}
 
 function SourceRow({
   source,
@@ -411,21 +424,28 @@ function SourceRow({
   lit: boolean;
 }) {
   const notes = [
-    source.coverage_note ?? source.read_at,
-    source.coverage === "full" && !source.coverage_note && "full",
-    source.freshness === "stale" && "stale",
+    source.read_at
+      ? `read ${clock.format(new Date(source.read_at))} UTC`
+      : "kept by decision",
+    source.coverage,
+    source.freshness === "stale" &&
+      `stale${source.stale_reason ? `: ${source.stale_reason}` : ""}`,
     source.conflicts_with?.length &&
       `conflicts with ${source.conflicts_with.map((n) => `[${n}]`).join(" ")}`,
   ].filter(Boolean);
   return (
     <li className="h-source" data-landed={landed} data-lit={lit}>
       <span className="h-source-n">[{source.n}]</span>
-      <span className="h-source-mark">{marks[source.connector]}</span>
+      <span className="h-source-mark">
+        <SourceMark connector={source.connector} />
+      </span>
       <span className="h-source-text">
         <b>{source.label}</b> {source.claim}
         <span
           className="h-source-note"
-          data-warn={source.freshness === "stale" || source.coverage === "partial"}
+          data-warn={
+            source.freshness === "stale" || source.coverage === "partial"
+          }
         >
           {notes.join(" · ")}
         </span>
