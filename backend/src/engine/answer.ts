@@ -67,10 +67,12 @@ class Numbering {
   constructor(private engine: Engine, private facts: Fact[]) {}
 
   cite(f: Fact): number[] {
-    return recordsOf(f).map((r) => {
-      if (!this.order.includes(r)) this.order.push(r);
-      return this.order.indexOf(r) + 1;
-    });
+    return recordsOf(f)
+      .map((r) => {
+        if (!this.order.includes(r)) this.order.push(r);
+        return this.order.indexOf(r) + 1;
+      })
+      .sort((a, b) => a - b);
   }
 
   indexOf(record: string): number | null {
@@ -119,7 +121,7 @@ export function answerTopic(engine: Engine, question: string, topicId?: string, 
     if (f === dueFact || finding.some((x) => x.fact_id === f.id)) continue;
     finding.push({ text: f.quote, cites: numbering.cite(f), deciding: false, fact_id: f.id });
   }
-  const moveCites = [...new Set(evidence.filter((f) => f !== dueFact).flatMap((f) => numbering.cite(f)))];
+  const moveCites = [...new Set(evidence.filter((f) => f !== dueFact).flatMap((f) => numbering.cite(f)))].sort((a, b) => a - b);
   const dueCites = dueFact ? numbering.cite(dueFact) : [];
 
   // Stale evidence about the subject is shown, numbered, and never used; conflicts are named, not settled.

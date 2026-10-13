@@ -82,7 +82,7 @@ export async function draftFollowups(model: ChatModel | null, topic: Topic, answ
       channel: "slack", sent: false, generated_by: "template (no answering model configured)",
       drafts: [
         { to: recipients[0], text: `Decision needed ${due}: ${a.move.title}. Evidence ${cite(a.move.cites)}. Nothing changes until you say yes.`, cites: a.move.cites },
-        { to: recipients[1], text: `If ${recipients[0]} agrees: ${a.conditions.join("; then ")}. Make the change ${due} ${cite(a.due?.cites ?? [])}.`, cites: a.due?.cites ?? [] },
+        { to: recipients[1], text: `If ${recipients[0]} agrees: ${a.conditions.map((c, i) => (i ? c.replace(/^./, (x) => x.toLowerCase()) : c)).join("; then ")}. Make the change ${due} ${cite(a.due?.cites ?? [])}.`, cites: a.due?.cites ?? [] },
         { to: recipients[2], text: `Heads-up, nothing has changed yet. Proposed: ${a.move.title} ${cite(a.move.cites)}.`, cites: a.move.cites },
       ],
     };
