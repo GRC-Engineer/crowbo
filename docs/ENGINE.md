@@ -40,13 +40,14 @@ flowchart LR
 
 | Layer | Owns | Prototype module |
 | --- | --- | --- |
-| 01 Ingest | Reading each tool on its own schedule. Every item is an immutable revision with its readers. | `ingest.ts` |
-| 02 Classify | Turning readable text into typed facts about subjects. Every fact quotes its source exactly. | `extract.ts` |
+| 01 Ingest | Reading each tool through its own API on its own schedule. A changed item becomes a new revision; every record carries its readers, its date and, for logs, its coverage. | `connectors.ts` |
+| 02 Classify | Turning readable text into typed facts about subjects. Every fact quotes its source exactly. Prose goes to a model extractor (Clef or Clef-flash on Workers AI). | `extract.ts` |
+| 02 Join | Facts computed from facts in several tools (people holding a role who have not used it), carrying their inputs, the oldest date and the narrowest coverage. | `derive.ts` |
 | 02 Weight | The company's visible, editable inputs: source weights, risk scenarios with frequency and loss ranges, and candidate actions with effort ranges. | `model.ts`, `fixture.ts` |
 | 03 Context graph | The relationships no single tool holds: owners, teams, launches, controls and systems. Each edge records the source revisions it came from. | `graph.ts` |
 | Decide | The next moves by risk removed, under capacity. Deterministic. | `decide.ts` |
 | 04 Decision memory | Every decision, call, exception, weight change and tuning proposal, in order, tamper-evident. | `memory.ts` |
-| Surface | The engine over MCP for any harness. | `tools.ts`, `scripts/mcp-local.ts` |
+| Surface | The engine over MCP for any harness: the answer with numbered sources, follow-up drafts (never sent), the schedule replay and the weekly brief. | `answer.ts`, `tools.ts`, `scripts/mcp-local.ts` |
 | Wiring | One refresh runs the layers in order and precomputes the decision, so asking is a lookup. | `engine.ts` |
 
 ## Who does what
@@ -56,10 +57,10 @@ The decision is arithmetic over evidence and the company's own stated inputs. Mo
 | Step | Done by | Why |
 | --- | --- | --- |
 | Read sources, apply access | Code | Restricted content must never reach anything derived. |
-| Extract facts from prose | A model, qualified on reviewed cases ([evaluation contract](EVALUATION.md)) | Models read prose well. Each fact is checked against an exact quote. |
+| Extract facts from prose (ingestion) | A decision model: Clef or Clef-flash on Workers AI (Jev-compatible), qualified on reviewed cases ([evaluation contract](EVALUATION.md)) | It returns calibrated probabilities to typed questions, one sentence at a time, so the sentence is the quote. |
 | Set weights, scenarios, estimates | People, with model proposals labelled as proposals | The company owns its risk appetite and must be able to see and change it. |
 | Compute risk removed and choose moves | Code | The same inputs must give the same answer, and every number must trace back. |
-| Explain, answer follow-ups | A model, citing the computed result | Explanation must not become selection. |
+| Route a question, summarise the answer, draft follow-ups | An answering model: GLM-5.3-flash on Workers AI, or Claude Haiku 5.5 | It writes words around a computed decision. Its text is rejected unless every number appears in the answer and every [n] is a real source; one retry, then an error, never a silent fallback. |
 | Accept, override, grant an exception | A person | Recommendations grant no authority. |
 
 ## The decision, in arithmetic
@@ -67,8 +68,8 @@ The decision is arithmetic over evidence and the company's own stated inputs. Mo
 The prototype uses deliberately simple arithmetic. [Production](#what-engineers-build) replaces each step with something stronger.
 
 1. **Expected annual loss** for each scenario = frequency × loss per event, both as ranges with a stated basis.
-2. **Evidence.** A scenario's gap is *evidenced* when a fact from a source weighted at least 2 out of 5 meets its condition. It is *not observed* when such facts exist but none meets it. It is *unresolved* when no usable fact exists, or the usable facts conflict.
-3. **Confidence** = the strongest supporting source weight ÷ 5. It is shown on every move.
+2. **Evidence.** A fact is *stale* once its source is older than that source's freshness limit (set per company with the weight); stale facts are shown and never used. A scenario's gap is *evidenced* when a fresh fact from a source weighted at least 2 out of 5 meets its condition. It is *not observed* when such facts exist but none meets it. It is *unresolved* when no usable fact exists, or the usable facts conflict.
+3. **Confidence** = the strongest supporting source weight ÷ 5. A fact joined from several sources takes the lowest of their weights. It is shown on every move.
 4. **Risk removed by an action** = expected loss × reduction fraction × confidence, summed over the scenarios the action touches.
    - It counts only where a gap is evidenced.
    - Risk an action *adds* (a drop) counts in full, whatever the evidence.
@@ -76,7 +77,7 @@ The prototype uses deliberately simple arithmetic. [Production](#what-engineers-
    - Drops come first, provided the risk they add stays within the company's tolerance and their prerequisites hold (for example "found no issues in four quarters" and "superseded by"). They give hours back to the horizon.
    - The rest are taken in order of risk removed per hour, as long as they fit at their upper effort bounds.
    - Anything else is deferred with the exact shortfall.
-6. **Owner and due date** come from the graph. The owner is the control's owner. The due date is the earliest launch that depends on the control, or else the end of the horizon.
+6. **Who decides, who delivers, by when** come from the graph. The system's business owner decides (or the control's assignee when there is none), the control's assignee delivers, and the due date is the earliest launch that depends on the control, else the end of the horizon. Partial coverage adds a condition (confirm the missing days).
 
 A decision's ID is the hash of its inputs: facts, weights, scenarios, actions, capacity, viewer and method version. New evidence or a weight change produces a new decision, and the change is recorded in memory.
 
@@ -96,18 +97,21 @@ Each one is tested in [`test/engine/engine.test.ts`](../backend/test/engine/engi
 
 ## Try the prototype
 
-The repo's `.mcp.json` starts the local server in Claude Code. In a new session in this folder, approve the `crowbo` server, then ask:
+The demo is a case a future customer raised: 40 people hold admin in the billing app and 31 have not used it in 90 days. The repo's `.mcp.json` starts the local server in Claude Code. In a new session in this folder, approve the `crowbo` server, then ask:
 
-- "What are Northwind's next moves, and why?"
-- "Explain why deploy approval was deferred."
-- "Simulate the Okta cleanup. What changed?"
-- "Slack threads aren't proof for us. Set Slack's weight to 1. What happens?"
-- "Show me decision memory."
+- "Who should still have billing admin?" (`engine_decide`: five numbered sources, the move, Priya decides, Alex delivers, before audit prep)
+- "Draft the follow-ups." (`engine_draft_followups`: three drafts, nothing sent)
+- "Replay the first hour after connecting the tools." (`engine_run_schedule`: reads on their own cadence, links forming, the decision taking shape)
+- "Alex says 4 of the 31 are break-glass accounts. Record that." (`engine_record_call`; ask the first question again: 27, cited from decision memory)
+- "Give me the weekly brief." (`engine_weekly_brief`)
+
+`bun scripts/demo-check.ts` in `backend/` runs all of this against the real server process and checks each claim against literal values; `--record <file>` saves the outputs ([recorded run](demo/engine-demo-recorded.json)).
 
 **What is a stand-in:**
 - The company and all its numbers are invented.
-- Connectors read a fixture.
-- The model extractor returns pre-written labels. One of them is a deliberate hallucination, which binding rejects.
+- The connectors are real mapping code, but read a fake API that serves each tool's response shape.
+- Models run when their keys are present (Keychain `crowbo/workers-ai` and `crowbo/cf-account` for Clef and GLM, `crowbo/anthropic` for Haiku; `CROWBO_INGEST_MODEL`, `CROWBO_ANSWER_MODEL=glm|haiku`). Each answer reports which model routed, summarised and drafted. Without keys, routing uses keywords, drafts use a template, there is no summary, and the output says so.
+- Without Workers AI, the prose extractor returns pre-written labels. One of them is a deliberate hallucination, which binding rejects. With the binding, Clef or Clef-flash answers typed questions per sentence; that path is tested against a fake binding and not yet run live.
 - State lives in one process.
 
 ## What engineers build

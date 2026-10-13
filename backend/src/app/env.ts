@@ -9,7 +9,8 @@ export interface Env {
   /** JSON: sha256(token) -> operator config. Administrator-controlled secret. */
   CROWBO_OPERATORS?: string;
   CLOUDFLARE_API_TOKEN?: string;
-  TURBOPUFFER_API_KEY?: string;
+  /** A plain secret locally, or a Secrets Store binding on staging (shared across Workers). */
+  TURBOPUFFER_API_KEY?: string | SecretsStoreSecret;
   SLACK_API_TOKEN?: string;
   /** "true" only outside production: lets synthetic fixture gates activate criteria. */
   ALLOW_SYNTHETIC_GATES?: string;

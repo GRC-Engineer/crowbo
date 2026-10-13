@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  resolve: { alias: { "cloudflare:workers": join(__dirname, "test/stubs/cloudflare-workers.ts") } },
+  resolve: { alias: { "cloudflare:workers": join(import.meta.dirname, "test/stubs/cloudflare-workers.ts") } },
   test: {
     include: ["test/**/*.test.ts"],
     exclude: ["test/worker/**"],

@@ -11,6 +11,8 @@
   "preview_urls": false,
   "observability": { "enabled": true },
   "durable_objects": { "bindings": [{ "name": "TENANT", "class_name": "TenantStore" }] },
+  // Workers AI: Clef and Clef-flash (typed extraction), GLM (explanation). No API key; the account binding.
+  "ai": { "binding": "AI" },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["TenantStore"] }],
   // Poll registered Slack syncs; each sync decides for itself whether it is due.
   "triggers": { "crons": ["*/15 * * * *"] },
@@ -23,10 +25,13 @@
       "workers_dev": true,
       "vars": { "AI_GATEWAY": "default", "ALLOW_SYNTHETIC_GATES": "true" },
       "durable_objects": { "bindings": [{ "name": "TENANT", "class_name": "TenantStore" }] },
+      "ai": { "binding": "AI" },
       // OAuth clients and grants for Claude connectors (src/app/oauth.ts). Staging only: without
       // this binding the Worker accepts operator bearer tokens alone. Wrangler creates the
       // namespace on first deploy.
       "kv_namespaces": [{ "binding": "OAUTH_KV" }],
+      // Turbopuffer key from the account Secrets Store, shared by every Worker that binds it.
+      "secrets_store_secrets": [{ "binding": "TURBOPUFFER_API_KEY", "store_id": "596f3eced1724c08b5e5d090eeb3f0a9", "secret_name": "TURBOPUFFER_API_KEY" }],
       "triggers": { "crons": [] }
     }
   }
