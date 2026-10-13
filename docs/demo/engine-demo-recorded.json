@@ -5,6 +5,8 @@
     "elapsed_ms": 1,
     "sources": [
       {
+        "weight": 5,
+        "used": true,
         "n": 1,
         "connector": "okta",
         "label": "Okta",
@@ -16,6 +18,8 @@
         "fact_id": "b23b4aa61c7a"
       },
       {
+        "weight": 4,
+        "used": true,
         "n": 2,
         "connector": "billing",
         "label": "Billing apps",
@@ -27,6 +31,8 @@
         "fact_id": "9d9a65b42873"
       },
       {
+        "weight": 3,
+        "used": true,
         "n": 3,
         "connector": "vendor-docs",
         "label": "Vendor docs",
@@ -38,6 +44,8 @@
         "fact_id": "bacf03b40716"
       },
       {
+        "weight": 3,
+        "used": true,
         "n": 4,
         "connector": "linear",
         "label": "Linear",
@@ -49,6 +57,8 @@
         "fact_id": "ba2c68a8121b"
       },
       {
+        "weight": 3,
+        "used": false,
         "n": 5,
         "connector": "sheets",
         "label": "Risk register",
@@ -152,7 +162,7 @@
     },
     "decision_id": "4d7e0de088964331210834a42d05dc907b3c824986c58c7d724d6bbfddaaf2a3",
     "synthetic": true,
-    "lookup_ms": 0.5,
+    "lookup_ms": 0.6,
     "summary": {
       "text": "",
       "generated_by": "none (no answering model configured; the harness model explains the answer)"
@@ -614,7 +624,7 @@
       "id": "4d7e0de088964331210834a42d05dc907b3c824986c58c7d724d6bbfddaaf2a3",
       "inputs_hash": "d6e84063c8108e07ec369c07dbe5237ce5390a1d916e04087a56bdbbd0d67271",
       "viewer": "grc-lead",
-      "computed_at": "2026-10-13T13:47:49.293Z",
+      "computed_at": "2026-10-13T15:19:37.846Z",
       "next_moves": [
         {
           "action": "drop-access-screenshots",
@@ -789,7 +799,7 @@
   "engine_record_call": {
     "recorded": {
       "seq": 9,
-      "at": "2026-10-13T13:47:49.300Z",
+      "at": "2026-10-13T15:19:37.853Z",
       "kind": "call",
       "actor": "grc-lead (via MCP)",
       "body": {
@@ -805,8 +815,8 @@
           }
         ]
       },
-      "prev": "4bd52d988b1dbd0ad30a966c953a0a9b091c38cc52595cdd938ccafc461f55c1",
-      "hash": "843cc447b6faf806b36d185e9c2ed5ca8ec0de42cb4999da427bec4c459d9e99"
+      "prev": "e45107c17e128db03b4ab42d5745f85d2abb12165e0c55408d95e2a299080d4e",
+      "hash": "ccaa645fc94e6b82baa144eedcd3cedb1791358d221000df71ad8c597b5bfb48"
     },
     "proposals": [],
     "decision_diff": {
@@ -825,6 +835,8 @@
     "elapsed_ms": 0,
     "sources": [
       {
+        "weight": 5,
+        "used": true,
         "n": 1,
         "connector": "okta",
         "label": "Okta",
@@ -836,6 +848,8 @@
         "fact_id": "b23b4aa61c7a"
       },
       {
+        "weight": 4,
+        "used": true,
         "n": 2,
         "connector": "billing",
         "label": "Billing apps",
@@ -847,6 +861,8 @@
         "fact_id": "9d9a65b42873"
       },
       {
+        "weight": 4,
+        "used": true,
         "n": 3,
         "connector": "memory",
         "label": "Decision memory",
@@ -858,6 +874,8 @@
         "fact_id": "a97d4ccd7caa"
       },
       {
+        "weight": 3,
+        "used": true,
         "n": 4,
         "connector": "vendor-docs",
         "label": "Vendor docs",
@@ -869,6 +887,8 @@
         "fact_id": "bacf03b40716"
       },
       {
+        "weight": 3,
+        "used": true,
         "n": 5,
         "connector": "linear",
         "label": "Linear",
@@ -880,6 +900,8 @@
         "fact_id": "ba2c68a8121b"
       },
       {
+        "weight": 3,
+        "used": false,
         "n": 6,
         "connector": "sheets",
         "label": "Risk register",
@@ -1000,7 +1022,7 @@
     }
   },
   "engine_weekly_brief": {
-    "markdown": "# Security brief, week of 2026-10-13\nNorthwind (fictional). Demo data built on a case a future customer raised.\n\n## Next moves, by risk removed\n1. **Stop the quarterly access screenshots; the auditor accepts the Okta export** (drop). Gives back 21 hours this horizon; adds at most $3k a year of risk, within tolerance. Decides: Dana. Delivers: Dana. Due end of the planning horizon (2027-01-11).\n2. **Move the 27 unused billing admins to the Billing Operator role** (fix). Removes $14k–$346k a year of expected loss for 6–10 hours: \"Billing data misused through admin access nobody needs\" (confidence 0.8). Decides: Priya. Delivers: Alex. Due before audit prep (2026-11-24).\n\n**Hours back this quarter:** 21 security, 0 engineering. **Risk removed if all moves land:** $14k–$346k a year.\n\n## Not now, and why\n- Nothing deferred.\n\n## Decided this week\n- grc-lead (via MCP): override on move-unused-to-operator. \"Alex: 4 of the 31 are break-glass accounts and must keep admin\"\n\n## Evidence we did not use\n- stale: group:billing-admins holders 12 (sheets:risk-register, last updated 2026-03-04, 223 days old, past the 90-day limit for Risk register)\n- stale: risk:billing-misuse rating high (sheets:risk-register, last updated 2026-03-04, 223 days old, past the 90-day limit for Risk register)\n- stale: risk:billing-misuse owner person:priya (sheets:risk-register, last updated 2026-03-04, 223 days old, past the 90-day limit for Risk register)\n- conflicting: sheets:risk-register says 12 (stale); derived:group:billing-admins/holders says 40 (fresh)\n\nDecision 64e080247653. Recommendations only; nothing executes.",
+    "markdown": "# Security brief, week of 13 Oct\nDemo data built on a case a future customer raised.\n\n## Next moves, by risk removed\n1. **Stop the quarterly access screenshots; the auditor accepts the Okta export** (drop). Gives back 21 hours this horizon; adds at most $3k a year of risk, within tolerance. Decides: Dana. Delivers: Dana. Due end of the planning horizon (11 Jan). Sources: Controls register, Slack.\n2. **Move the 27 unused billing admins to the Billing Operator role** (fix). Removes $14k–$346k a year of expected loss for 6–10 hours: \"Billing data misused through admin access nobody needs\" (confidence 0.8). Decides: Priya. Delivers: Alex. Due before audit prep (24 Nov). Sources: Billing apps, Decision memory, Okta, Vendor docs, Linear.\n\n**Hours back this quarter:** 21 security, 0 engineering. **Risk removed if all moves land:** $14k–$346k a year.\n\n## Not now, and why\n- Nothing deferred.\n\n## Decided this week\n- Overridden: Move the 27 unused billing admins to the Billing Operator role. \"Alex: 4 of the 31 are break-glass accounts and must keep admin\"\n\n## Evidence we did not use\n- Risk register says 12 for billing-admins holders; last updated 4 Mar, 223 days old. Not used.\n- Risk register says high for billing-misuse rating; last updated 4 Mar, 223 days old. Not used.\n- Risk register says Priya for billing-misuse owner; last updated 4 Mar, 223 days old. Not used.\n\nRecommendations only; nothing executes.",
     "decision_id": "64e080247653a2ca27fa6d02ae2253cd70236a37306995e46d6e7e9865a03c71"
   }
 }

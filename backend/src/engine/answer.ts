@@ -24,6 +24,10 @@ export interface Source {
   stale_reason?: string;
   conflicts_with?: number[];
   fact_id: string;
+  /** The company's trust in this source, 0 to 5: the weight the risk arithmetic uses. */
+  weight: number;
+  /** Whether the decision used it: fresh and weighted at least MIN_WEIGHT. Stale is shown, not used. */
+  used: boolean;
 }
 
 export interface Answer {
@@ -87,7 +91,9 @@ class Numbering {
       const own = this.facts.filter((f) => f.source.record === id);
       const claimFact = own.find((f) => r.format === "prose") ?? this.facts.find((f) => f.kind === "derived" && recordsOf(f).includes(id)) ?? own[0];
       const stale = own.find((f) => f.freshness === "stale");
+      const weight = this.engine.weightsTable().find((w) => w.connector === r.connector)?.weight ?? 0;
       return {
+        weight, used: !stale && weight >= MIN_WEIGHT,
         n: i + 1, connector: r.connector, label: this.engine.label(id), record: id, claim: claimFact?.quote ?? "",
         read_at: this.engine.readAt.get(r.connector) ?? null,
         coverage: r.coverage && r.coverage.days_with_data < r.coverage.window_days ? "partial" : "full",
@@ -161,18 +167,42 @@ export function answerTopic(engine: Engine, question: string, topicId?: string, 
   };
 }
 
-/** The weekly brief a CISO can take to the board: moves, what was decided, hours back, open evidence. */
+/** The weekly brief a CISO can take to the board: moves with their sources, what was decided, hours back, evidence not used. */
 export function weeklyBrief(engine: Engine): { markdown: string; decision_id: string } {
   const d: Decision = engine.nextMoves();
   const money = (n: number) => `$${Math.round(n / 1000)}k`;
   const calls = engine.memory.list("call");
   const weights = engine.memory.list("weight_change");
+  const facts = engine.facts;
+  const date = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+  const words = (f: Fact) => `${nodeName(f.subject)} ${f.predicate.replace(/_/g, " ")}`;
+  // Source names behind a move: each cited record, and the records behind each joined fact.
+  const sourcesOf = (m: Move) => {
+    const records = m.evidence.flatMap((c) => {
+      const f = facts.find((x) => x.source.record === c.record && x.quote === c.quote);
+      return f ? recordsOf(f) : [c.record];
+    });
+    return [...new Set(records.map((r) => engine.label(r)))].join(", ");
+  };
+  // Evidence the decision did not use, in words: stale sources, real disagreements, missing facts.
+  const notUsed: string[] = [];
+  const explained = new Set<string>();
+  for (const f of facts.filter((x) => x.freshness === "stale")) {
+    explained.add(`${f.subject}|${f.predicate}`);
+    const r = engine.records.get(f.source.record);
+    const age = r ? Math.round((Date.parse(`${engine.fixture.as_of}T00:00:00Z`) - Date.parse(`${r.observed_at}T00:00:00Z`)) / 86_400_000) : null;
+    const shown = typeof f.value === "string" && /^[a-z]+:/.test(f.value) ? person(f.value) : f.value;
+    notUsed.push(`- ${engine.label(f.source.record)} says ${shown} for ${words(f)}; last updated ${r ? date(r.observed_at) : "unknown"}${age !== null ? `, ${age} days old` : ""}. Not used.`);
+  }
+  for (const u of d.unresolved.filter((x) => !explained.has(`${x.subject}|${x.predicate}`))) {
+    notUsed.push(u.kind === "missing" ? `- No current source states ${nodeName(u.subject)} ${u.predicate.replace(/_/g, " ")}.` : `- Sources disagree on ${nodeName(u.subject)} ${u.predicate.replace(/_/g, " ")}. Not settled; not used.`);
+  }
   const md = [
-    `# Security brief, week of ${engine.fixture.as_of}`,
-    `${engine.fixture.company}. Demo data built on a case a future customer raised.`,
+    `# Security brief, week of ${date(engine.fixture.as_of)}`,
+    "Demo data built on a case a future customer raised.",
     "",
     "## Next moves, by risk removed",
-    ...d.next_moves.map((m, i) => `${i + 1}. **${m.title}** (${m.mode}). ${m.why} Decides: ${person(m.decides) ?? "unassigned"}. Delivers: ${person(m.delivers) ?? "unassigned"}. Due ${m.due_reason} (${m.due}).`),
+    ...d.next_moves.map((m, i) => `${i + 1}. **${m.title}** (${m.mode}). ${m.why} Decides: ${person(m.decides) ?? "unassigned"}. Delivers: ${person(m.delivers) ?? "unassigned"}. Due ${m.due_reason} (${date(m.due!)}). Sources: ${sourcesOf(m)}.`),
     "",
     `**Hours back this quarter:** ${d.hours_back.security_hours} security, ${d.hours_back.engineering_hours} engineering. **Risk removed if all moves land:** ${money(d.next_moves.reduce((s, m) => s + Math.max(0, m.risk_removed_per_year.low), 0))}–${money(d.next_moves.reduce((s, m) => s + Math.max(0, m.risk_removed_per_year.high), 0))} a year.`,
     "",
@@ -180,13 +210,13 @@ export function weeklyBrief(engine: Engine): { markdown: string; decision_id: st
     ...(d.deferred.length ? d.deferred.map((x) => `- ${x.title}: ${x.reason}`) : ["- Nothing deferred."]),
     "",
     "## Decided this week",
-    ...(calls.length ? calls.map((c) => `- ${c.actor}: ${c.body.call} on ${c.body.action}. "${c.body.reason}"`) : ["- No calls recorded yet."]),
-    ...weights.map((w) => `- ${w.actor} set ${w.body.connector} weight ${w.body.from} → ${w.body.to}: "${w.body.reason}"`),
+    ...(calls.length ? calls.map((c) => `- ${c.body.call === "override" ? "Overridden" : String(c.body.call).replace(/^./, (x) => x.toUpperCase())}: ${d.next_moves.find((m) => m.action === c.body.action)?.title ?? c.body.action}. "${c.body.reason}"`) : ["- No calls recorded yet."]),
+    ...weights.map((w) => `- ${engine.options.connectors.find((c) => c.id === w.body.connector)?.label ?? String(w.body.connector)} weight ${w.body.from} → ${w.body.to}: "${w.body.reason}"`),
     "",
     "## Evidence we did not use",
-    ...(d.unresolved.length ? d.unresolved.map((u) => `- ${u.kind}: ${u.detail}`) : ["- None."]),
+    ...(notUsed.length ? notUsed : ["- None."]),
     "",
-    `Decision ${d.id.slice(0, 12)}. Recommendations only; nothing executes.`,
+    "Recommendations only; nothing executes.",
   ].join("\n");
   return { markdown: md, decision_id: d.id };
 }
