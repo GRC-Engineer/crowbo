@@ -2,6 +2,23 @@
 
 Read [the foundation](docs/FOUNDATION.md) and [the evaluation contract](docs/EVALUATION.md) before proposing or implementing a change. Current user instructions take precedence. Keep each decision in its owning document and link to it rather than maintaining parallel roadmaps.
 
+## Baseline method: PStack
+
+Every Crowbo workstream (backend, frontend, design, deck and strategy) uses the PStack skills as its default working method. They are installed locally under `.claude/skills/` with the `pstack-` prefix, and are not committed. Use the skill for the phase you are in. Skip a skill only when its own description says it does not apply, and say so.
+
+| Phase | Skills |
+| --- | --- |
+| Frame | `pstack-figure-it-out` for multi-step or ambitious work. `pstack-how` and `pstack-why` to ground in the existing system. `pstack-recall` when resuming. `pstack-principle-attack-the-premise`. |
+| Design | `pstack-architect` (with `pstack-arena`) before non-trivial code. `pstack-interrogate` for multi-model adversarial review of a design or diff. `pstack-principle-model-the-domain`, `-exhaust-the-design-space`, `-redesign-from-first-principles`, `-subtract-before-you-add`. |
+| Build | `pstack-tdd` for regressions and cheap test targets. `pstack-typescript-best-practices` on every `.ts` file. `pstack-principle-sequence-verifiable-units`, `-boundary-discipline`, `-type-system-discipline`, `-make-operations-idempotent`, `-fix-root-causes`. `pstack-swarm` only for independent parallel slices. |
+| Verify | `pstack-principle-prove-it-works` and `-test-behavior-not-implementation`. `pstack-blast-radius` before shipping. `pstack-thermo-nuclear-code-quality-review`, `pstack-deslop` and `pstack-no-comments` on the diff. `pstack-create-verification-skill` and `pstack-maintain-verification-skill` for driving the product as a user would. |
+| Record | `pstack-show-me-your-work`: a decision log with one row per decision and its evidence, committed with the change when reviewers need it. |
+| Ship | `pstack-make-pr-easy-to-review` with the repository's PR template. `pstack-babysit`, `pstack-fix-ci`, `pstack-get-pr-comments` and `pstack-fix-merge-conflicts` until the PR is mergeable. A merge still needs the founder's approval. |
+| Write | `pstack-unslop` on all prose. `pstack-technical-writing` for docs. `pstack-teach` and `pstack-bro` to explain work plainly. |
+| Learn | `pstack-reflect` after a substantial session. `pstack-what-did-i-get-done` for updates. `pstack-principle-encode-lessons-in-structure`: turn a repeated correction into a check. |
+
+The rules in this file still apply on top of the skills. Where a skill and this file disagree, this file wins.
+
 ## Plan before code
 
 Always write a plan before generating or modifying code. Note the security considerations the plan raises and address them in the change.

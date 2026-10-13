@@ -5,6 +5,17 @@ import { SCHEMA, SqlLedger, SqlStore } from "../storage/sql-store";
 import type { Env } from "./env";
 import { type Context, run } from "./operations";
 
+/** Read a key that is either a plain secret or a Secrets Store binding. Missing means null. */
+async function secret(value: string | SecretsStoreSecret | undefined): Promise<string | null> {
+  if (!value) return null;
+  if (typeof value === "string") return value;
+  try {
+    return await value.get();
+  } catch {
+    return null;
+  }
+}
+
 export type CallerPayload = { settings: Settings; roles: string[] };
 
 /**
@@ -23,8 +34,9 @@ export class TenantStore extends DurableObject<Env> {
   async operate(caller: CallerPayload, name: string, args: unknown) {
     const settings = caller.settings;
     const ledger = new SqlLedger(this.ctx.storage, settings);
-    const chunks = this.env.TURBOPUFFER_API_KEY
-      ? new TurbopufferChunks(this.env.TURBOPUFFER_API_KEY, namespacePrefix(settings), ledger)
+    const searchKey = await secret(this.env.TURBOPUFFER_API_KEY);
+    const chunks = searchKey
+      ? new TurbopufferChunks(searchKey, namespacePrefix(settings), ledger)
       : new NoSearchIndex();
     const context: Context = {
       caller,

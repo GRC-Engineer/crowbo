@@ -27,6 +27,8 @@
       // this binding the Worker accepts operator bearer tokens alone. Wrangler creates the
       // namespace on first deploy.
       "kv_namespaces": [{ "binding": "OAUTH_KV" }],
+      // Turbopuffer key from the account Secrets Store, shared by every Worker that binds it.
+      "secrets_store_secrets": [{ "binding": "TURBOPUFFER_API_KEY", "store_id": "596f3eced1724c08b5e5d090eeb3f0a9", "secret_name": "TURBOPUFFER_API_KEY" }],
       "triggers": { "crons": [] }
     }
   }
