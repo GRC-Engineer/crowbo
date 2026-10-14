@@ -1,6 +1,7 @@
+import { EngineError } from "./errors";
 import { MIN_WEIGHT, type Weighed } from "./decide";
 import type { Engine } from "./engine";
-import type { Citation, Decision, Move, Topic } from "./model";
+import type { Action, Citation, Decision, Move, Range, Topic } from "./model";
 import { nodeName } from "./predicates";
 
 /**
@@ -45,6 +46,16 @@ export interface Answer {
     conditions: string[];
     unresolved: string[];
   };
+  /** Everything the ranking used, so the host can explain "why this above that" and what would change it. */
+  basis: {
+    method: string;
+    scenario: null | { title: string; frequency_per_year: Range; loss_per_event: Range; estimate_basis: string; expected_loss_per_year: Range; state: string; confidence: number };
+    action: null | { id: string; reduces: Action["reduces"]; effort: Action["effort"]; score: number | null; rank: number | null; expect: Action["expect"] | null };
+    alternatives: { action: string; title: string; mode: string; score?: number; deferred_because?: string }[];
+    weights: { connector: string; weight: number; max_age_days: number }[];
+  };
+  /** What was done after the move was proposed: inferred from later reads, or stated by a person. */
+  outcomes: { at: string; status: string; source: string; baseline?: unknown; value?: unknown; what_was_done?: unknown }[];
   decision_id: string;
   synthetic: true;
 }
@@ -52,12 +63,12 @@ export interface Answer {
 export function pickTopic(topics: Topic[], question: string, topic?: string): Topic {
   if (topic) {
     const t = topics.find((x) => x.id === topic);
-    if (!t) throw new Error(`Unknown topic ${topic}; known: ${topics.map((x) => x.id).join(", ")}`);
+    if (!t) throw new EngineError(`Unknown topic ${topic}; known: ${topics.map((x) => x.id).join(", ")}`);
     return t;
   }
   const q = question.toLowerCase();
   const scored = topics.map((t) => ({ t, n: t.keywords.filter((k) => q.includes(k)).length })).sort((a, b) => b.n - a.n);
-  if (!scored[0] || scored[0].n === 0) throw new Error(`No topic matches; ask about: ${topics.map((x) => x.question).join(" / ")}`);
+  if (!scored[0] || scored[0].n === 0) throw new EngineError(`No topic matches; ask about: ${topics.map((x) => x.question).join(" / ")}`);
   return scored[0].t;
 }
 
@@ -163,7 +174,33 @@ export function answerTopic(engine: Engine, question: string, topicId?: string, 
       conditions: move?.conditions ?? [],
       unresolved,
     },
+    basis: basisFor(engine, decision, topic),
+    outcomes: engine.outcomes().filter((o) => topic.actions.includes(String(o.body.action))).map((o) => ({
+      at: o.at, status: String(o.body.status), source: String(o.body.source), baseline: o.body.baseline, value: o.body.value, what_was_done: o.body.what_was_done,
+    })),
     decision_id: decision.id, synthetic: true,
+  };
+}
+
+function basisFor(engine: Engine, decision: Decision, topic: Topic): Answer["basis"] {
+  const scenario = engine.fixture.scenarios.find((s) => s.id === topic.scenario);
+  const assessed = decision.scenarios.find((s) => s.scenario === topic.scenario);
+  // The move this topic recommends, if any; otherwise the topic's first action.
+  const recommended = decision.next_moves.find((m) => topic.actions.includes(m.action))?.action;
+  const action = engine.fixture.actions.find((a) => a.id === (recommended ?? topic.actions[0]));
+  const index = decision.next_moves.findIndex((m) => m.action === action?.id);
+  return {
+    method: decision.method,
+    scenario: scenario && assessed ? {
+      title: scenario.title, frequency_per_year: scenario.frequency_per_year, loss_per_event: scenario.loss_per_event, estimate_basis: scenario.basis,
+      expected_loss_per_year: assessed.expected_loss_per_year, state: assessed.state, confidence: assessed.confidence,
+    } : null,
+    action: action ? { id: action.id, reduces: action.reduces, effort: action.effort, score: index >= 0 ? decision.next_moves[index].score : null, rank: index >= 0 ? index + 1 : null, expect: action.expect ?? null } : null,
+    alternatives: [
+      ...decision.next_moves.filter((m) => m.action !== action?.id).map((m) => ({ action: m.action, title: m.title, mode: m.mode, score: m.score })),
+      ...decision.deferred.filter((d) => d.action !== action?.id).map((d) => ({ action: d.action, title: d.title, mode: engine.fixture.actions.find((a) => a.id === d.action)?.mode ?? "", deferred_because: d.reason })),
+    ],
+    weights: engine.weightsTable().map(({ connector, weight, max_age_days }) => ({ connector, weight, max_age_days })),
   };
 }
 

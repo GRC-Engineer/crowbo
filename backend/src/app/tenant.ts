@@ -4,6 +4,11 @@ import { NoSearchIndex, TurbopufferChunks } from "../providers/turbopuffer";
 import { SCHEMA, SqlLedger, SqlStore } from "../storage/sql-store";
 import type { Env } from "./env";
 import { type Context, run } from "./operations";
+import { demoOptions } from "../engine/demo";
+import { Engine } from "../engine/engine";
+import { NORTHWIND } from "../engine/fixture";
+import { isEngineOp, runEngine } from "../engine/port";
+import { SqlEngineStore } from "../engine/store";
 
 /** Read a key that is either a plain secret or a Secrets Store binding. Missing means null. */
 async function secret(value: string | SecretsStoreSecret | undefined): Promise<string | null> {
@@ -29,6 +34,38 @@ export class TenantStore extends DurableObject<Env> {
     ctx.blockConcurrencyWhile(async () => {
       for (const statement of SCHEMA) ctx.storage.sql.exec(statement);
     });
+  }
+
+  private engine: Promise<Engine> | null = null;
+
+  /**
+   * The demo engine for this tenant, opened on the tenant's own SQLite and kept warm in the object.
+   * Staging only. Engine errors (validation, unknown topic) are returned as messages; anything else
+   * is reported generically, like the operations boundary.
+   */
+  async engineCall(actor: string, op: string, args: unknown): Promise<{ ok: true; result: unknown } | { ok: false; error: string }> {
+    if (this.env.ALLOW_SYNTHETIC_GATES !== "true") return { ok: false, error: "The demo engine runs only where synthetic data is allowed" };
+    if (!isEngineOp(op)) return { ok: false, error: "Unknown engine operation" };
+    try {
+      if (op === "reset") {
+        if ((args as { confirm?: unknown } | null)?.confirm !== true) return { ok: false, error: "Pass confirm: true to reset this copy" };
+        this.engine = null;
+        for (const table of ["engine_records", "engine_weights", "engine_memory", "engine_meta"]) this.ctx.storage.sql.exec(`DROP TABLE IF EXISTS ${table}`);
+        return { ok: true, result: { reset: true } };
+      }
+      // A failed open is not cached: the next call tries again instead of failing forever.
+      this.engine ??= Engine.open(structuredClone(NORTHWIND), demoOptions(), new SqlEngineStore(this.ctx.storage.sql)).catch((error) => {
+        this.engine = null;
+        throw error;
+      });
+      const engine = await this.engine;
+      return { ok: true, result: JSON.parse(JSON.stringify(await runEngine(engine, actor, op, args))) };
+    } catch (error) {
+      // Only the engine's own messages cross the boundary; storage or runtime errors are reported generically.
+      if (error instanceof Error && error.name === "EngineError") return { ok: false, error: error.message.slice(0, 500) };
+      if (error instanceof Error && error.name === "ZodError") return { ok: false, error: "Invalid input for this engine operation" };
+      return { ok: false, error: "The engine could not complete this operation" };
+    }
   }
 
   async operate(caller: CallerPayload, name: string, args: unknown) {

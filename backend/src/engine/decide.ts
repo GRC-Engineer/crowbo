@@ -1,3 +1,4 @@
+import { EngineError } from "./errors";
 import { digest } from "../domain/canonical";
 import type { ContextGraph } from "./graph";
 import { isMulti, nodeName } from "./predicates";
@@ -103,7 +104,7 @@ export function riskRemoved(action: Action, assessed: Map<string, ScenarioAssess
   let low = 0, high = 0;
   for (const r of action.reduces) {
     const a = assessed.get(r.scenario);
-    if (!a) throw new Error(`Action ${action.id} names unknown scenario ${r.scenario}`);
+    if (!a) throw new EngineError(`Action ${action.id} names unknown scenario ${r.scenario}`);
     const adds = r.fraction.low < 0;
     const k = adds ? 1 : a.state === "gap_supported" ? a.confidence : 0;
     const part = times(a.expected_loss_per_year, r.fraction, k);
