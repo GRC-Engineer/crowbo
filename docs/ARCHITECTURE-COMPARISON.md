@@ -1,5 +1,7 @@
 # Turbopuffer storage design
 
+Status: historical as of 14 October 2026. [ADR 0001](adr/0001-typescript-on-workers-with-tenant-durable-objects.md) made one SQLite Durable Object per tenant the system of record and kept Turbopuffer as a rebuildable search index only; records no longer live in Turbopuffer. The current design is in the [engine brief](ENGINE.md).
+
 25 September 2026. Turbopuffer is the selected evidence database and search service. No additional primary database is selected. [The backend brief](TECHNICAL-PLAN.md) owns dependencies and application flow.
 
 ## Initial namespace layout
