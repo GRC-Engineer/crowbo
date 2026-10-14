@@ -1,5 +1,7 @@
 # Connected backend
 
+Status: historical as of 14 October 2026. This brief describes the Python pilot with Turbopuffer as record storage. [ADR 0001](adr/0001-typescript-on-workers-with-tenant-durable-objects.md) replaced it with TypeScript on Workers and a tenant Durable Object as the system of record, and [ADR 0002](adr/0002-deterministic-risk-arithmetic-decides.md) moved the decision into deterministic code. The current architecture, build order and open questions are in the [engine brief](ENGINE.md). Section links from other documents still resolve here for the record.
+
 Updated 29 September 2026. The existing implementation uses one backend, Turbopuffer with native Voyage embeddings, Jev through Cloudflare, and a reasoning model. The three-workflow portfolio below changes planned domain coverage, not this stack or its qualification status. Historical experiments provide no architecture, policy or implementation requirements. No connected module imports them.
 
 [Foundation](FOUNDATION.md) owns the objective. [Data contract](DECISION-DATA-MODEL.md) owns record meaning. [Storage design](ARCHITECTURE-COMPARISON.md) owns layout. [Evaluation](EVALUATION.md) owns judgment qualification.

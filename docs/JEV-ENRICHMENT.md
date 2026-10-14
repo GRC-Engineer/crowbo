@@ -1,5 +1,7 @@
 # Jev enrichment: batching, cascades and scale
 
+Status: historical as of 14 October 2026. [ADR 0002](adr/0002-deterministic-risk-arithmetic-decides.md) rejected classifying every record across many dimensions up front; the engine extracts only the predicates its scenarios and actions read, one typed question per sentence ([engine brief](ENGINE.md)). The cost arithmetic below still applies to that per-predicate design. Nothing here describes the current pipeline.
+
 28 September 2026. Context retained from the founder's architecture discussion. The preference below is explicit; the design and arithmetic are proposals and planning estimates, not measured pipeline results. The [foundation](FOUNDATION.md) and [evaluation contract](EVALUATION.md) continue to govern the product and qualification of judgment. This note changes no runtime configuration or code.
 
 ## Founder preference

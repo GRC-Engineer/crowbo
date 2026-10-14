@@ -23,7 +23,7 @@ Source facts, interpretation, search relevance and action priority remain distin
 
 ## Storage and retrieval
 
-[The namespace design](ARCHITECTURE-COMPARISON.md#initial-namespace-layout) keeps source/history records separate from rebuildable search chunks inside Turbopuffer. Search hits resolve back to their current source and access before disclosure.
+[The historical namespace design](ARCHITECTURE-COMPARISON.md#initial-namespace-layout) kept source/history records separate from rebuildable search chunks inside Turbopuffer. Search hits resolve back to their current source and access before disclosure.
 
 Unchanged imports reuse assessments and indexes. Changed questions cause new assessments without re-embedding unchanged text. Changed sources require new matching assessments. Equal-time conflicting revisions remain unresolved until reconciliation.
 

@@ -62,7 +62,7 @@ Tenant namespaces and connector/workspace checks remain in force. Saved reviews,
 
 ## Jev cascades and mixed audiences
 
-Current Jev calls assess one source revision. Their answers inherit that source's current access. The larger [batching and cascade design](JEV-ENRICHMENT.md) remains proposed.
+Current Jev calls assess one source revision. Their answers inherit that source's current access. The larger [batching and cascade design](JEV-ENRICHMENT.md) is historical; [ADR 0002](adr/0002-deterministic-risk-arithmetic-decides.md) superseded it.
 
 Before combining sources, each derived assessment must identify every contributing source revision and prior assessment. Its audience must satisfy all contributors, including additional context. Check the requester against each source separately. Intersecting group-name strings is insufficient: someone in both Security and Leadership can read a result derived from one record for each group.
 
