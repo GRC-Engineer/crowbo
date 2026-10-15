@@ -43,7 +43,8 @@ function tenant(env: Env, name: string) {
 }
 
 /** A demo engine copy's operations, by its key (tenant::engine::reader). */
-const engineCaller = (env: Env) => (key: string) => (actor: string, op: string, args: unknown) => tenant(env, key).engineCall(actor, op, args);
+/** The Slack surface's calls into a workspace's engine copy, marked as coming from Slack. */
+const engineCaller = (env: Env) => (key: string) => (actor: string, op: string, args: unknown) => tenant(env, key).engineCall(actor, op, args, "slack");
 
 function invoker(env: Env, config: OperatorConfig) {
   const caller = callerFor(config, env.CLOUDFLARE_ACCOUNT_ID, env.AI_GATEWAY ?? "default");
