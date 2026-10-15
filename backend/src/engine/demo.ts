@@ -22,8 +22,10 @@ export const startDemo = (ai?: WorkersAi, ingestModel?: string, answerer: ChatMo
  * Models for the local server, from the environment or the Keychain: Workers AI (Clef for ingestion,
  * GLM-5.3-flash for answering) needs crowbo/workers-ai and crowbo/cf-account; Haiku 5.5 needs
  * crowbo/anthropic. CROWBO_INGEST_MODEL and CROWBO_ANSWER_MODEL (glm | haiku) choose between them.
+ * CROWBO_OFFLINE=1 uses no model and reads no Keychain entry, so a check replays the recorded demo.
  */
 export function localModels(env: Record<string, string | undefined>) {
+  if (env.CROWBO_OFFLINE === "1") return { ai: undefined, ingestModel: env.CROWBO_INGEST_MODEL || CLEF, answerer: null };
   const token = secret(env.CLOUDFLARE_AI_TOKEN, "crowbo/workers-ai");
   const account = secret(env.CLOUDFLARE_ACCOUNT_ID, "crowbo/cf-account");
   const anthropic = secret(env.ANTHROPIC_API_KEY, "crowbo/anthropic");
