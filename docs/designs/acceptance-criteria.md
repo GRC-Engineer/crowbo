@@ -34,9 +34,9 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 | P2.1 | Prose from real sources is extracted live by Clef, with precision at 0.8 and recall measured on 50 labelled sentences | Failing until built |
 | P3 | A mention in Slack answers with the card: citations, a named decider and a date, with no assistant needed | True on fixtures |
 | P3.1 | The list arrives in the customer's Slack with citations, a named decider and a date, with no assistant needed: the weekly post on schedule, and a signed mention answered in its thread | True on fixtures |
-| P4 | A call recorded where the pilot works changes the next answer, and the answer cites it | Failing until built: P4.2. P4.1 is built; the engine part is R8 |
+| P4 | A call recorded where the pilot works changes the next answer, and the answer cites it | True on fixtures: P4.1 and P4.2; the engine part is R8 |
 | P4.1 | A call recorded from a Slack thread keeps the thread's permalink as provenance | True on fixtures |
-| P4.2 | Repeated corrections yield a weight proposal; accepting it is recorded and recomputes the ranking | Failing until built |
+| P4.2 | Repeated corrections yield a weight proposal; accepting it is recorded and recomputes the ranking | True on fixtures |
 | P5 | The weekly brief reaches the security lead in plain words: moves with sources, deciders and dates, hours back, evidence not used | True on fixtures: delivery is P3.1, the format is R9 |
 
 ### Build specs
@@ -131,6 +131,7 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
   - It records the acceptance against the proposal.
   - It recomputes the decision and reports why the ranking moved.
 - **Check:** after two disputes of one source, accepting the proposal changes the weight, the memory links the change to the proposal, and the decision diff names that source.
+- **Built:** `engine_accept_proposal`. Accepting is a weight change kept against the proposal, with who accepted and why, and the decision is recomputed; the diff says which source moved and why. A proposal already accepted, or overtaken by another weight change, is refused. Ignoring a proposal changes nothing: tuning is never applied without a person accepting it. Disputes are counted since the source's last weight change, so an accepted proposal is not proposed again at once.
 - **Size:** about 1 day.
 
 **Reviewed, not tested.** One more outcome is judged by the pilot, not by a test: a CISO at the pilot forwards the brief to their leadership without editing it. The brief should open with what the security lead did not already know that week.

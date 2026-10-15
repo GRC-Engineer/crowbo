@@ -129,7 +129,7 @@ describe("pilot criteria for mid-December: what a first paid pilot buys", () => 
     expect(JSON.stringify(answerTopic(e, Q).sources)).toContain(permalink);
   });
 
-  it.fails("P4.2 repeated corrections yield a weight proposal; accepting it is recorded against the proposal and recomputes the ranking", async () => {
+  it("P4.2 repeated corrections yield a weight proposal; accepting it is recorded against the proposal and recomputes the ranking (true on fixtures)", async () => {
     const { e, proposal, second } = await twoDisputes();
     expect(second.proposals).toHaveLength(1);
     const op: string = "accept_proposal";
