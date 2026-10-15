@@ -79,12 +79,15 @@ const usable = (f: Fact) => f.freshness === "fresh" && f.weight >= MIN_WEIGHT;
 /** Number sources in the order the answer first cites them. */
 class Numbering {
   private order: string[] = [];
+  /** The first fact this answer cited from each record: what that source is quoted for. */
+  private citedFor = new Map<string, Fact>();
   constructor(private engine: Engine, private facts: Fact[]) {}
 
   cite(f: Fact): number[] {
     return recordsOf(f)
       .map((r) => {
         if (!this.order.includes(r)) this.order.push(r);
+        if (!this.citedFor.has(r)) this.citedFor.set(r, f);
         return this.order.indexOf(r) + 1;
       })
       .sort((a, b) => a - b);
@@ -95,12 +98,12 @@ class Numbering {
     return i < 0 ? null : i + 1;
   }
 
-  /** Each source's claim: its own prose, else the joined fact it feeds, else its first fact. */
+  /** Each source's claim: its own prose, else the fact this answer cited it for, else the joined fact it feeds, else its first fact. */
   sources(): Source[] {
     return this.order.map((id, i) => {
       const r = this.engine.records.get(id)!;
       const own = this.facts.filter((f) => f.source.record === id);
-      const claimFact = own.find((f) => r.format === "prose") ?? this.facts.find((f) => f.kind === "derived" && recordsOf(f).includes(id)) ?? own[0];
+      const claimFact = own.find((f) => r.format === "prose") ?? this.citedFor.get(id) ?? this.facts.find((f) => f.kind === "derived" && recordsOf(f).includes(id)) ?? own[0];
       const stale = own.find((f) => f.freshness === "stale");
       const weight = this.engine.weightsTable().find((w) => w.connector === r.connector)?.weight ?? 0;
       return {

@@ -114,5 +114,77 @@ export function derive(usable: Fact[], asOf: string, windowDays = 90): Fact[] {
       inputs));
     if (exposed) out.push(derived(launch, "depends_on", "control:security-review", `${nodeName(launch)} needs its security review before ${start.value}`, inputs));
   }
+
+  // A list counts only when every record that stated it says it was read completely (a stated total,
+  // or a last page), and at least one listing exists. Unknown completeness is incomplete. When a join
+  // is skipped for a partial read, a read_in_part fact on the join's subject says how much was read.
+  const listings = (name: string) => by("read").filter((f) => f.subject.startsWith("listing:") && f.subject.endsWith(`.${name}`));
+  const whole = (facts: Fact[]) => facts.every((f) => f.completeness !== undefined && !isPartial(f.completeness));
+  const readInPart = (subject: string, facts: Fact[]) => {
+    const partial = facts.find((f) => f.completeness === undefined || isPartial(f.completeness));
+    if (!partial) return;
+    const c = partial.completeness;
+    out.push(derived(subject, "read_in_part", true, c ? `${c.of} read in part (${c.read} of ${c.total ?? "an unknown number of"} ${c.of})` : "read without a stated completeness", [partial]));
+  };
+
+  // S5: vendors that handle customer data with no security review in a year (or never).
+  const vendorListing = listings("vendors");
+  const handles = by("handles_data").filter((f) => f.subject.startsWith("vendor:"));
+  const vendorReviews = by("last_reviewed_at").filter((f) => f.subject.startsWith("vendor:"));
+  if (vendorListing.length && !whole([...vendorListing, ...handles, ...vendorReviews])) readInPart("vendors:all", [...vendorListing, ...handles, ...vendorReviews]);
+  else if (vendorListing.length) {
+    const classes = uniq(handles.map((h) => String(h.value)));
+    const classified = by("customer_data").filter((f) => classes.includes(f.subject));
+    const customer = new Set(classified.filter((f) => f.value === true).map((f) => f.subject));
+    const vendors = uniq(handles.filter((h) => customer.has(String(h.value))).map((h) => h.subject));
+    // Every class a vendor handles is classified, and every such vendor states its last review.
+    if (classes.length && classes.every((c) => classified.some((f) => f.subject === c)) && vendors.every((v) => vendorReviews.some((r) => r.subject === v))) {
+      const lastReview = (v: string) => String(vendorReviews.find((r) => r.subject === v)!.value);
+      const stale = vendors.filter((v) => lastReview(v) === "never" || at(asOf) - at(lastReview(v)) > 365 * DAY);
+      out.push(derived("vendors:all", "unreviewed_customer_data_vendors", stale.length,
+        `${stale.length} of ${vendors.length} vendors handling customer data have no security review in 365 days${stale.length ? `: ${stale.map((v) => `${nodeName(v)} (${lastReview(v)})`).join(", ")}` : ""}`,
+        [...vendorListing, ...handles, ...classified, ...vendorReviews.filter((r) => vendors.includes(r.subject))]));
+    }
+  }
+
+  // S6: exceptions past their review date, or signed by someone who has left (HR, narrowest audience).
+  // The claim names exceptions, never the person who left: text from it may reach a wider audience.
+  const exceptionListing = listings("exceptions");
+  const reviewBy = by("review_by").filter((f) => f.subject.startsWith("exception:"));
+  const signers = by("signer").filter((f) => f.subject.startsWith("exception:"));
+  if (exceptionListing.length && !whole([...exceptionListing, ...reviewBy, ...signers])) readInPart("exceptions:all", [...exceptionListing, ...reviewBy, ...signers]);
+  else if (exceptionListing.length) {
+    const exceptions = uniq([...reviewBy, ...signers].map((f) => f.subject));
+    const hrListing = listings("terminations");
+    const hr = hrListing.length > 0 && whole(hrListing);
+    const past = reviewBy.filter((f) => String(f.value) < asOf);
+    const terminated = hr ? by("terminated_on").filter((t) => String(t.value) <= asOf) : [];
+    const gone = signers.filter((s) => terminated.some((t) => t.subject === s.value));
+    const flagged = uniq([...past, ...gone].map((f) => f.subject));
+    // Without a complete HR read the signers cannot be checked: a count of zero would claim more than is known.
+    if (hr || flagged.length) {
+      const why = [...past.map((f) => `${nodeName(f.subject)} past its review date (${f.value})`), ...gone.map((f) => `${nodeName(f.subject)} signed by someone who left`)];
+      const hrNote = hr ? "" : hrListing.length ? "; signers not checked, HR terminations read in part" : "; signers not checked, HR terminations not readable";
+      out.push(derived("exceptions:all", "exceptions_needing_review", flagged.length,
+        `${flagged.length} of ${exceptions.length} exceptions need re-signing${why.length ? `: ${why.join("; ")}` : ""}${hrNote}`,
+        [...exceptionListing, ...past, ...gone, ...(hr ? [...hrListing, ...terminated.filter((t) => gone.some((g) => g.value === t.subject))] : [])]));
+    } else if (hrListing.length) readInPart("exceptions:all", hrListing);
+  }
+
+  // S7: controls that take recurring hours with no linked risk, obligation or commitment, from any source.
+  const controlListing = listings("controls");
+  const linkCounts = by("link_count").filter((f) => f.subject.startsWith("control:"));
+  if (controlListing.length && !whole([...controlListing, ...linkCounts])) readInPart("controls:all", [...controlListing, ...linkCounts]);
+  else if (controlListing.length) {
+    const linked = new Set([...by("linked_risk"), ...by("linked_obligation"), ...by("customer_commitment")].map((f) => f.subject));
+    const effort = linkCounts.filter((f) => f.value === 0 && !linked.has(f.subject)).flatMap((f) => {
+      const hours = by("hours_per_quarter").filter((h) => h.subject === f.subject && Number(h.value) > 0);
+      return hours.length ? [{ control: f.subject, hours: Math.max(...hours.map((h) => Number(h.value))), inputs: [f, ...hours] }] : [];
+    });
+    const total = effort.reduce((n, e) => n + e.hours, 0);
+    out.push(derived("controls:all", "unlinked_effort_controls", effort.length,
+      effort.length ? `${effort.length} control${effort.length === 1 ? " takes" : "s take"} ${total} hours a quarter with no linked risk, obligation or commitment: ${effort.map((e) => nodeName(e.control)).join(", ")}` : "Every control with recurring hours is linked to a risk, obligation or commitment",
+      [...controlListing, ...effort.flatMap((e) => e.inputs)]));
+  }
   return out;
 }
