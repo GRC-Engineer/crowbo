@@ -161,26 +161,32 @@ export class Engine {
   }
 
   /**
-   * Import a knowledge-base export: each file becomes a "kb" record (typed lines or prose), facts are
-   * extracted through the same quote check as any source, and the decision is recomputed on the
-   * company's weights (a default for "kb" until it sets one). Re-importing an unchanged export writes
-   * nothing. An import that changed a file is kept in memory with a digest of each file, never its text.
+   * Import a knowledge-base export: each file becomes a "kb" record (typed lines from a mapped CSV,
+   * or prose), facts go through the same quote check as any source, and the decision is recomputed.
+   * Only an export declared synthetic is accepted until the founders clear real exports. Everything is
+   * validated before anything is kept. Re-importing an unchanged export writes nothing; otherwise
+   * memory keeps the import (a digest per file, never its text) and, the first time, the default
+   * weight for "kb" as a weight change with its reason.
    */
-  async importKnowledgeBase(files: KbFile[], by: string) {
+  async importKnowledgeBase(files: KbFile[], by: string, declaration: { synthetic: true }) {
     const started = performance.now();
+    if (declaration?.synthetic !== true) throw new EngineError("Only an export declared synthetic is imported until the founders clear real exports");
     checkLimits(files);
     const prepared = files.map((f) => ({ file: f, ...toRecord(f, this.fixture.viewer, this.asOf()) }));
     const before = this.latest;
-    if (!this.weights.has(KB_CONNECTOR)) {
-      this.store.saveWeight(KB_DEFAULT_WEIGHT);
-      this.weights.set(KB_CONNECTOR, { ...KB_DEFAULT_WEIGHT });
-    }
     const results: KbFileResult[] = prepared.map(({ file, record, format, reason }) => {
       const changed = record ? this.keep(record, record.observed_at) : false;
       return { path: file.path, record: record?.id ?? null, format, revision: record ? this.records.get(record.id)!.revision : null, changed, ...(reason ? { reason } : {}) };
     });
     if (results.some((r) => r.changed)) {
+      if (!this.weights.has(KB_CONNECTOR)) {
+        const w = KB_DEFAULT_WEIGHT;
+        this.memory.append("weight_change", by, { connector: w.connector, from: null, to: w.weight, max_age_days: w.max_age_days, reason: w.reason, default: true });
+        this.store.saveWeight(w);
+        this.weights.set(w.connector, { ...w });
+      }
       this.memory.append("import", by, {
+        declared: "synthetic",
         files: results.map((r, i) => ({ path: r.path, record: r.record, format: r.format, revision: r.revision, changed: r.changed, sha256: digest({ content: files[i].content }) })),
       });
     }

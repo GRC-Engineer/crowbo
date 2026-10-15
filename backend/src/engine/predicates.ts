@@ -11,17 +11,24 @@ export interface PredicateRule {
   multi?: true;
   /** Links two nodes; becomes an edge in the context graph. */
   relation?: true;
+  /** May be stated as a typed fact by an export file a person mapped. Derived predicates never are. */
+  importable?: true;
   /** May be stated in a recorded call. `check` returns an error message, or null when valid. */
   assertable?: (value: Value, context: { factValue: (subject: string, predicate: string) => Value | undefined; subject: string }) => string | null;
 }
 
 export const PREDICATES: Record<string, PredicateRule> = {
-  member_of: { multi: true, relation: true },
-  leads: { multi: true, relation: true },
-  depends_on: { multi: true, relation: true },
+  member_of: { multi: true, relation: true, importable: true },
+  leads: { multi: true, relation: true, importable: true },
+  depends_on: { multi: true, relation: true, importable: true },
   grants_admin_on: { multi: true, relation: true },
-  assigned_to: { relation: true },
-  business_owner: { relation: true },
+  assigned_to: { relation: true, importable: true },
+  business_owner: { relation: true, importable: true },
+  data_class: { importable: true },
+  rating: { importable: true },
+  issues_found_last_4: { importable: true },
+  superseded_by: { importable: true },
+  hours_per_quarter: { importable: true },
   permits: { multi: true },
   billing_actions: { multi: true },
   break_glass_exempt: {
@@ -35,6 +42,7 @@ export const PREDICATES: Record<string, PredicateRule> = {
 
 export const isMulti = (predicate: string) => PREDICATES[predicate]?.multi === true;
 export const isRelation = (predicate: string) => PREDICATES[predicate]?.relation === true;
+export const isImportable = (predicate: string) => PREDICATES[predicate]?.importable === true;
 
 /** A node id without its type prefix: "launch:audit-prep" → "audit-prep". */
 export const nodeName = (node: string) => node.replace(/^[a-z]+:/, "");

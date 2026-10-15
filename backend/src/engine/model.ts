@@ -66,7 +66,7 @@ export interface Fact {
   subject: string; // node id, e.g. "group:billing-admins"
   predicate: string;
   value: Value;
-  kind: "extracted" | "derived" | "asserted";
+  kind: "extracted" | "derived" | "asserted" | "imported";
   quote: string;
   source: { record: string; revision: number; connector: string };
   extractor: string;

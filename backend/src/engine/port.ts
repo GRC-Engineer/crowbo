@@ -3,7 +3,7 @@ import { answerTopic, pickTopic, weeklyBrief } from "./answer";
 import { type Engine, MEMORY_CAP, OUTCOME_STATUSES, replaySchedule } from "./engine";
 import { EngineError } from "./errors";
 import { draftFollowups, routeQuestion, summarise } from "./explain";
-import { KB_LIMITS } from "./kb";
+import { DATE, KB_LIMITS } from "./kb";
 
 /**
  * The engine's operations, one table for every surface: the local MCP server runs them in-process,
@@ -34,20 +34,24 @@ export const ENGINE_INPUTS = {
   memory: z.strictObject({ kind: z.enum(["read", "decision", "call", "weight_change", "proposal", "outcome", "clock", "import"]).optional() }),
   set_weight: z.strictObject({ connector: z.string().min(1).max(50), weight: z.number().int().min(0).max(5), reason: z.string().min(1).max(500) }),
   /**
-   * A knowledge-base export, as text files. `synthetic: true` is required: until counsel clears
-   * third-party data and the founder gives a written go, only synthetic exports are imported.
+   * A knowledge-base export, as text files. `synthetic: true` is required until the founders clear
+   * real exports; the engine checks it again and keeps the declaration with the import.
    */
   import_knowledge_base: z.strictObject({
     synthetic: z.literal(true),
     files: z.array(z.strictObject({
       path: z.string().min(1).max(300),
       content: z.string().max(KB_LIMITS.file_chars),
-      modified_at: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-      mapping: z.strictObject({
-        subject_column: z.string().min(1).max(100),
-        subject_prefix: z.string().min(1).max(30),
-        columns: z.record(z.string().max(100), z.strictObject({ predicate: z.string().min(1).max(80), node_prefix: z.string().min(1).max(30).optional() })),
-      }).optional(),
+      modified_at: z.string().regex(DATE).optional(),
+      mapping: z.discriminatedUnion("shape", [
+        z.strictObject({ shape: z.literal("triples") }),
+        z.strictObject({
+          shape: z.literal("columns"),
+          subject_column: z.string().min(1).max(100),
+          subject_prefix: z.string().min(1).max(30),
+          columns: z.record(z.string().max(100), z.strictObject({ predicate: z.string().min(1).max(80), node_prefix: z.string().min(1).max(30).optional() })),
+        }),
+      ]).optional(),
     })).min(1).max(KB_LIMITS.files),
   }),
   /** Start this copy over from the demo's first morning. Handled by the host, which owns the store. */
@@ -99,6 +103,6 @@ export async function runEngine(engine: Engine, actor: string, op: EngineOp, raw
     case "set_weight":
       return engine.setWeight(args.connector, args.weight, actor, args.reason);
     case "import_knowledge_base":
-      return engine.importKnowledgeBase(args.files, actor);
+      return engine.importKnowledgeBase(args.files, actor, { synthetic: args.synthetic });
   }
 }

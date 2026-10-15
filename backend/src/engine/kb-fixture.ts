@@ -12,6 +12,7 @@ export const NORTHWIND_KB_EXPORT: KbFile[] = [
     modified_at: "2026-09-02",
     content: "System,Business owner,Data class\nBilling,priya@northwind.example,financial\nOkta,dana@northwind.example,identity\n",
     mapping: {
+      shape: "columns",
       subject_column: "System",
       subject_prefix: "app",
       columns: { "Business owner": { predicate: "business_owner", node_prefix: "person" }, "Data class": { predicate: "data_class" } },
@@ -27,11 +28,13 @@ export const NORTHWIND_KB_EXPORT: KbFile[] = [
       "C-07,control:quarterly-access-screenshots,hours_per_quarter,24",
       "C-03,control:billing-admin-access,assigned_to,person:alex",
     ].join("\n"),
+    mapping: { shape: "triples" },
   },
   {
     path: "registers/risk-register.csv",
     modified_at: "2026-03-04",
     content: "id,subject,field,value\nR-12,group:billing-admins,holders,12\nR-12,risk:billing-misuse,rating,high\n",
+    mapping: { shape: "triples" },
   },
   {
     path: "registers/vendors.csv",

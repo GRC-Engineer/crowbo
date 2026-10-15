@@ -7,13 +7,15 @@ Every criterion carries one of three labels:
 - **Failing until built:** written now, and failing on purpose.
 - **Decided:** a design choice, not a test.
 
+A criterion with a part that is already true keeps the label of the part that is not. The true part is listed under regression, so it stays true.
+
 The checks are in [`backend/test/acceptance/criteria.test.ts`](../../backend/test/acceptance/criteria.test.ts). To run them:
 
 ```bash
 cd backend && bunx vitest run test/acceptance
 ```
 
-A failing criterion is written as an `it.fails` test, so the suite stays green. When the work lands, that test starts passing and vitest reports it as an error. The label then has to change here and in the test. All checks use fixtures only, with no third-party data.
+A failing criterion is written as an `it.fails` test, so the suite stays green. It calls the operation or module the work will add, and fails on the behaviour it asserts, never on a missing name. When the work lands, that test starts passing and vitest reports it as an error. The label then has to change here and in the test. All checks use fixtures only, with no third-party data.
 
 Architecture: [ENGINE.md](../ENGINE.md). The decision rule: [ADR 0002](../adr/0002-deterministic-risk-arithmetic-decides.md). Judgment quality: [EVALUATION.md](../EVALUATION.md).
 
@@ -25,43 +27,50 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 
 | ID | Criterion | Label |
 | --- | --- | --- |
-| P1 | A knowledge-base export produces a first company profile and first next moves within a day | True on a synthetic export |
-| P1.1 | PDF and DOCX files in the export are read | Failing until built |
+| P1 | A knowledge-base export produces a first company profile within a day | True on fixtures (a synthetic export) |
+| P1.1 | PDF and DOCX files in the export are read: a PDF with known text yields a quoted fact | Failing until built |
+| P1.2 | An export produces first next moves from the profile's own defaults, with no pre-authored scenarios or actions | Failing until built: needs the register |
 | P2 | Three real connectors, read-only, feed the weekly fix-or-drop list | Failing until built |
 | P2.1 | Prose from real sources is extracted live by Clef, with precision at 0.8 and recall measured on 50 labelled sentences | Failing until built |
 | P3 | The list arrives in the customer's Slack with citations, a named decider and a date, with no assistant needed | Failing until built |
-| P4 | A recorded call changes the next answer, and the answer cites it | True on fixtures (engine part) |
+| P4 | A call recorded where the pilot works changes the next answer, and the answer cites it | Failing until built: P4.1 and P4.2. The engine part is R8 |
 | P4.1 | A call recorded from a Slack thread keeps the thread's permalink as provenance | Failing until built |
 | P4.2 | Repeated corrections yield a weight proposal; accepting it is recorded and recomputes the ranking | Failing until built |
-| P5 | The weekly brief reads in plain words: moves with sources, deciders and dates, hours back, evidence not used | True on fixtures (format part) |
-| P5.1 | A CISO at the pilot forwards the brief to their leadership without editing it | Reviewed, not tested |
+| P5 | The weekly brief reaches the security lead in plain words: moves with sources, deciders and dates, hours back, evidence not used | Failing until built: delivery is P3. The format is R9 |
 
 ### Build specs
 
-**P1. From export to first profile.**
+**P1. From export to first profile.** Split in review: P1 is the profile; P1.2 is the first moves.
 - **Input:** a folder or archive of the customer's policies, risk register and last audit report (PDF, DOCX, Markdown, CSV).
 - **Build:** an import operation that registers each file as a prose or typed record, extracts quoted facts through the evaluation gate, and registers the subjects it finds.
 - **Output:** a first next-moves list on default weights, plus a profile: the systems, owners, controls and stale entries it found.
-- **Check:** on a synthetic export it returns a profile and a list in one run.
+- **Check:** on a synthetic export it returns a profile (systems with owners, controls with assignees, stale entries) in one run.
 - **Size:** about 3–4 days.
 - **Built:** `engine_import_knowledge_base`, over [`kb.ts`](../../backend/src/engine/kb.ts).
-  - Markdown and text are read as prose. A CSV is typed only with a `subject,field,value` header or an explicit column mapping; otherwise it is read as prose and nothing is typed.
-  - The export is one more source, `kb`, weighted 3 with a 180-day limit until the company sets its own. Each file's edit date drives freshness.
-  - Re-importing an unchanged file changes nothing. Memory keeps a digest of each file, never its text.
-  - The operation requires `synthetic: true` until counsel clears third-party data and Ayoub gives a written go.
+  - Markdown and text are read as prose, and their facts must quote the file.
+  - A CSV is typed only when the person importing it maps it: `triples` for subject, field and value columns, or `columns` with a subject column. Unmapped CSV is prose.
+  - Typed rows may state only predicates the engine declares importable, never one it derives (such as unused counts). Their facts are kind `imported`, never mistaken for a connector's.
+  - The export is one more source, `kb`, weighted 3 with a 180-day limit until the company sets its own. That default is kept in memory as a weight change with its reason, the first time a file is read. Each file's edit date drives freshness.
+  - Re-importing an unchanged export writes nothing. Memory keeps a digest of each file, never its text, and the declaration that the export is synthetic.
+  - Only a synthetic export is accepted, checked at the operation and again in the engine, until the founders clear real exports.
   - The profile keeps the current Scenario and Action shapes. The register is meant to replace `kbProfile`, not the import.
+
+**P1.2. First moves from an export.**
+- **Today:** the moves in P1's profile come from the demo company's pre-authored scenarios and actions. With none authored, an export yields a profile and no moves.
+- **Build:** default scenarios and actions that the profile proposes from what it found. This is the register, awaiting sign-off.
+- **Check:** with no pre-authored scenarios or actions, the move list is empty before the import and not empty after.
 
 **P1.1. PDF and DOCX.**
 - **Today:** listed as not read, with the reason.
 - **Build:** read their text in the Worker, or take text the harness already extracted.
-- **Check:** no file in the synthetic export is left unread.
+- **Check:** a PDF with known text, imported through the operation, is read as prose and yields a fact quoting that text.
 - **Size:** about 1 day.
 
 **P2. Three real connectors.**
 - **Build:** pick the three that the pilot's first case needs, likely the identity provider, the ticketing tool and the incumbent compliance platform.
   - Each connector is the existing mapping code, pointed at the real API by configuration.
   - Each has read-only scopes, a sync schedule and stores no credentials in the repo.
-- **Check:** three connectors are marked live, and each one's mapping test passes on a recorded response.
+- **Check:** at least three connectors each read a recorded response from the real API (`backend/test/fixtures/recorded/`) into records.
 - **Size:** 1–2 days each.
 
 **P2.1. Clef live.**
@@ -75,12 +84,12 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
   - A mention in a thread answers with the card: numbered sources, the move, decider and date.
   - It works where no AI assistant is deployed.
   - It never posts unprompted except the weekly list, and never sends on anyone's behalf.
-- **Check:** the surface exists. On fixtures, a scripted mention returns the card with citations, decider and date.
+- **Check:** on fixtures, a scripted mention returns the card with numbered citations, the decider and a date.
 - **Size:** about 3–4 days.
 
 **P4.1. Corrections from Slack.**
 - **Build:** "record this" in a thread writes the call. The thread's permalink becomes the call's provenance.
-- **Check:** the recorded call carries the permalink, and the next answer cites it.
+- **Check:** a call recorded with a thread permalink keeps it as provenance, and the next answer cites it.
 - **Size:** about 1 day, on top of P3.
 
 **P4.2. From correction to weight.**
@@ -91,9 +100,9 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 - **Check:** after two disputes of one source, accepting the proposal changes the weight, the memory links the change to the proposal, and the decision diff names that source.
 - **Size:** about 1 day.
 
-**P5.1** is judged by the pilot, not by a test. The brief should open with what the security lead did not already know that week.
+**Reviewed, not tested.** One more outcome is judged by the pilot, not by a test: a CISO at the pilot forwards the brief to their leadership without editing it. The brief should open with what the security lead did not already know that week.
 
-Build order, riskiest first: P1, P3, P2, P2.1, P4.1, P4.2. That totals about 3 weeks of focused work. P1 is built; P1.1 follows when a pilot's export needs it.
+Build order, riskiest first: P1, P3, P2, P2.1, P4.1, P4.2. That totals about 3 weeks of focused work. P1 is built. P1.1 follows when a pilot's export needs it, and P1.2 follows the register.
 
 ## Regression: already true on fixtures
 
@@ -108,6 +117,8 @@ These must stay true while the pilot work is built.
 | R5 | Stale or conflicting evidence stays unresolved and uncited; missing evidence defers the move and names the missing fact (an information request) |
 | R6 | A decision is an input-addressed record with a defined field list, countable and exportable |
 | R7 | The engine is served over MCP, so any MCP client lists and calls the same tools |
+| R8 | A recorded call changes the next answer, and the answer cites decision memory (the engine part of P4) |
+| R9 | The weekly brief reads in plain words: moves with sources, deciders and dates, hours back, evidence not used (the format part of P5) |
 
 ## Appendix: diligence questions
 
@@ -117,16 +128,16 @@ An investor asked twelve questions. The answers below come from the criteria abo
 | --- | --- | --- | --- |
 | 1 | MVP scope per pilot: connectors and decision kinds? | One decision kind per pilot (the partner's first case). Knowledge-base export, plus three read-only connectors. | P1, P2 |
 | 2 | What beats a good prompt with generic connectors? Where is the moat? | Decisions computed in code over quoted facts and visible weights; reproducible, cited and kept. The moat is decision memory and outcomes. Quality against a prompt is measured, not claimed. | R1, R2, R6, L2 |
-| 3 | How is business context captured, by whom, and kept fresh? | From the tools the business already uses, on each tool's schedule. Every fact keeps its date and source. Stale facts are shown and not used. People add context by recording calls. | P1, P2, R5, P4 |
+| 3 | How is business context captured, by whom, and kept fresh? | From the tools the business already uses, on each tool's schedule. Every fact keeps its date and source. Stale facts are shown and not used. People add context by recording calls. | P1, P2, R5, R8, P4.1 |
 | 4 | A unified model mapped to ISO 27001, SOC 2, DORA, NIS2? | No, by design. Crowbo reads the platform that holds the mapping. | D1 |
 | 5 | What is a decision, how is it counted, how is it made opposable? | A record addressed by its inputs. Kept once in hash-chained memory: countable, exportable and checkable by recomputation. | R6, R2, D2 |
 | 6 | Which harnesses? Fallback when IT restricts assistants? | Any MCP harness (Claude Code, Claude, Cursor, Codex, Gemini). Slack is the fallback. | R7, P3 |
 | 7 | Onboarding effort, and who acts on the customer side? | The security lead exports the knowledge base, and an admin grants read-only access to three tools. | P1, P2 |
 | 8 | Where does "Priya decides, Alex delivers" come from? | Relationships between tools: the system's owner decides, the control's assignee delivers, and the earliest dependent launch sets the date. | R4 |
-| 9 | Prompt injection through untrusted tickets, issues and pages? | Text is data. Prose goes only to the extraction model, quotes must match, typed fields come only from connectors, and calls assert only allowlisted facts. | R3 |
+| 9 | Prompt injection through untrusted tickets, issues and pages? | Text is data. Prose goes only to the extraction model and quotes must match. Typed fields come only from connectors and from export files a person mapped, limited to importable predicates and labelled as imported. Calls assert only allowlisted facts. | R3 |
 | 10 | Measuring quality; contradicting or incomplete sources? | Reviewed cases, not self-grading. Conflicts are shown, not settled. Missing evidence defers the move with an information request. | R5, P2.1, L1 |
 | 11 | Same question twice, same decision? Auditor-usable traces? | Yes: same inputs, same ID. The trace is the hash-chained memory, with every source cited by revision. | R1, R2 |
-| 12 | Learning from accepted or rejected decisions; cross-customer with consent? | Within a customer: calls change the next answer, and corrections become weight proposals a person accepts. Across customers: nothing without consent. | P4, P4.2, L3 |
+| 12 | Learning from accepted or rejected decisions; cross-customer with consent? | Within a customer: calls change the next answer, and corrections become weight proposals a person accepts. Across customers: nothing without consent. | R8, P4.2, L3 |
 
 ### Later criteria
 
