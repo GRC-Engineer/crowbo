@@ -80,6 +80,25 @@ describe("security review findings", () => {
     expect(JSON.stringify(history.versions)).not.toContain("2031-04-01");
   });
 
+  it("2 (high), regression: history keeps oldest first when two versions share a millisecond", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-15T12:00:00Z"));
+    const { engine, standing, lead } = await setup();
+    await standing.registerSubject(lead, EXCEPTION, "grc");
+    await activate(standing, lead, "exception_valid");
+    const item = withSource(makeItem(), { native_id: "exc-9", text: "EXC-9 approved by the CISO; the exception expires on 2031-04-01 per the register." });
+    await engine.ingest(batch(item));
+    const cite = (quote: string) => [{ source_id: logicalId(item.source), revision_id: revisionId(item.source), quote }];
+    await standing.assertFact(lead, { subject_key: "exception:EXC-9", workflow: "exceptions", predicate: "expires_on", state: "stated", value: "2031-04-01", citations: cite("the exception expires on 2031-04-01"), provenance: "source_extraction", extractor: "manual@1", attributed_to: "operator" } as any);
+    await standing.ask(lead, EXCEPTION);
+    await engine.withdraw(logicalId(item.source), now());
+    const history = await standing.history(lead, EXCEPTION);
+    if (history.status !== "ok") throw new Error("expected history");
+    expect(history.versions[0]).toEqual({ id: expect.any(String), computed_at: expect.any(String), withheld: "contributing source withdrawn or not readable" });
+    expect(JSON.stringify(history.versions)).not.toContain("2031-04-01");
+    vi.useRealTimers();
+  });
+
   it("3 (high): nobody can supersede another reader's fact; extractions cannot assert unknown", async () => {
     const { standing, lead } = await setup();
     await standing.registerSubject(lead, FINDING, "grc");

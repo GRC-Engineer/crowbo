@@ -1,6 +1,6 @@
 // Port of tests/test_feedback.py. Synthetic feedback/reassessment behaviour, not qualified
 // security judgment.
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ZodError } from "zod";
 import { logicalId, revisionId, type SourceInput, sourceInput } from "../../src/domain/contracts";
 import { type DecisionRequest, decisionRequest } from "../../src/domain/decision-request";
@@ -23,6 +23,14 @@ import {
   withGrant,
   withSource,
 } from "../helpers";
+
+// Fixtures take today's date from the clock: pin it to noon UTC so a run cannot straddle midnight.
+// Date still advances in real time, so timestamps stay ordered.
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"], shouldAdvanceTime: true });
+  vi.setSystemTime(new Date("2026-10-15T12:00:00Z"));
+});
+afterEach(() => vi.useRealTimers());
 
 const MODEL = "@cf/zai-org/glm-5.3-flash";
 

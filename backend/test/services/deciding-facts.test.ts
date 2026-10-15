@@ -1,7 +1,7 @@
 // Port of tests/test_deciding_facts.py. Fictional evidence; origin checks do not qualify the
 // model's semantic judgment. Helpers mirror tests/test_decision.py (configured, fact_payload,
 // reply, model_for) with an injected fetch and a MemoryLedger in place of Runtime's SQLite calls.
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { logicalId, revisionId, type SourceInput } from "../../src/domain/contracts";
 import { CrowboError } from "../../src/domain/errors";
 import { type DecisionRequest, decisionRequest } from "../../src/domain/decision-request";
@@ -13,6 +13,14 @@ import { Decision } from "../../src/services/decision";
 import type { Evidence } from "../../src/services/evidence";
 import { Reasoner } from "../../src/services/review";
 import { addMicros, batch, DAY, makeEngine, makeItem, MemoryLedger, now, withGrant } from "../helpers";
+
+// Fixtures take today's date from the clock: pin it to noon UTC so a run cannot straddle midnight.
+// Date still advances in real time, so timestamps stay ordered.
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"], shouldAdvanceTime: true });
+  vi.setSystemTime(new Date("2026-10-15T12:00:00Z"));
+});
+afterEach(() => vi.useRealTimers());
 
 const MODEL = "@cf/zai-org/glm-5.3-flash";
 

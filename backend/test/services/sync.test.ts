@@ -31,6 +31,8 @@ const MODEL = "openai/gpt-6-luna";
  * the Python test relies on that.
  */
 async function nextInstant(): Promise<void> {
+  // With Date faked, real time passing never moves it: step the fake clock instead of waiting forever.
+  if (vi.isFakeTimers()) return void vi.setSystemTime(Date.now() + 1);
   const start = Date.now();
   while (Date.now() === start) await new Promise((resolve) => setTimeout(resolve, 1));
 }
