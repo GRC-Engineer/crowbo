@@ -6,7 +6,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
 const client = new Client({ name: "demo-check", version: "0" });
-await client.connect(new StdioClientTransport({ command: "bun", args: [new URL("./mcp-local.ts", import.meta.url).pathname] }));
+await client.connect(new StdioClientTransport({ command: "bun", args: [new URL("./mcp-local.ts", import.meta.url).pathname], env: { ...(process.env as Record<string, string>), CROWBO_OFFLINE: "1" } }));
 const call = async (name: string, args: Record<string, unknown> = {}) => {
   const r: any = await client.callTool({ name, arguments: args });
   if (r.isError) throw new Error(`${name}: ${r.content[0].text}`);
