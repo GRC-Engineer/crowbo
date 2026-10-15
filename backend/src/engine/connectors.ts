@@ -103,7 +103,8 @@ export const workday: Connector = {
       }),
       record({
         id: "workday:terminations", connector: "workday", rail: "business", observed_at: day(r.asOf), readers: ["people-team"],
-        lines: r.data.filter((w) => w.terminated).flatMap((w) => line(person(w.email), "terminated_on", w.terminated!)),
+        // The listing line lets a join tell "nobody left" from "terminations not readable".
+        lines: [...line("listing:terminations", "read", "complete"), ...r.data.filter((w) => w.terminated).flatMap((w) => line(person(w.email), "terminated_on", w.terminated!))],
       }),
     ];
   },

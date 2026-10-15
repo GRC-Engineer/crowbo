@@ -114,5 +114,60 @@ export function derive(usable: Fact[], asOf: string, windowDays = 90): Fact[] {
       inputs));
     if (exposed) out.push(derived(launch, "depends_on", "control:security-review", `${nodeName(launch)} needs its security review before ${start.value}`, inputs));
   }
+
+  // The GRC platform's lists count only when read completely; otherwise these stay unresolved.
+  const listed = (name: string) => by("read").find((f) => f.subject === `listing:${name}` && f.value === "complete");
+
+  // S5: vendors that handle customer data with no security review in a year (or never).
+  const vendorList = listed("vendors");
+  if (vendorList) {
+    const handles = by("handles_data").filter((f) => f.subject.startsWith("vendor:"));
+    const classes = uniq(handles.map((h) => String(h.value)));
+    const classified = by("customer_data").filter((f) => classes.includes(f.subject));
+    const reviews = by("last_reviewed_at").filter((f) => f.subject.startsWith("vendor:"));
+    const customer = new Set(classified.filter((f) => f.value === true).map((f) => f.subject));
+    const vendors = uniq(handles.filter((h) => customer.has(String(h.value))).map((h) => h.subject));
+    // Every class a vendor handles is classified, and every such vendor states its last review.
+    if (classes.length && classes.every((c) => classified.some((f) => f.subject === c)) && vendors.every((v) => reviews.some((r) => r.subject === v))) {
+      const lastReview = (v: string) => String(reviews.find((r) => r.subject === v)!.value);
+      const stale = vendors.filter((v) => lastReview(v) === "never" || at(asOf) - at(lastReview(v)) > 365 * DAY);
+      out.push(derived("vendors:all", "unreviewed_customer_data_vendors", stale.length,
+        `${stale.length} of ${vendors.length} vendors handling customer data have no security review in 365 days${stale.length ? `: ${stale.map((v) => `${nodeName(v)} (${lastReview(v)})`).join(", ")}` : ""}`,
+        [vendorList, ...handles, ...classified, ...reviews.filter((r) => vendors.includes(r.subject))]));
+    }
+  }
+
+  // S6: exceptions past their review date, or signed by someone who has left (HR, narrowest audience).
+  const exceptionList = listed("exceptions");
+  if (exceptionList) {
+    const reviewBy = by("review_by").filter((f) => f.subject.startsWith("exception:"));
+    const signers = by("signer").filter((f) => f.subject.startsWith("exception:"));
+    const exceptions = uniq([...reviewBy, ...signers].map((f) => f.subject));
+    const hr = listed("terminations");
+    const past = reviewBy.filter((f) => String(f.value) < asOf);
+    const gone = hr ? signers.filter((s) => by("terminated_on").some((t) => t.subject === s.value && String(t.value) <= asOf)) : [];
+    const flagged = uniq([...past, ...gone].map((f) => f.subject));
+    // Without HR the signers cannot be checked: a count of zero would claim more than is known.
+    if (hr || flagged.length) {
+      const why = [...past.map((f) => `${nodeName(f.subject)} past its review date (${f.value})`), ...gone.map((f) => `${nodeName(f.subject)} signed by ${nodeName(String(f.value))}, who left`)];
+      out.push(derived("exceptions:all", "exceptions_needing_review", flagged.length,
+        `${flagged.length} of ${exceptions.length} exceptions need re-signing${why.length ? `: ${why.join("; ")}` : ""}${hr ? "" : "; signers not checked, HR terminations not readable"}`,
+        [exceptionList, ...past, ...gone, ...(hr ? [hr, ...by("terminated_on").filter((t) => gone.some((g) => g.value === t.subject))] : [])]));
+    }
+  }
+
+  // S7: controls that take recurring hours with no linked risk, obligation or commitment.
+  const controlList = listed("controls");
+  if (controlList) {
+    const unlinked = by("link_count").filter((f) => f.value === 0 && f.subject.startsWith("control:"));
+    const effort = unlinked.flatMap((f) => {
+      const hours = by("hours_per_quarter").filter((h) => h.subject === f.subject && Number(h.value) > 0);
+      return hours.length ? [{ control: f.subject, hours: Math.max(...hours.map((h) => Number(h.value))), inputs: [f, ...hours] }] : [];
+    });
+    const total = effort.reduce((n, e) => n + e.hours, 0);
+    out.push(derived("controls:all", "unlinked_effort_controls", effort.length,
+      effort.length ? `${effort.length} control${effort.length === 1 ? " takes" : "s take"} ${total} hours a quarter with no linked risk, obligation or commitment: ${effort.map((e) => nodeName(e.control)).join(", ")}` : "Every control with recurring hours is linked to a risk, obligation or commitment",
+      [controlList, ...effort.flatMap((e) => e.inputs)]));
+  }
   return out;
 }

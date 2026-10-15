@@ -82,6 +82,11 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
   - It reads launches with their dates and leads, the controls they depend on, the features they include and the data classes those features handle, and their security-review issues.
   - [`NORTHWIND_TICKETS`](../../backend/src/engine/fixture-tickets.ts) exercises S10: a launch handling customer data with no security review before its date. The review becomes due before the launch.
   - Which data classes are customer data comes from the company's register, not from label names. "No security review" is stated only when every issue of the launch was read, so a partial read leaves S10 unresolved.
+- **Also built:** the GRC platform connector, read-only, one class with two providers, Vanta and Drata ([`grc-platform.ts`](../../backend/src/engine/grc-platform.ts)), on fixtures.
+  - It reads controls (owner, assurance class, coverage, evidence date, hours, links to risks, obligations and commitments), vendors (data classes, last review) and exceptions (control, signer, review date).
+  - [`NORTHWIND_GRC`](../../backend/src/engine/fixture-grc.ts) exercises S5 (a vendor with customer data unreviewed for a year), S6 (an exception past its review date or signed by someone who left, with HR under the narrowest-audience rule) and S7 (a control taking recurring hours with no link: the drop).
+  - Each list counts only when the platform says it was read completely; otherwise the scenario is unresolved and the record says how much was read. Assurance class and coverage are two facts, never one score.
+  - The provider field names are to be confirmed against recorded responses.
   - P2 stays failing: it needs recorded responses from three real APIs.
 
 **P2.1. Clef live.**
