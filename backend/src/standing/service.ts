@@ -33,6 +33,18 @@ const CONTENT_FRESHNESS = DAY;
  * there is no recompute queue to lose and no cached answer to drift. Currency and access are
  * derived at read against current heads and grants, so revocation applies on the next ask.
  */
+/**
+ * Oldest first. Two versions can share a millisecond (an ask and the next one after a withdrawal),
+ * so a tie is broken by the predecessor chain, then by id, never left to the sort's whim.
+ */
+function byChain(a: Record<string, any>, b: Record<string, any>): number {
+  const d = micros(a.computed_at) - micros(b.computed_at);
+  if (d !== 0n) return d < 0n ? -1 : 1;
+  if (b.predecessor === a.id) return -1;
+  if (a.predecessor === b.id) return 1;
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+}
+
 export class Standing {
   constructor(
     private readonly store: Store,
@@ -260,7 +272,7 @@ export class Standing {
     const versions = [];
     const stored = (await this.store.scan("decision_version", key))
       .filter((v) => v.team === subject.team && v.question.kind === q.kind)
-      .sort((a, b) => (micros(a.computed_at) < micros(b.computed_at) ? -1 : 1));
+      .sort(byChain);
     for (const v of stored) {
       let disclosable = true;
       for (const [source] of v.inputs.revisions as [string, string][]) {
