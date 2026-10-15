@@ -2,8 +2,8 @@ import { EngineError } from "./errors";
 import { digest } from "../domain/canonical";
 import type { ContextGraph } from "./graph";
 import { isMulti, nodeName } from "./predicates";
-import type {
-  Action, Capacity, Citation, Condition, Decision, Deferred, Fact, Freshness, Move, Range, Scenario, ScenarioAssessment, Unresolved,
+import {
+  type Action, type Capacity, type Citation, type Condition, type Decision, type Deferred, type Fact, type Freshness, isPartial, type Move, type Range, type Scenario, type ScenarioAssessment, type Unresolved,
 } from "./model";
 
 /**
@@ -76,7 +76,10 @@ export function unresolved(facts: Weighed[], conditions: Condition[]): Unresolve
     }
   }
   for (const c of conditions) {
-    if (!usable(c, facts).length) out.push({ subject: c.subject, predicate: c.predicate, kind: "missing", detail: `No fresh source weighted ${MIN_WEIGHT}+ states ${c.subject} ${c.predicate}` });
+    if (usable(c, facts).length) continue;
+    const partial = facts.find((f) => f.subject === c.subject && isPartial(f.completeness))?.completeness;
+    const read = partial ? `; ${c.subject} was read in part (${partial.read} of ${partial.total ?? "an unknown number of"} ${partial.of})` : "";
+    out.push({ subject: c.subject, predicate: c.predicate, kind: "missing", detail: `No fresh source weighted ${MIN_WEIGHT}+ states ${c.subject} ${c.predicate}${read}` });
   }
   return out;
 }

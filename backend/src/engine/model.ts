@@ -16,6 +16,18 @@ export interface Coverage {
   missing: string[]; // ISO dates with no data
 }
 
+/**
+ * How much of a listing a read actually got (e.g. 3 of 120 issues). Total is null when the provider
+ * did not say, and an unknown total is never complete.
+ */
+export interface Completeness {
+  read: number;
+  total: number | null;
+  of: string;
+}
+
+export const isPartial = (c: Completeness | undefined) => !!c && (c.total === null || c.read < c.total);
+
 /** One revision of one source item, as a connector read it. Never edited; a change is a new revision. */
 export interface SourceRecord {
   id: string;
@@ -34,6 +46,8 @@ export interface SourceRecord {
   /** Who may read this record. Filtering happens before anything is derived from it. */
   readers: string[];
   coverage?: Coverage;
+  /** For a listing read page by page: how much of it this read got. */
+  completeness?: Completeness;
   /** Display name when one connector holds several kinds of record (e.g. "Risk register"). */
   label?: string;
   /** For a connector class with several providers (identity): which one read this record. */
@@ -82,6 +96,7 @@ export interface Fact {
   /** For derived facts: the facts and records it was computed from. */
   derived_from?: { record: string; revision: number }[];
   coverage?: Coverage;
+  completeness?: Completeness;
 }
 
 /** Turns a readable record into facts. Real extractors are models, qualified by the eval gate. */

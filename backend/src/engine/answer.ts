@@ -1,7 +1,7 @@
 import { EngineError } from "./errors";
 import { MIN_WEIGHT, type Weighed } from "./decide";
 import type { Engine } from "./engine";
-import type { Action, Citation, Decision, Move, Range, Topic } from "./model";
+import { type Action, type Citation, type Decision, isPartial, type Move, type Range, type Topic } from "./model";
 import { nodeName } from "./predicates";
 
 /**
@@ -107,7 +107,7 @@ class Numbering {
         weight, used: !stale && weight >= MIN_WEIGHT,
         n: i + 1, connector: r.connector, label: this.engine.label(id), record: id, claim: claimFact?.quote ?? "",
         read_at: this.engine.readAt.get(r.connector) ?? null,
-        coverage: r.coverage && r.coverage.days_with_data < r.coverage.window_days ? "partial" : "full",
+        coverage: (r.coverage && r.coverage.days_with_data < r.coverage.window_days) || isPartial(r.completeness) ? "partial" : "full",
         freshness: stale ? "stale" : "fresh", ...(stale?.stale_reason ? { stale_reason: stale.stale_reason } : {}),
         fact_id: claimFact?.id ?? "",
       };

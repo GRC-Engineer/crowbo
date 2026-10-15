@@ -101,6 +101,7 @@ export async function bind(record: SourceRecord, extractor: Extractor): Promise<
       ...f, kind: record.connector === "memory" ? "asserted" : record.connector === "kb" && record.format === "lines" ? "imported" : "extracted", observed_at: record.observed_at, extractor: extractor.id,
       source: { record: record.id, revision: record.revision, connector: record.connector },
       ...(record.coverage ? { coverage: record.coverage } : {}),
+      ...(record.completeness ? { completeness: record.completeness } : {}),
     });
   }
   return { facts, rejected };

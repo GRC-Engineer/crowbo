@@ -1,4 +1,4 @@
-import type { Coverage, Fact } from "./model";
+import { type Coverage, type Fact, isPartial } from "./model";
 import { nodeName } from "./predicates";
 
 /**
@@ -26,6 +26,8 @@ function derived(subject: string, predicate: string, value: Fact["value"], quote
     observed_at: inputs.map((f) => f.observed_at).sort()[0],
     derived_from: [...refs.keys()].sort().map((k) => refs.get(k)!),
     ...(coverage ? { coverage } : {}),
+    // A fact computed from a listing read in part says so.
+    ...(inputs.find((f) => isPartial(f.completeness)) ? { completeness: inputs.find((f) => isPartial(f.completeness))!.completeness } : {}),
   };
 }
 
@@ -99,7 +101,9 @@ export function derive(usable: Fact[], asOf: string, windowDays = 90): Fact[] {
     const features = by("includes").filter((f) => f.subject === launch);
     const handles = by("handles_data").filter((f) => features.some((x) => x.value === f.subject));
     const classified = by("customer_data").filter((f) => handles.some((h) => h.value === f.subject));
-    if (!review || !handles.length || !classified.length) continue;
+    const unclassified = handles.filter((h) => !classified.some((c) => c.subject === h.value));
+    // Every data class the launch handles must be classified, or the answer could miss customer data.
+    if (!review || !handles.length || unclassified.length) continue;
     const customer = uniq(classified.filter((f) => f.value === true).map((f) => nodeName(f.subject)));
     const exposed = customer.length > 0 && review.value !== "done";
     const inputs = [start, review, ...features, ...handles, ...classified];

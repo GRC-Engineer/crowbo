@@ -134,7 +134,7 @@ export const NORTHWIND: CompanyFixture = {
       path: "/graphql?query=projects",
       versions: [{
         from: "2026-10-12T16:00:00Z",
-        body: { data: { projects: { nodes: [{ slugId: "audit-prep", name: "SOC 2 audit prep", startDate: "2026-11-24", updatedAt: "2026-10-12T16:00:00Z", issues: { nodes: [{ identifier: "SEC-41", assignee: { email: email("alex") }, labels: { nodes: [{ name: "control:billing-admin-access" }] } }] } }] } } },
+        body: { data: { projects: { nodes: [{ slugId: "audit-prep", name: "SOC 2 audit prep", startDate: "2026-11-24", updatedAt: "2026-10-12T16:00:00Z", issues: { nodes: [{ identifier: "SEC-41", assignee: { email: email("alex") }, labels: { nodes: [{ name: "control:billing-admin-access" }] } }], pageInfo: { hasNextPage: false } } }] } } },
       }],
     },
     {

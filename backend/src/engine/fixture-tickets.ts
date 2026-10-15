@@ -32,7 +32,7 @@ const projects = base.api.find((r) => r.path === "/graphql?query=projects")!;
 const body = projects.versions[0].body as { data: { projects: { nodes: unknown[] } } };
 body.data.projects.nodes.push({
   slugId: "checkout-v2", name: "Checkout v2", startDate: "2026-11-10", updatedAt: "2026-10-12T16:00:00Z", lead: { email: email("priya") },
-  issues: { nodes: checkout.map((i, n) => ({ identifier: `ENG-${n + 7}`, state: { type: "started" }, assignee: { email: email(i.assignee) }, labels: { nodes: i.labels.map((name) => ({ name })) } })) },
+  issues: { nodes: checkout.map((i, n) => ({ identifier: `ENG-${n + 7}`, state: { type: "started" }, assignee: { email: email(i.assignee) }, labels: { nodes: i.labels.map((name) => ({ name })) } })), pageInfo: { hasNextPage: false } },
 });
 
 // Jira: the same launches as unreleased versions of one project, and the same issues.

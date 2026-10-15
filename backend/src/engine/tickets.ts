@@ -10,7 +10,9 @@ import type { Connector, FetchJson, SourceRecord } from "./model";
  *                     feature handles that class of data.
  *  - security-review  the launch's security review; done when the issue is done.
  * A launch with no security-review issue is stated as such only when every issue of the launch was
- * read. A paged list read only in part states nothing about the review, so the gap stays unresolved.
+ * read. Completeness must be stated by the provider (Linear's hasNextPage false, Jira's isLast or a
+ * total): unknown completeness is incomplete. A partial read states nothing about the review, and the
+ * record says how much was read. A cancelled review counts as no review.
  */
 
 export const TICKETS = "tickets";
@@ -18,11 +20,15 @@ const SECURITY_REVIEW = "security-review";
 
 export interface Launch {
   key: string;
+  /** Where the launch lives in the provider (a Jira project), so same-named launches do not share a record. */
+  scope?: string;
   start_date: string | null;
   lead: string | null;
-  issues: { labels: string[]; done: boolean; assignee: string | null }[];
-  /** False when the provider reported more issues than were read (a page not fetched). */
-  complete: boolean;
+  issues: { labels: string[]; done: boolean; cancelled?: boolean; assignee: string | null }[];
+  /** How many issues the launch has, as the provider stated it; null when it did not say. */
+  issues_total: number | null;
+  /** The listing the issues came from, as read: how many, out of the total the provider stated (null: not stated). */
+  listing: { read: number; total: number | null };
 }
 
 export interface TicketsProvider {
@@ -40,14 +46,16 @@ export const linear: TicketsProvider = {
   id: "linear", label: "Linear",
   async launches(api) {
     type Issue = { state?: { type: string }; assignee: { email: string } | null; labels: { nodes: { name: string }[] } };
+    // Linear states completeness only through pageInfo; without it the total is unknown.
     type Issues = { nodes: Issue[]; pageInfo?: { hasNextPage: boolean } };
     const r = (await api("/graphql?query=projects")) as null | {
       data: { projects: { nodes: { slugId: string; startDate: string | null; lead?: { email: string } | null; issues: Issues }[] } };
     };
     return (r?.data.projects.nodes ?? []).map((p) => ({
       key: p.slugId, start_date: p.startDate, lead: p.lead?.email ?? null,
-      issues: p.issues.nodes.map((i) => ({ labels: i.labels.nodes.map((l) => l.name), done: i.state?.type === "completed", assignee: i.assignee?.email ?? null })),
-      complete: p.issues.pageInfo?.hasNextPage !== true,
+      issues: p.issues.nodes.map((i) => ({ labels: i.labels.nodes.map((l) => l.name), done: i.state?.type === "completed", cancelled: i.state?.type === "canceled", assignee: i.assignee?.email ?? null })),
+      issues_total: p.issues.pageInfo?.hasNextPage === false ? p.issues.nodes.length : null,
+      listing: { read: p.issues.nodes.length, total: p.issues.pageInfo?.hasNextPage === false ? p.issues.nodes.length : null },
     }));
   },
 };
@@ -57,21 +65,25 @@ export const jira: TicketsProvider = {
   id: "jira", label: "Jira",
   async launches(api) {
     type Project = { key: string; lead?: { emailAddress?: string } };
-    type Issue = { fields: { labels: string[]; status: { statusCategory: { key: string } }; assignee: { emailAddress?: string } | null; fixVersions: { name: string }[] } };
+    type Issue = { fields: { labels: string[]; status: { statusCategory: { key: string } }; resolution?: { name: string } | null; assignee: { emailAddress?: string } | null; fixVersions: { name: string }[] } };
     const projects = ((await api("/rest/api/3/project/search")) as null | { values: Project[] })?.values ?? [];
     const out: Launch[] = [];
     for (const p of projects) {
       const versions = ((await api(`/rest/api/3/project/${p.key}/versions`)) ?? []) as { name: string; releaseDate?: string; released: boolean }[];
-      const page = (await api(`/rest/api/3/search?jql=project%3D${p.key}`)) as null | { issues: Issue[]; total?: number };
+      const page = (await api(`/rest/api/3/search?jql=project%3D${p.key}`)) as null | { issues: Issue[]; total?: number; isLast?: boolean };
       const issues = page?.issues ?? [];
-      const complete = page !== null && (page.total === undefined || page.total <= issues.length);
+      // Complete only when Jira says so: the last page, or a total no larger than what was read.
+      const complete = page !== null && (page.isLast === true || (typeof page.total === "number" && page.total <= issues.length));
       for (const v of versions.filter((x) => !x.released)) {
+        const mine = issues.filter((i) => i.fields.fixVersions.some((f) => f.name === v.name));
         out.push({
-          key: slug(v.name), start_date: v.releaseDate ?? null, lead: p.lead?.emailAddress ?? null,
-          issues: issues.filter((i) => i.fields.fixVersions.some((f) => f.name === v.name)).map((i) => ({
-            labels: i.fields.labels, done: i.fields.status.statusCategory.key === "done", assignee: i.fields.assignee?.emailAddress ?? null,
-          })),
-          complete,
+          key: slug(v.name), scope: p.key, start_date: v.releaseDate ?? null, lead: p.lead?.emailAddress ?? null,
+          issues: mine.map((i) => {
+            const cancelled = /^(won't do|cancel+ed|declined)$/i.test(i.fields.resolution?.name ?? "");
+            return { labels: i.fields.labels, done: i.fields.status.statusCategory.key === "done" && !cancelled, cancelled, assignee: i.fields.assignee?.emailAddress ?? null };
+          }),
+          issues_total: complete ? mine.length : null,
+          listing: { read: issues.length, total: typeof page?.total === "number" ? page.total : complete ? issues.length : null },
         });
       }
     }
@@ -94,9 +106,10 @@ export function launchLines(l: Launch): string[] {
       }
     }
   }
-  const reviews = l.issues.filter((i) => i.labels.includes(SECURITY_REVIEW));
+  const reviews = l.issues.filter((i) => i.labels.includes(SECURITY_REVIEW) && !i.cancelled);
+  const complete = l.issues_total !== null && l.issues.length >= l.issues_total;
   // An open review is open however much was read; "none" and "done" need every issue.
-  const review = reviews.some((i) => !i.done) ? "open" : !l.complete ? null : reviews.length === 0 ? "none" : "done";
+  const review = reviews.some((i) => !i.done) ? "open" : !complete ? null : reviews.length === 0 ? "none" : "done";
   if (review) out.push(...line(launch, "security_review", review));
   for (const r of reviews) if (r.assignee) out.push(...line("control:security-review", "assigned_to", person(r.assignee)));
   return [...new Set(out)];
@@ -110,8 +123,9 @@ export function ticketsConnector(provider: TicketsProvider): Connector {
       const launches = await provider.launches(api);
       // Live state: the engine stamps each record with the time it was read.
       return launches.map((l): SourceRecord => ({
-        id: `${TICKETS}:${provider.id}/launch/${slug(l.key)}`, connector: TICKETS, provider: provider.id, rail: "engineering",
+        id: `${TICKETS}:${provider.id}/launch/${l.scope ? `${slug(l.scope)}/` : ""}${slug(l.key)}`, connector: TICKETS, provider: provider.id, rail: "engineering",
         revision: 1, format: "lines", observed_at: "", readers: GRC, text: launchLines(l).join("\n"),
+        completeness: { ...l.listing, of: "issues" },
       }));
     },
   };

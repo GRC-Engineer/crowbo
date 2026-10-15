@@ -30,7 +30,8 @@ describe("tickets: one connector class, two providers", () => {
     for (const [p, label] of [[linear, "Linear"], [jira, "Jira"]] as const) {
       const e = await start(p);
       expect(e.weightsTable().map((w) => w.connector)).toContain("tickets");
-      expect(e.records.get(`tickets:${p.id}/launch/checkout-v2`)).toMatchObject({ connector: "tickets", provider: p.id });
+      const id = p.id === "jira" ? "tickets:jira/launch/nw/checkout-v2" : "tickets:linear/launch/checkout-v2";
+      expect(e.records.get(id)).toMatchObject({ connector: "tickets", provider: p.id, completeness: { read: p.id === "jira" ? 3 : 2, total: p.id === "jira" ? 3 : 2, of: "issues" } });
       const a = answerTopic(e, "Which launches handle customer data without a security review?");
       expect(a.sources.some((s) => s.label === label && s.connector === "tickets")).toBe(true);
     }
@@ -57,13 +58,53 @@ describe("tickets: S10 holds only on evidence", () => {
     expect(scenario(e, S10)).toBe("no_gap_observed");
   });
 
-  it("a partial read states nothing about the review, so S10 stays unresolved instead of looking reviewed or unreviewed", async () => {
+  const linearProjects = (f: CompanyFixture) => (f.api.find((r) => r.path === "/graphql?query=projects")!.versions[0].body as { data: { projects: { nodes: { slugId: string; issues: { pageInfo?: { hasNextPage: boolean } } }[] } } }).data.projects.nodes;
+  const jiraSearch = (f: CompanyFixture) => f.api.find((r) => r.path === "/rest/api/3/search?jql=project%3DNW")!.versions[0].body as { issues: unknown[]; total?: number; isLast?: boolean };
+
+  it("a partial read states nothing about the review: S10 stays unresolved and says how much was read (Jira total)", async () => {
     const partial = structuredClone(NORTHWIND_TICKETS);
-    (partial.api.find((r) => r.path === "/rest/api/3/search?jql=project%3DNW")!.versions[0].body as { total: number }).total = 120;
+    jiraSearch(partial).total = 120;
     const e = await start(jira, partial);
     expect(fact(e, "launch:checkout-v2", "security_review")).toBeUndefined();
     expect(scenario(e, S10)).toBe("unresolved");
-    expect(launchLines({ key: "x", start_date: null, lead: null, complete: false, issues: [{ labels: ["security-review"], done: false, assignee: null }] })).toContain("launch:x security_review open");
+    expect(e.nextMoves().unresolved.find((u) => u.subject === "launch:checkout-v2")!.detail).toMatch(/read in part \(3 of 120 issues\)$/);
+    const a = answerTopic(e, "Which launches handle customer data without a security review?");
+    expect(a.sources.find((x) => x.connector === "tickets")!.coverage).toBe("partial");
+  });
+
+  it("a partial read from Linear (hasNextPage true) is unresolved too", async () => {
+    const partial = structuredClone(NORTHWIND_TICKETS);
+    linearProjects(partial).find((x) => x.slugId === "checkout-v2")!.issues.pageInfo = { hasNextPage: true };
+    const e = await start(linear, partial);
+    expect(fact(e, "launch:checkout-v2", "security_review")).toBeUndefined();
+    expect(scenario(e, S10)).toBe("unresolved");
+  });
+
+  it("unknown completeness is incomplete: no Linear pageInfo, or a Jira page with neither isLast nor total", async () => {
+    const noPageInfo = structuredClone(NORTHWIND_TICKETS);
+    delete linearProjects(noPageInfo).find((x) => x.slugId === "checkout-v2")!.issues.pageInfo;
+    expect(scenario(await start(linear, noPageInfo), S10)).toBe("unresolved");
+    const noTotal = structuredClone(NORTHWIND_TICKETS);
+    delete jiraSearch(noTotal).total;
+    expect(scenario(await start(jira, noTotal), S10)).toBe("unresolved");
+    const isLast = structuredClone(NORTHWIND_TICKETS);
+    delete jiraSearch(isLast).total;
+    jiraSearch(isLast).isLast = true;
+    expect(scenario(await start(jira, isLast), S10)).toBe("gap_supported");
+  });
+
+  it("an open review is stated however much was read; a cancelled review counts as no review", () => {
+    expect(launchLines({ key: "x", start_date: null, lead: null, issues_total: null, listing: { read: 1, total: null }, issues: [{ labels: ["security-review"], done: false, assignee: null }] })).toContain("launch:x security_review open");
+    expect(launchLines({ key: "x", start_date: null, lead: null, issues_total: 1, listing: { read: 1, total: 1 }, issues: [{ labels: ["security-review"], done: false, cancelled: true, assignee: null }] })).toContain("launch:x security_review none");
+  });
+
+  it("every handled data class must be classified: one marked not customer and one unclassified is unresolved, not no gap", async () => {
+    const half = structuredClone(NORTHWIND_TICKETS);
+    const reg = half.api.find((r) => r.path.startsWith("/v4/spreadsheets/controls-register"))!.versions[0].body as { values: string[][] };
+    reg.values = reg.values.filter((row) => row[1] !== "data:payment-card").map((row) => (row[1] === "data:customer-pii" ? [...row.slice(0, 3), "false"] : row));
+    const e = await start(linear, half);
+    expect(fact(e, "launch:checkout-v2", "unreviewed_customer_data")).toBeUndefined();
+    expect(scenario(e, S10)).toBe("unresolved");
   });
 
   it("which data is customer data comes from the company's register, not the label: without the classification, S10 is unresolved", async () => {
@@ -91,6 +132,7 @@ describe("tickets: a stored engine from before the class", () => {
     old.readAt = Object.fromEntries(Object.entries(old.readAt).map(([k, v]) => [k === "tickets" ? "linear" : k, v]));
     const e = await Engine.open(structuredClone(NORTHWIND), demoOptions(), new MemoryEngineStore(old));
     expect(e.memory.list("weight_change").at(-1)!.body).toMatchObject({ connector: "tickets", renamed_from: "linear", from: 3, to: 3 });
+    expect(e.memory.verify()).toBe(true);
     await e.catchUp();
     expect(e.records.has("tickets:linear/launch/audit-prep")).toBe(true);
     expect(e.nextMoves().next_moves.find((m) => m.action === "move-unused-to-operator")!.due).toBe("2026-11-24");
