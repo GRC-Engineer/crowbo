@@ -247,19 +247,20 @@ export class ConnectionVault {
   // ---- Key rotation ----
 
   /**
-   * Move every secret to the current key id, one provider per transaction. Run after a new KEK is
-   * made current and before the old one is removed from the keyring. Returns how many moved.
+   * Move every secret to the current key id. Run after a new KEK is made current and before the old
+   * one is removed from the keyring. Returns how many moved. A token request in flight for the
+   * provider finishes first; a refresh that commits while a secret is being re-encrypted wins, because
+   * each secret is replaced only if it is still the one read (its new value is already under the
+   * current key). A rotated single-use refresh token is never reverted.
    */
   async rekey(): Promise<{ moved: number; current: string }> {
     let moved = 0;
-    const byProvider = new Map<string, Partial<Record<SecretKind, Envelope>>>();
-    for (const { provider, kind, envelope } of this.store.allSecrets()) {
-      if (envelope.kid === this.ring.current) continue;
-      const next = await reencrypt(this.ring, this.tenant, provider, kind, envelope);
-      byProvider.set(provider, { ...(byProvider.get(provider) ?? {}), [kind]: next });
-      moved++;
+    for (const { provider, kind } of this.store.allSecrets()) {
+      await this.inflight.get(provider)?.catch(() => null);
+      const read = this.store.secret(provider, kind);
+      if (!read || read.kid === this.ring.current) continue;
+      if (this.store.swapSecret(provider, kind, read, await reencrypt(this.ring, this.tenant, provider, kind, read))) moved++;
     }
-    for (const [provider, secrets] of byProvider) if (this.store.get(provider)) this.store.update(provider, (cur) => cur, secrets);
     return { moved, current: this.ring.current };
   }
 
@@ -294,6 +295,16 @@ export class ConnectionVault {
     return out;
   }
 }
+
+/** The prefix of the identities a provider states: "linear:<urlKey>", "google:<domain>", and so on. */
+const IDENTITY_PREFIX: Record<string, string> = { slack: "slack", linear: "linear", jira: "jira", "google-workspace": "google" };
+
+/**
+ * The tenant's registered identities for one provider. A consent is started only when there is at
+ * least one: without them, the operator who confirms a pending consent may be the one who forwarded
+ * the link, so the confirm step alone cannot stop a consent landing on another company's workspace.
+ */
+export const registeredFor = (provider: string, identities: string[]) => identities.filter((i) => i.startsWith(`${IDENTITY_PREFIX[provider] ?? provider}:`));
 
 /**
  * Who consented, as each provider states it: the Google Workspace primary domain, the Linear

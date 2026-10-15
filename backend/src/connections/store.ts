@@ -43,6 +43,10 @@ function guard(current: Connection | null, next: Connection) {
   if (current?.status === "revoked" && next.status !== "revoked") throw new RevokedError(`${current.provider} was revoked; only a fresh consent reconnects it`);
 }
 
+/** Secrets are never written onto a revoked connection: a token that arrives after revocation is dropped. */
+const writable = (next: Connection, secrets: Partial<Record<SecretKind, Envelope>>) => (next.status === "revoked" ? {} : secrets);
+const sameEnvelope = (a: Envelope | null, b: Envelope) => a !== null && a.kid === b.kid && a.iv === b.iv && a.ct === b.ct;
+
 export interface ConsentState {
   nonce: string;
   provider: string;
@@ -63,9 +67,12 @@ export interface ConnectionStore {
   commit(connection: Connection, secrets: Partial<Record<SecretKind, Envelope>>): void;
   /**
    * A change applied to the record as it is at the moment of the write, with any secrets, in one
-   * transaction. Refuses (RevokedError) to move a revoked connection to any other status.
+   * transaction. Refuses (RevokedError) to move a revoked connection to any other status, and writes no
+   * secret onto a connection that is revoked after the change.
    */
   update(provider: string, change: Change, secrets?: Partial<Record<SecretKind, Envelope>>): Connection;
+  /** Replace a secret only if it is still the envelope that was read; false when it changed meanwhile. */
+  swapSecret(provider: string, kind: SecretKind, expected: Envelope, next: Envelope): boolean;
   /** Also purges states that have expired by `now`. */
   putState(state: ConsentState, now: number): void;
   /** The state for a nonce, once: it is deleted as it is read. */
@@ -107,8 +114,13 @@ export class MemoryConnectionStore implements ConnectionStore {
     if (!current) throw new Error(`No connection for ${provider}`);
     const next = change(current);
     guard(current, next);
-    this.commit(next, secrets);
+    this.commit(next, writable(next, secrets));
     return next;
+  }
+  swapSecret(provider: string, kind: SecretKind, expected: Envelope, next: Envelope) {
+    if (!sameEnvelope(this.secret(provider, kind), expected)) return false;
+    this.secrets.set(`${provider}|${kind}`, next);
+    return true;
   }
   putState(state: ConsentState, now: number) {
     for (const [k, v] of this.states) if (Date.parse(v.expires_at) < now) this.states.delete(k);
@@ -162,10 +174,17 @@ export class SqlConnectionStore implements ConnectionStore {
       const next = change(current);
       guard(current, next);
       this.storage.sql.exec("UPDATE connections SET body = ? WHERE provider = ?", JSON.stringify(next), provider);
-      for (const [kind, env] of Object.entries(secrets)) {
+      for (const [kind, env] of Object.entries(writable(next, secrets))) {
         this.storage.sql.exec("INSERT INTO connection_secrets (provider, kind, body) VALUES (?, ?, ?) ON CONFLICT (provider, kind) DO UPDATE SET body = excluded.body", provider, kind, JSON.stringify(env));
       }
       return next;
+    });
+  }
+  swapSecret(provider: string, kind: SecretKind, expected: Envelope, next: Envelope) {
+    return this.storage.transactionSync(() => {
+      if (!sameEnvelope(this.secret(provider, kind), expected)) return false;
+      this.storage.sql.exec("UPDATE connection_secrets SET body = ? WHERE provider = ? AND kind = ?", JSON.stringify(next), provider, kind);
+      return true;
     });
   }
   putState(state: ConsentState, now: number) {

@@ -3,7 +3,7 @@ import { type Keyring, open, parseKeyring, reencrypt, seal } from "../../src/con
 import { authorizeUrl, MANIFESTS } from "../../src/connections/manifests";
 import { MemoryConnectionStore } from "../../src/connections/store";
 import { connectionFetch, linkNext } from "../../src/connections/transport";
-import { ConnectionVault } from "../../src/connections/vault";
+import { ConnectionVault, registeredFor } from "../../src/connections/vault";
 import { connectAuthed, signState, stateKey, verifyState } from "../../src/app/connect";
 import type { Env } from "../../src/app/env";
 import { weeklyBrief } from "../../src/engine/answer";
@@ -246,9 +246,63 @@ describe("PR 51 review: concurrency, revocation and who consented", () => {
     };
     expect(await vault.accessToken("jira", client, http)).toBeNull();
     expect(store.get("jira")).toMatchObject({ status: "revoked", revoked_reason: "the provider answered 401" });
+    // The token that arrived after the revocation is not written onto the dead connection.
+    expect(await open(ring(), "tenant-a", "jira", "access_token", store.secret("jira", "access_token")!)).toBe("at-1");
     vault.markUsed("jira");
     expect(store.get("jira")!.status).toBe("revoked");
     expect(() => store.update("jira", (c) => ({ ...c, status: "active" }))).toThrow(/only a fresh consent reconnects it/);
+  });
+
+  it("a refresh that lands during a rekey is kept: the rotated refresh token is never reverted to the used one", async () => {
+    let now = NOW;
+    const inflight = new Map<string, Promise<string | null>>();
+    const { store } = await connected("jira", () => now, inflight);
+    const k2 = ring("k2", { k1: 1, k2: 2 });
+    const vault = new ConnectionVault("tenant-a", store, k2, () => now, inflight);
+    // Atlassian-style single-use refresh tokens: only the latest one issued is accepted.
+    let valid = "rt-1";
+    let n = 1;
+    const { http } = fakeHttp((_url, init) => {
+      if (form(init).refresh_token !== valid) return Response.json({ error: "invalid_grant" }, { status: 400 });
+      valid = `rt-${++n}`;
+      return Response.json({ access_token: `at-${n}`, refresh_token: valid, expires_in: 3600 });
+    });
+    now += 2 * 3600_000;
+    const [rekeyed, token] = await Promise.all([vault.rekey(), vault.accessToken("jira", client, http)]);
+    expect(token).toBe("at-2");
+    expect(rekeyed.current).toBe("k2");
+    expect(store.allSecrets().every((s) => s.envelope.kid === "k2")).toBe(true);
+    expect(await open(k2, "tenant-a", "jira", "refresh_token", store.secret("jira", "refresh_token")!)).toBe("rt-2");
+    now += 2 * 3600_000;
+    expect(await vault.accessToken("jira", client, http)).toBe("at-3");
+    expect(store.get("jira")!.status).toBe("active");
+  });
+
+  it("a rekey whose secret changed after it was read leaves the newer secret in place", async () => {
+    const { store } = await connected("jira", () => NOW);
+    const k2 = ring("k2", { k1: 1, k2: 2 });
+    const newer = await seal(k2, "tenant-a", "jira", "refresh_token", "rt-newer");
+    const read = store.secret.bind(store);
+    let swapped = false;
+    // The refresh commits between the rekey reading the old envelope and writing the re-encrypted one.
+    store.secret = (provider, kind) => {
+      const env = read(provider, kind);
+      if (kind === "refresh_token" && !swapped) {
+        swapped = true;
+        queueMicrotask(() => store.secrets.set("jira|refresh_token", newer));
+      }
+      return env;
+    };
+    await new ConnectionVault("tenant-a", store, k2, () => NOW).rekey();
+    expect(await open(k2, "tenant-a", "jira", "refresh_token", read("jira", "refresh_token")!)).toBe("rt-newer");
+  });
+
+  it("a consent starts only for a provider the tenant registered an identity for", () => {
+    const ids = ["linear:northwind", "google:northwind.example"];
+    expect(registeredFor("linear", ids)).toEqual(["linear:northwind"]);
+    expect(registeredFor("google-workspace", ids)).toEqual(["google:northwind.example"]);
+    expect(registeredFor("jira", ids)).toEqual([]);
+    expect(registeredFor("slack", [])).toEqual([]);
   });
 
   it("with no registered identity, a consent waits for its initiator: not used until then, and nobody else can confirm", async () => {

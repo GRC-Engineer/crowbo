@@ -12,7 +12,7 @@ import { SqlEngineStore } from "../engine/store";
 import { parseKeyring } from "../connections/crypto";
 import { MANIFESTS } from "../connections/manifests";
 import { SqlConnectionStore } from "../connections/store";
-import { ConnectionError, ConnectionVault, identityProbe } from "../connections/vault";
+import { ConnectionError, ConnectionVault, identityProbe, registeredFor } from "../connections/vault";
 import { type FetchLike, fixedHostFetch } from "../providers/http";
 
 /** A fetch that reaches only a provider's token host and the hosts its manifest and identity probe use. */
@@ -82,6 +82,7 @@ export class TenantStore extends DurableObject<Env> {
       };
       switch (op.op) {
         case "start":
+          if (!registeredFor(op.provider, identities).length) return { ok: false, error: `Register this company's ${MANIFESTS[op.provider]?.label ?? op.provider} identity before starting a consent` };
           return { ok: true, result: await vault.startConsent(op.provider, client(op.provider).id, op.redirectUri, op.initiator) };
         case "callback": {
           const m = MANIFESTS[op.provider];
