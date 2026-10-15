@@ -355,9 +355,37 @@ export class Engine {
       this.records.set(id, record);
     }
     const proposals = this.memory.tuningProposals(new Map([...this.weights].map(([k, w]) => [k, w.weight])));
-    for (const p of proposals) this.memory.append("proposal", "engine", { ...p, note: "Proposal only: approve by changing the weight." });
+    for (const p of proposals) this.memory.append("proposal", "engine", { ...p, note: "Proposal only: a person accepts it with accept_proposal." });
     const after = await this.refresh(by);
     return { recorded: entry, proposals, decision_diff: after.id !== before.id ? diff(before, after) : null };
+  }
+
+  /**
+   * A person accepts a weight proposal: the weight changes as proposed, the change is kept against
+   * the proposal, and the decision is recomputed. Refused if the proposal is unknown, already
+   * accepted, or the weight has changed since it was proposed (the proposal no longer applies).
+   */
+  async acceptProposal(seq: number, by: string) {
+    const proposal = this.memory.list("proposal").find((e) => e.seq === seq);
+    if (!proposal) throw new EngineError(`No proposal ${seq}`);
+    if (this.memory.list("weight_change").some((e) => e.body.proposal === seq)) throw new EngineError(`Proposal ${seq} was already accepted`);
+    const { connector, from, to, disputes } = proposal.body as { connector: string; from: number; to: number; disputes: number };
+    const current = this.weights.get(connector);
+    if (!current) throw new EngineError(`Unknown source ${connector}`);
+    if (current.weight !== from) throw new EngineError(`Proposal ${seq} was for ${connector} at ${from}; it is now ${current.weight}, so the proposal no longer applies`);
+    const before = this.latest!;
+    const reason = `Accepted proposal ${seq}: ${disputes} recorded calls disputed ${connector}`;
+    this.memory.append("weight_change", by, { connector, from, to, reason, proposal: seq });
+    const next = { ...current, weight: to, set_by: by, reason };
+    this.store.saveWeight(next);
+    this.weights.set(connector, next);
+    const after = await this.refresh(by);
+    const changed = after.id !== before.id ? diff(before, after) : null;
+    return {
+      connector, from, to, proposal: seq,
+      decision_diff: changed && { ...changed, because: `${connector} weight ${from} → ${to}, accepted from proposal ${seq}` },
+      decision: after,
+    };
   }
 
   /** The current usable value of a condition's subject and predicate. */

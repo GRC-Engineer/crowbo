@@ -150,7 +150,7 @@ describe("surface: MCP", () => {
     const client = new Client({ name: "test", version: "0" });
     await Promise.all([server.connect(a), client.connect(b)]);
     const names = (await client.listTools()).tools.map((t) => t.name).sort();
-    expect(names).toEqual(["engine_advance_time", "engine_decide", "engine_draft_followups", "engine_graph", "engine_import_knowledge_base", "engine_memory", "engine_next_moves", "engine_record_call", "engine_record_outcome", "engine_reset_demo", "engine_run_schedule", "engine_set_weight", "engine_status", "engine_weekly_brief", "engine_what_if"]);
+    expect(names).toEqual(["engine_accept_proposal", "engine_advance_time", "engine_decide", "engine_draft_followups", "engine_graph", "engine_import_knowledge_base", "engine_memory", "engine_next_moves", "engine_record_call", "engine_record_outcome", "engine_reset_demo", "engine_run_schedule", "engine_set_weight", "engine_status", "engine_weekly_brief", "engine_what_if"]);
     const drafts: any = await client.callTool({ name: "engine_draft_followups", arguments: { topic: "billing-admin" } });
     expect(drafts.structuredContent.sent).toBe(false);
     expect(names.some((n) => /send|post/.test(n))).toBe(false);
