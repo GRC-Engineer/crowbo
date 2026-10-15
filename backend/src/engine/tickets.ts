@@ -1,6 +1,6 @@
 import { line } from "./connectors";
 import type { Connector, FetchJson, SourceRecord } from "./model";
-import { collect, MAX_PAGES } from "./paging";
+import { collect } from "./paging";
 
 /**
  * The tickets connector: one class, several providers (Linear, Jira). A provider reads its own API
@@ -51,15 +51,13 @@ export const linear: TicketsProvider = {
     type Issues = { nodes: Issue[]; pageInfo?: { hasNextPage: boolean; endCursor?: string | null } };
     /** A project's issues: the first page from the projects query, the rest by cursor until a page says it is the last. */
     const allIssues = async (slugId: string, first: Issues) => {
-      const nodes = [...first.nodes];
-      let info = first.pageInfo;
-      for (let n = 1; n < MAX_PAGES && info?.hasNextPage === true && info.endCursor; n++) {
-        const r = (await api(`/graphql?query=project-issues&project=${encodeURIComponent(slugId)}&after=${encodeURIComponent(info.endCursor)}`)) as null | { data: { project: { issues: Issues } } };
-        if (!r) return { nodes, complete: false };
-        nodes.push(...r.data.project.issues.nodes);
-        info = r.data.project.issues.pageInfo;
-      }
-      return { nodes, complete: info?.hasNextPage === false };
+      const l = await collect<Issue>("first", async (cursor) => {
+        const page = cursor === "first" ? first : ((await api(`/graphql?query=project-issues&project=${encodeURIComponent(slugId)}&after=${encodeURIComponent(cursor)}`)) as null | { data: { project: { issues: Issues } } })?.data.project.issues;
+        if (!page) return null;
+        const info = page.pageInfo;
+        return { items: page.nodes, next: info?.hasNextPage === false ? null : info?.hasNextPage && info.endCursor ? info.endCursor : undefined };
+      }, (i) => (i as { identifier?: string }).identifier ?? JSON.stringify(i));
+      return { nodes: l.items, complete: l.complete };
     };
     const r = (await api("/graphql?query=projects")) as null | {
       data: { projects: { nodes: { slugId: string; startDate: string | null; lead?: { email: string } | null; issues: Issues }[] } };
@@ -83,14 +81,15 @@ export const jira: TicketsProvider = {
   id: "jira", label: "Jira",
   async launches(api) {
     type Project = { key: string; lead?: { emailAddress?: string } };
-    type Issue = { fields: { labels: string[]; status: { statusCategory: { key: string } }; resolution?: { name: string } | null; assignee: { emailAddress?: string } | null; fixVersions: { name: string }[] } };
+    type Issue = { key?: string; fields: { labels: string[]; status: { statusCategory: { key: string } }; resolution?: { name: string } | null; assignee: { emailAddress?: string } | null; fixVersions: { name: string }[] } };
     const projects = ((await api("/rest/api/3/project/search")) as null | { values: Project[] })?.values ?? [];
     const out: Launch[] = [];
     for (const p of projects) {
       const versions = ((await api(`/rest/api/3/project/${p.key}/versions`)) ?? []) as { name: string; releaseDate?: string; released: boolean }[];
       // Search pages by nextPageToken; complete only when a page says it is the last (isLast), or a stated
       // total is no larger than what was read. A page that says neither leaves the list incomplete.
-      const base = `/rest/api/3/search?jql=project%3D${p.key}`;
+      // The enhanced search endpoint pages by nextPageToken and marks the last page with isLast.
+      const base = `/rest/api/3/search/jql?jql=project%3D${p.key}`;
       let total: number | null = null;
       let read = 0;
       const listing = await collect<Issue>(base, async (path) => {
@@ -100,7 +99,7 @@ export const jira: TicketsProvider = {
         if (typeof page.total === "number") total = page.total;
         const last = page.isLast === true || (total !== null && total <= read);
         return { items: page.issues, next: last ? null : page.nextPageToken ? `${base}&nextPageToken=${encodeURIComponent(page.nextPageToken)}` : undefined };
-      });
+      }, (i) => i.key ?? JSON.stringify(i));
       const issues = listing.items;
       const complete = listing.complete;
       for (const v of versions.filter((x) => !x.released)) {

@@ -83,14 +83,32 @@ describe("identity: paging, Okta status, admins from the admin flag", () => {
     expect(state(m, "leaver-access")).toBe("unresolved");
   });
 
-  it("a paged list that never ends stops at the page cap and is incomplete", async () => {
+  it("a page that links back to itself is a loop: read once, incomplete, no duplicates", async () => {
     // A members page whose Link header always points back to itself.
     const api = new FakeApi([
       { path: "/api/v1/groups", versions: [{ from: SINCE, body: [{ id: "00g-billing", profile: { name: "g" } }] }] },
       { path: "/api/v1/groups/00g-billing/users", versions: [{ from: SINCE, body: [{ profile: { login: "a@x" } }], next: "/api/v1/groups/00g-billing/users" }] },
     ], "2026-10-13T09:00:00Z");
     const s = await okta.snapshot(api.fetch);
-    expect(s.groups[0].members).toEqual({ items: Array(MAX_PAGES).fill("a@x"), complete: false });
+    expect(s.groups[0].members).toEqual({ items: ["a@x"], complete: false });
+  });
+
+  it("a Link header with an absolute URL is followed by its path", async () => {
+    const users = body<unknown[]>(NORTHWIND, "/api/v1/groups/00g-billing/users");
+    const f = withRoutes(NORTHWIND, [
+      route("/api/v1/groups/00g-billing/users", users.slice(0, 25), "https://northwind.okta.com/api/v1/groups/00g-billing/users?after=25"),
+      route("/api/v1/groups/00g-billing/users?after=25", users.slice(25)),
+    ]);
+    expect(fact(await Engine.start(f, demoOptions()), "group:billing-admins", "holders")!.value).toBe(40);
+  });
+
+  it("a group list read in part leaves the admin review unresolved: a missed group might grant admin", async () => {
+    const groups = body<unknown[]>(NORTHWIND_IDENTITY, "/api/v1/groups");
+    const f = withRoutes(NORTHWIND_IDENTITY, [route("/api/v1/groups", groups, "/api/v1/groups?after=2")]);
+    const e = await engineWith(f, { identity: okta });
+    expect(fact(e, "app:google-workspace", "review_overdue")).toBeUndefined();
+    expect(fact(e, "app:google-workspace", "read_in_part")!.quote).toBe("groups read in part (2 of an unknown number of groups)");
+    expect(state(e, "standing-admin-unreviewed")).toBe("unresolved");
   });
 });
 
@@ -107,7 +125,7 @@ describe("tickets and GRC platform: paging", () => {
   });
 
   it("Jira: search pages by nextPageToken until isLast", async () => {
-    const path = "/rest/api/3/search?jql=project%3DNW";
+    const path = "/rest/api/3/search/jql?jql=project%3DNW";
     const issues = body<{ issues: unknown[] }>(NORTHWIND_TICKETS, path).issues;
     const paged = withRoutes(NORTHWIND_TICKETS, [route(path, { issues: issues.slice(0, 1), nextPageToken: "n2" }), route(`${path}&nextPageToken=n2`, { issues: issues.slice(1), isLast: true })]);
     const e = await engineWith(paged, { tickets: jira });
@@ -130,6 +148,42 @@ describe("tickets and GRC platform: paging", () => {
   });
 });
 
+describe("tickets and GRC platform: a page two that fails, a loop, a cap", () => {
+  it("Linear: a cursor page that cannot be read leaves S10 unresolved", async () => {
+    const f = structuredClone(NORTHWIND_TICKETS);
+    const project = body<{ data: { projects: { nodes: { slugId: string; issues: { nodes: unknown[]; pageInfo: unknown } }[] } } }>(f, "/graphql?query=projects").data.projects.nodes.find((p) => p.slugId === "checkout-v2")!;
+    project.issues = { nodes: project.issues.nodes.slice(0, 1), pageInfo: { hasNextPage: true, endCursor: "c1" } };
+    expect(state(await engineWith(f, { tickets: linear }), "launch-without-review")).toBe("unresolved");
+  });
+
+  it("Jira: a nextPageToken page that cannot be read leaves S10 unresolved", async () => {
+    const path = "/rest/api/3/search/jql?jql=project%3DNW";
+    const issues = body<{ issues: unknown[] }>(NORTHWIND_TICKETS, path).issues;
+    const f = withRoutes(NORTHWIND_TICKETS, [route(path, { issues: issues.slice(0, 1), nextPageToken: "n2" })]);
+    expect(state(await engineWith(f, { tickets: jira }), "launch-without-review")).toBe("unresolved");
+  });
+
+  it("Vanta: a cursor page that cannot be read, and a list longer than the page cap, are both incomplete", async () => {
+    const vendors = body<{ results: { data: unknown[] } }>(NORTHWIND_GRC, "/v1/vendors").results.data;
+    const cut = withRoutes(NORTHWIND_GRC, [route("/v1/vendors", { results: { data: vendors.slice(0, 2), pageInfo: { hasNextPage: true, endCursor: "v2" } } })]);
+    expect(state(await engineWith(cut, { grc: vanta }), "vendor-review-gap")).toBe("unresolved");
+    const pages = Array.from({ length: MAX_PAGES + 5 }, (_, n) => route(n === 0 ? "/v1/vendors" : `/v1/vendors?pageCursor=c${n}`, { results: { data: [{ id: `v${n}`, dataClasses: ["customer-pii"], lastSecurityReviewAt: null }], pageInfo: { hasNextPage: true, endCursor: `c${n + 1}` } } }));
+    const e = await engineWith(withRoutes(NORTHWIND_GRC, pages), { grc: vanta });
+    expect(e.records.get("grc-platform:vanta/vendors")!.completeness).toEqual({ read: MAX_PAGES, total: null, of: "vendors" });
+    expect(state(e, "vendor-review-gap")).toBe("unresolved");
+  });
+
+  it("Drata: a page two that cannot be read, or a server that returns page 1 again, never counts as complete", async () => {
+    const dv = body<{ data: unknown[]; total: number }>(NORTHWIND_GRC, "/public/vendors");
+    const missing = withRoutes(NORTHWIND_GRC, [route("/public/vendors", { data: dv.data.slice(0, 2), total: 4 })]);
+    expect(state(await engineWith(missing, { grc: drata }), "vendor-review-gap")).toBe("unresolved");
+    const repeats = withRoutes(NORTHWIND_GRC, [route("/public/vendors", { data: dv.data.slice(0, 2), total: 4 }), route("/public/vendors?page=2", { data: dv.data.slice(0, 2), total: 4 })]);
+    const e = await engineWith(repeats, { grc: drata });
+    expect(e.records.get("grc-platform:drata/vendors")!.completeness).toEqual({ read: 2, total: 4, of: "vendors" });
+    expect(state(e, "vendor-review-gap")).toBe("unresolved");
+  });
+});
+
 describe("migration: the default is marked, and the renamed connector is read at once", () => {
   it("a stored engine from before the class logs default: true and opens with the class already read", async () => {
     const store = new MemoryEngineStore();
@@ -142,5 +196,22 @@ describe("migration: the default is marked, and the renamed connector is read at
     // No empty decision in between: the first decision kept after the rename already has the 31.
     expect(e.records.has("identity:okta/group/billing-admins")).toBe(true);
     expect(fact(e, "group:billing-admins", "unused_90d")!.value).toBe(31);
+    // No empty decision was kept after the rename: every one since proposes the billing move.
+    const rename = e.memory.list("weight_change").at(-1)!.seq;
+    const after = e.memory.list("decision").filter((d) => d.seq > rename);
+    // The inputs after re-reading equal the ones before the rename, so often no new decision is kept at all.
+    expect(after.every((d) => (d.body.next_moves as string[]).includes("move-unused-to-operator"))).toBe(true);
+    expect(e.nextMoves().next_moves.map((m) => m.action)).toContain("move-unused-to-operator");
+  });
+
+  it("a weight the company set moves to the class without the default mark", async () => {
+    const store = new MemoryEngineStore();
+    await Engine.open(structuredClone(NORTHWIND), demoOptions(), store);
+    const old = store.load()!;
+    old.weights = [...old.weights, { connector: "okta", weight: 4, max_age_days: 1, set_by: "grc-lead", reason: "Set by the company" }];
+    const e = await Engine.open(structuredClone(NORTHWIND), demoOptions(), new MemoryEngineStore(old));
+    const change = e.memory.list("weight_change").at(-1)!.body;
+    expect(change).toMatchObject({ connector: "identity", renamed_from: "okta", from: 4, to: 4 });
+    expect(change).not.toHaveProperty("default");
   });
 });

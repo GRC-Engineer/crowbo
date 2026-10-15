@@ -97,8 +97,10 @@ export function derive(usable: Fact[], asOf: string, windowDays = 90): Fact[] {
     const direct = by("admin_of").filter((f) => f.value === app);
     const groupsOf = by("grants_admin_on").filter((f) => f.value === app);
     const viaGroups = by("member_of").filter((m) => groupsOf.some((g) => g.subject === m.value));
-    if (!whole([...direct, ...viaGroups])) {
-      readInPart(app, [...direct, ...viaGroups]);
+    // A group list read in part may have missed a group that grants admin on this app.
+    const groupLists = listings("groups");
+    if (!whole([...direct, ...viaGroups, ...groupLists])) {
+      readInPart(app, [...groupLists, ...direct, ...viaGroups]);
       continue;
     }
     const admins = uniq([...direct, ...viaGroups].map((f) => f.subject));

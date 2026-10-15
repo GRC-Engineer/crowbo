@@ -50,7 +50,7 @@ describe("tickets: one connector class, two providers", () => {
 describe("tickets: S10 holds only on evidence", () => {
   it("a finished security review is no gap", async () => {
     const done = structuredClone(NORTHWIND_TICKETS);
-    const search = done.api.find((r) => r.path === "/rest/api/3/search?jql=project%3DNW")!.versions[0].body as { issues: unknown[]; total: number };
+    const search = done.api.find((r) => r.path === "/rest/api/3/search/jql?jql=project%3DNW")!.versions[0].body as { issues: unknown[]; total: number };
     search.issues.push({ fields: { labels: ["security-review"], status: { statusCategory: { key: "done" } }, assignee: { emailAddress: "dana@northwind.example" }, fixVersions: [{ name: "checkout-v2" }] } });
     search.total = 4;
     const e = await start(jira, done);
@@ -59,7 +59,7 @@ describe("tickets: S10 holds only on evidence", () => {
   });
 
   const linearProjects = (f: CompanyFixture) => (f.api.find((r) => r.path === "/graphql?query=projects")!.versions[0].body as { data: { projects: { nodes: { slugId: string; issues: { pageInfo?: { hasNextPage: boolean } } }[] } } }).data.projects.nodes;
-  const jiraSearch = (f: CompanyFixture) => f.api.find((r) => r.path === "/rest/api/3/search?jql=project%3DNW")!.versions[0].body as { issues: unknown[]; total?: number; isLast?: boolean };
+  const jiraSearch = (f: CompanyFixture) => f.api.find((r) => r.path === "/rest/api/3/search/jql?jql=project%3DNW")!.versions[0].body as { issues: unknown[]; total?: number; isLast?: boolean };
 
   it("a partial read states nothing about the review: S10 stays unresolved and says how much was read (Jira total)", async () => {
     const partial = structuredClone(NORTHWIND_TICKETS);
