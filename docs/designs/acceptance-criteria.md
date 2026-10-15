@@ -33,11 +33,11 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 | P2 | Three real connectors, read-only, feed the weekly fix-or-drop list | Failing until built |
 | P2.1 | Prose from real sources is extracted live by Clef, with precision at 0.8 and recall measured on 50 labelled sentences | Failing until built |
 | P3 | A mention in Slack answers with the card: citations, a named decider and a date, with no assistant needed | True on fixtures |
-| P3.1 | The card and the weekly list are delivered to a workspace: a signed event gets a threaded reply, and the weekly post goes out on schedule | Failing until built |
+| P3.1 | The list arrives in the customer's Slack with citations, a named decider and a date, with no assistant needed: the weekly post on schedule, and a signed mention answered in its thread | True on fixtures |
 | P4 | A call recorded where the pilot works changes the next answer, and the answer cites it | Failing until built: P4.1 and P4.2. The engine part is R8 |
 | P4.1 | A call recorded from a Slack thread keeps the thread's permalink as provenance | Failing until built |
 | P4.2 | Repeated corrections yield a weight proposal; accepting it is recorded and recomputes the ranking | Failing until built |
-| P5 | The weekly brief reaches the security lead in plain words: moves with sources, deciders and dates, hours back, evidence not used | Failing until built: delivery is P3.1. The format is R9 |
+| P5 | The weekly brief reaches the security lead in plain words: moves with sources, deciders and dates, hours back, evidence not used | True on fixtures: delivery is P3.1, the format is R9 |
 
 ### Build specs
 
@@ -93,10 +93,16 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
   - Without a model, the card is the computed answer alone. With one, the model only routes the question and phrases a summary checked against the sources; the ranking is the same either way.
   - Text from questions, sources and models is escaped, so it cannot become a link, a mention or a broadcast.
 
-**P3.1. Delivered to a workspace.**
+**P3.1. Delivered to a workspace.** P3 checks the card; P3.1 makes the original outcome true, that the list arrives in the customer's Slack.
 - **Build:** the events endpoint that verifies Slack's signature and replay window, replies in the thread, and posts the weekly list to one configured channel on a schedule. Plus the app manifest and setup steps.
-- **Check:** a signed `app_mention` event, with a fake Slack API, produces one threaded reply carrying the card.
+- **Check:** with a fake Slack API, the scheduled post carries the list with sources and deciders, and a signed `app_mention` gets one reply in its thread with citations.
 - **Size:** about 1–2 days.
+- **Built:** [`slack-events.ts`](../../backend/src/surfaces/slack-events.ts) and [`app/slack.ts`](../../backend/src/app/slack.ts); setup in [SLACK.md](../SLACK.md).
+  - Body size, signature and the five-minute replay window are checked before the JSON is read. Slack's retries and bot messages are ignored.
+  - Each registered workspace has its own engine copy. The weekly post goes to its one channel on Mondays at 08:00 UTC.
+  - An export by direct message is imported only in a workspace registered as synthetic; the declaration comes from the registration, not the message.
+  - Off unless synthetic data is allowed (staging) and all three Slack secrets are set.
+  - The card carries the headless contract in [INTERACTION-MODEL.md](../INTERACTION-MODEL.md): planning period and evidence-check time, advice marked as advice, reported choices and observed outcomes marked, the full result ID and the next operations.
 
 **P4.1. Corrections from Slack.**
 - **Build:** "record this" in a thread writes the call. The thread's permalink becomes the call's provenance.
@@ -113,7 +119,7 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 
 **Reviewed, not tested.** One more outcome is judged by the pilot, not by a test: a CISO at the pilot forwards the brief to their leadership without editing it. The brief should open with what the security lead did not already know that week.
 
-Build order, riskiest first: P1, P3, P2, P2.1, P4.1, P4.2. That totals about 3 weeks of focused work. P1 and P3 are built. P3.1 delivers P3 to a workspace. P1.1 follows when a pilot's export needs it, and P1.2 follows the register.
+Build order, riskiest first: P1, P3, P2, P2.1, P4.1, P4.2. That totals about 3 weeks of focused work. P1, P3 and P3.1 are built. P1.1 follows when a pilot's export needs it, and P1.2 follows the register.
 
 ## Regression: already true on fixtures
 

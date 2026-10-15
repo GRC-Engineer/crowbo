@@ -4,6 +4,8 @@ import type { Env } from "./app/env";
 import { buildServer } from "./app/mcp";
 import { oauthProvider } from "./app/oauth";
 import { isOperation } from "./app/operations";
+import { slackConfig, slackDeps, slackPoster, weeklyTargets } from "./app/slack";
+import { handleSlackEvent, postWeekly, WEEKLY_CRON } from "./surfaces/slack-events";
 
 export { TenantStore } from "./app/tenant";
 
@@ -61,6 +63,9 @@ function tenant(env: Env, name: string) {
   const namespace = env.DO_JURISDICTION === "none" ? env.TENANT : env.TENANT.jurisdiction("eu");
   return namespace.get(namespace.idFromName(name));
 }
+
+/** A demo engine copy's operations, by its key (tenant::engine::reader). */
+const engineCaller = (env: Env) => (key: string) => (actor: string, op: string, args: unknown) => tenant(env, key).engineCall(actor, op, args);
 
 function invoker(env: Env, config: OperatorConfig) {
   const caller = callerFor(config, env.CLOUDFLARE_ACCOUNT_ID, env.AI_GATEWAY ?? "default");
@@ -131,6 +136,17 @@ export default {
     if (url.pathname === "/health") return json({ ok: true, service: "crowbo-api" });
     // Claude shows a connector's favicon: point it at the crow on the public site.
     if (url.pathname === "/favicon.ico") return Response.redirect("https://crowbo.ai/assets/favicon-32.png", 301);
+    // Slack's Events API: signed by Slack, not by an operator token, so it is checked before auth.
+    if (url.pathname === "/slack/events") {
+      let config;
+      try {
+        config = slackConfig(env);
+      } catch {
+        return json({ error: "Slack configuration is invalid" }, 500);
+      }
+      if (!config) return json({ error: "Not found" }, 404);
+      return withSecurityHeaders(await handleSlackEvent(request, slackDeps(config, engineCaller(env), (work) => ctx.waitUntil(work))));
+    }
 
     let operators;
     try {
@@ -147,8 +163,13 @@ export default {
     return json({ error: "Unauthorized" }, 401);
   },
 
-  /** Cron: run every registered, due Slack sync as the operator who registered it. */
-  async scheduled(_event: ScheduledController, env: Env): Promise<void> {
+  /** Cron: the weekly Slack post on WEEKLY_CRON; otherwise every registered, due Slack sync as the operator who registered it. */
+  async scheduled(event: ScheduledController, env: Env): Promise<void> {
+    if (event.cron === WEEKLY_CRON) {
+      const config = slackConfig(env);
+      if (config) await postWeekly(weeklyTargets(config, engineCaller(env)), slackPoster(config.botToken));
+      return;
+    }
     const operators = parseOperators(env.CROWBO_OPERATORS);
     for (const config of Object.values(operators)) {
       if (!config.roles.includes("ingestor")) continue;
