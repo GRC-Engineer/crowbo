@@ -33,8 +33,8 @@ const built = (path: string) => existsSync(join(ROOT, path));
 const RECORDED = join(ROOT, "test/fixtures/recorded");
 const twoDisputes = async () => {
   const e = await demo();
-  await e.recordCall("move-unused-to-operator", "override", "tester", "Okta group sync lags", [], "okta");
-  const second = await e.recordCall("move-unused-to-operator", "override", "tester", "Still lags", [], "okta");
+  await e.recordCall("move-unused-to-operator", "override", "tester", "Okta group sync lags", [], "identity");
+  const second = await e.recordCall("move-unused-to-operator", "override", "tester", "Still lags", [], "identity");
   return { e, proposal: e.memory.list("proposal").at(-1)!, second };
 };
 const withSlack = (text: string) => {
@@ -133,8 +133,8 @@ describe("pilot criteria for mid-December: what a first paid pilot buys", () => 
     expect(second.proposals).toHaveLength(1);
     const op: string = "accept_proposal";
     const r = isEngineOp(op) ? ((await runEngine(e, "tester", op, { proposal: proposal.seq })) as { decision_diff: unknown }) : null;
-    expect(e.memory.list("weight_change").at(-1)?.body).toMatchObject({ connector: "okta", proposal: proposal.seq });
-    expect(JSON.stringify(r?.decision_diff ?? null)).toContain("okta");
+    expect(e.memory.list("weight_change").at(-1)?.body).toMatchObject({ connector: "identity", proposal: proposal.seq });
+    expect(JSON.stringify(r?.decision_diff ?? null)).toContain("identity");
   });
 });
 

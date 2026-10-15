@@ -38,7 +38,7 @@ export function derive(usable: Fact[], asOf: string, windowDays = 90): Fact[] {
   for (const group of groups) {
     const memberships = by("member_of").filter((f) => f.value === group);
     const holders = uniq(memberships.map((f) => f.subject));
-    out.push(derived(group, "holders", holders.length, `${holders.length} people hold ${nodeName(group)} (Okta group membership)`, memberships));
+    out.push(derived(group, "holders", holders.length, `${holders.length} people hold ${nodeName(group)} (identity provider group membership)`, memberships));
 
     // Held but not used: group membership joined with the app's audit log.
     const usage = by("last_billing_action");
@@ -65,6 +65,30 @@ export function derive(usable: Fact[], asOf: string, windowDays = 90): Fact[] {
     out.push(derived("role:billing-operator", "covers_unused_actions", missing.length === 0,
       missing.length ? `Billing Operator lacks ${missing.join(", ")}, used by unused holders` : `Every action the unused holders took (${needed.join(", ")}) is in the Billing Operator role`,
       [...permits, ...theirActions, ...usage], coverage));
+  }
+
+  // Standing admin access and its last review: a group that administers an app, joined with the date
+  // it was last reviewed. With no review date there is nothing to compute, and the gap stays missing.
+  for (const admin of by("grants_admin_on")) {
+    const reviewed = by("last_reviewed_at").filter((f) => f.subject === admin.subject).sort((x, y) => (String(x.value) < String(y.value) ? 1 : -1))[0];
+    if (!reviewed) continue;
+    const age = Math.round((at(asOf) - at(String(reviewed.value))) / DAY);
+    const overdue = age > windowDays;
+    out.push(derived(admin.subject, "review_overdue", overdue,
+      `Admin access through ${nodeName(admin.subject)} on ${nodeName(String(admin.value))} last reviewed ${reviewed.value}, ${age} days ago${overdue ? `, past the ${windowDays}-day limit` : `, within the ${windowDays}-day limit`}`,
+      [admin, reviewed]));
+  }
+
+  // Leavers still active: people HR shows as gone, joined with accounts the identity provider shows as
+  // active. Computed only when both are readable, so a viewer without HR access gets nothing to join.
+  const left = by("terminated_on").filter((f) => String(f.value) <= asOf);
+  const statuses = by("account_status");
+  if (left.length && statuses.length) {
+    const active = left.filter((t) => statuses.some((st) => st.subject === t.subject && st.value === "active"));
+    const names = uniq(active.map((t) => nodeName(t.subject)));
+    out.push(derived("directory:accounts", "leavers_active", names.length,
+      names.length ? `${names.length} of ${left.length} people who left still have an active account: ${names.join(", ")}` : `None of the ${left.length} people who left has an active account`,
+      [...left, ...statuses.filter((st) => left.some((t) => t.subject === st.subject))]));
   }
   return out;
 }

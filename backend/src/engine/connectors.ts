@@ -1,4 +1,5 @@
-import type { Connector, FakeApiRoute, FetchJson, SourceRecord } from "./model";
+import { identityConnector, okta } from "./identity";
+import type { AudienceGrant, Connector, FakeApiRoute, FetchJson, SourceRecord } from "./model";
 
 /**
  * Layer 01, ingest. Each connector reads one tool through the shape of that tool's API and turns
@@ -38,27 +39,6 @@ export class FakeApi {
     return live ? structuredClone(live.body) : null;
   };
 }
-
-export const okta: Connector = {
-  id: "okta", label: "Okta", rail: "security", every_minutes: 60, live_state: true,
-  async read(api) {
-    const groups = ((await api("/api/v1/groups?q=billing-admins")) ?? []) as { id: string; lastMembershipUpdated: string; profile: { name: string; app: string } }[];
-    const apps = ((await api("/api/v1/apps?q=billing")) ?? []) as { name: string; lastUpdated: string; profile: { businessOwner: string } }[];
-    const out: SourceRecord[] = [];
-    for (const g of groups) {
-      const users = ((await api(`/api/v1/groups/${g.id}/users`)) ?? []) as { profile: { login: string } }[];
-      const group = `group:${g.profile.name}`;
-      out.push(record({
-        id: `okta:group/${g.profile.name}`, connector: "okta", rail: "security", observed_at: day(g.lastMembershipUpdated), readers: GRC,
-        lines: [...line(group, "grants_admin_on", `app:${g.profile.app}`), ...users.flatMap((u) => line(person(u.profile.login), "member_of", group))],
-      }));
-    }
-    for (const a of apps) {
-      out.push(record({ id: `okta:app/${a.name}`, connector: "okta", rail: "security", observed_at: day(a.lastUpdated), readers: GRC, lines: line(`app:${a.name}`, "business_owner", person(a.profile.businessOwner)) }));
-    }
-    return out;
-  },
-};
 
 /** The billing app's audit API: last action and the actions each person has taken. */
 export const billing: Connector = {
@@ -163,10 +143,15 @@ export const slack: Connector = {
   },
 };
 
-export const CONNECTORS: Connector[] = [okta, billing, sheets, linear, vendorDocs, workday, slack];
+export const CONNECTORS: Connector[] = [identityConnector(okta), billing, sheets, linear, vendorDocs, workday, slack];
 
-/** Keep only what the viewer may read. Applied before extraction, so nothing derived can leak. */
-export function readable(records: SourceRecord[], viewer: string): { readable: SourceRecord[]; withheld: number } {
-  const ok = records.filter((r) => r.readers.includes(viewer));
+/**
+ * Keep only what the viewer may read: the record's own readers, plus any audience the company granted
+ * for that record. Applied before extraction, so a fact derived from several records only exists for
+ * a viewer who may read every one of them: it inherits the narrowest audience of its contributors.
+ */
+export function readable(records: SourceRecord[], viewer: string, grants: AudienceGrant[] = []): { readable: SourceRecord[]; withheld: number } {
+  const granted = (r: SourceRecord) => grants.some((g) => g.record === r.id && g.readers.includes(viewer));
+  const ok = records.filter((r) => r.readers.includes(viewer) || granted(r));
   return { readable: ok, withheld: records.length - ok.length };
 }
