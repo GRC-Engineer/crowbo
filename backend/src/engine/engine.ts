@@ -8,7 +8,7 @@ import { ContextGraph } from "./graph";
 import type { ChatModel } from "./ai";
 import { DecisionMemory } from "./memory";
 import { PREDICATES } from "./predicates";
-import type { CompanyFixture, Condition, Connector, Decision, Edge, Extractor, Fact, MemoryEntry, SourceRecord, SourceWeight, Value } from "./model";
+import type { CompanyFixture, Condition, Connector, Decision, Edge, Extractor, Fact, FetchJson, MemoryEntry, SourceRecord, SourceWeight, Value } from "./model";
 import { checkLimits, KB_CONNECTOR, KB_DEFAULT_WEIGHT, type KbFile, type KbFileResult, kbProfile, toRecords } from "./kb";
 import { type EngineState, type EngineStore, MemoryEngineStore } from "./store";
 
@@ -42,6 +42,17 @@ export interface EngineOptions {
   /** Routing and answering model (GLM-5.3-flash or Haiku 5.5); null runs without one, and says so. */
   answerer: ChatModel | null;
   clock?: () => string;
+  /** A connector's live API through its tenant's connection; absent, the fixture's fake API is read. */
+  fetchFor?: (connector: string) => FetchJson | null;
+  /** Sources the brief must name as not read: revoked, unused, or past their rotation date. */
+  sourceReport?: () => SourceProblem[];
+}
+
+export interface SourceProblem {
+  label: string;
+  problem: "revoked" | "unused" | "rotation_due";
+  since: string;
+  detail: string;
 }
 
 export interface ReadLogEntry {
@@ -175,7 +186,9 @@ export class Engine {
     this.api.now = at;
     const before = { facts: new Set(this.facts.map((f) => f.id)), edges: new Set(this.graph.all().map((e) => `${e.from}|${e.rel}|${e.to}`)), decision: this.latest };
     let changed = 0;
-    for (const fresh of await c.read(this.api.fetch)) if (this.keep(fresh, c.live_state ? at.slice(0, 10) : fresh.observed_at)) changed++;
+    // A live connection where one is configured; a revoked one reads as missing, so the listing is partial.
+    const api = this.options.fetchFor ? this.options.fetchFor(c.id) ?? (async () => null) : this.api.fetch;
+    for (const fresh of await c.read(api)) if (this.keep(fresh, c.live_state ? at.slice(0, 10) : fresh.observed_at)) changed++;
     this.store.saveReadAt(c.id, at);
     this.readAt.set(c.id, at);
     if (changed) this.memory.append("read", c.id, { at, records_changed: changed });
