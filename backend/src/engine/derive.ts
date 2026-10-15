@@ -87,9 +87,10 @@ export function derive(usable: Fact[], asOf: string, windowDays = 90): Fact[] {
   const statuses = by("account_status");
   if (left.length && statuses.length) {
     const active = left.filter((t) => statuses.some((st) => st.subject === t.subject && st.value === "active"));
-    const names = uniq(active.map((t) => nodeName(t.subject)));
+    const names = uniq(active.map((t) => t.subject));
     out.push(derived("directory:accounts", "leavers_active", names.length,
-      names.length ? `${names.length} of ${left.length} people who left still have an active account: ${names.join(", ")}` : `None of the ${left.length} people who left has an active account`,
+      // Counts only: who left is HR data, and text from this claim may reach a wider audience than its readers.
+      names.length ? `${names.length} of ${left.length} people who left still ${names.length === 1 ? "has" : "have"} an active account` : `None of the ${left.length} people who left has an active account`,
       [...left, ...statuses.filter((st) => left.some((t) => t.subject === st.subject))]));
   }
   // A launch that handles customer data with no finished security review before its date: the

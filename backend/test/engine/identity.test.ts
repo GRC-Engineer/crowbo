@@ -42,9 +42,9 @@ describe("identity: one connector class, two providers", () => {
 });
 
 describe("identity: the three scenarios", () => {
-  it("leavers: someone HR shows as gone with an active account counts; one already deprovisioned does not", async () => {
+  it("leavers: someone HR shows as gone with an active account counts; one already deprovisioned does not; the claim names nobody", async () => {
     const e = await start(okta);
-    expect(e.facts.find((f) => f.predicate === "leavers_active")!.quote).toBe("1 of 2 people who left still have an active account: u37");
+    expect(e.facts.find((f) => f.predicate === "leavers_active")!.quote).toBe("1 of 2 people who left still has an active account");
     expect(e.nextMoves().next_moves.find((m) => m.action === "disable-leaver-accounts")!.title).toBe("Disable the accounts still active for people who left (1 found)");
   });
 
