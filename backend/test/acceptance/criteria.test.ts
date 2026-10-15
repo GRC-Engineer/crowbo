@@ -14,7 +14,6 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { describe, expect, it } from "vitest";
 import { answerTopic, weeklyBrief } from "../../src/engine/answer";
-import { CONNECTORS } from "../../src/engine/connectors";
 import { demoOptions, startDemo } from "../../src/engine/demo";
 import { Engine } from "../../src/engine/engine";
 import { scriptedExtractor } from "../../src/engine/extract";
@@ -25,12 +24,13 @@ import { registerEngineTools } from "../../src/engine/tools";
 import type { EngineInvoke } from "../../src/engine/tools";
 import { handleMention } from "../../src/surfaces/slack";
 import { handleSlackEvent, type Post, postWeekly } from "../../src/surfaces/slack-events";
+import { connectorFor, type Recording, recordedApi } from "../../scripts/rehearsal/recording";
 
 const Q = "Who should still have billing admin?";
 const demo = () => startDemo().then((d) => d.engine);
 const ROOT = join(import.meta.dirname, "../..");
 const built = (path: string) => existsSync(join(ROOT, path));
-/** Recorded responses from real APIs, one file per connector: { connector, responses: { path: body } }. */
+/** Scrubbed recordings from Crowbo's sandbox accounts, one file per provider (scripts/rehearsal/record.ts). */
 const RECORDED = join(ROOT, "test/fixtures/recorded");
 const twoDisputes = async () => {
   const e = await demo();
@@ -78,11 +78,12 @@ describe("pilot criteria for mid-December: what a first paid pilot buys", () => 
   it.fails("P2 three real connectors read recorded responses from the real APIs and feed the weekly list", async () => {
     const files = existsSync(RECORDED) ? readdirSync(RECORDED).filter((f) => f.endsWith(".json")) : [];
     const read = await Promise.all(files.map(async (f) => {
-      const { connector, responses } = JSON.parse(readFileSync(join(RECORDED, f), "utf8")) as { connector: string; responses: Record<string, unknown> };
-      const c = CONNECTORS.find((x) => x.id === connector);
-      return c ? (await c.read(async (path) => responses[path] ?? null)).length : 0;
+      const r = JSON.parse(readFileSync(join(RECORDED, f), "utf8")) as Recording;
+      const c = connectorFor(r.connector, r.provider);
+      return c ? { connector: r.connector, records: (await c.read(recordedApi(r))).length } : null;
     }));
-    expect(read.filter((n) => n > 0).length).toBeGreaterThanOrEqual(3);
+    // Three connector classes, each read from a real API; two providers of one class count once.
+    expect(new Set(read.filter((x) => x && x.records > 0).map((x) => x!.connector)).size).toBeGreaterThanOrEqual(3);
   });
 
   it.fails("P2.1 prose from real sources is extracted live by Clef, with measured precision at 0.8 and recall on 50 labelled sentences", () => {

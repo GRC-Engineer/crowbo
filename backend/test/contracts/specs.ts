@@ -241,3 +241,23 @@ export function loadSpec(id: string, text = readFileSync(specFile(id), "utf8")):
   const doc = JSON.parse(text) as Json;
   return s.format === "google-discovery" ? discovery(doc) : openapi(doc);
 }
+
+/** The field paths a GraphQL document selects, from its first brace: "projects.nodes.slugId", and so on. */
+export function graphqlSelections(doc: string): string[] {
+  let body = doc.slice(doc.indexOf("{"));
+  for (let prev = ""; prev !== body; ) [prev, body] = [body, body.replace(/\([^()]*\)/g, "")];
+  const out: string[] = [];
+  const stack: string[] = [];
+  let last = "";
+  for (const t of body.match(/[A-Za-z_]\w*|[{}]/g) ?? []) {
+    if (t === "{") {
+      if (last) stack.push(last);
+      last = "";
+    } else if (t === "}") stack.pop();
+    else {
+      last = t;
+      out.push([...stack, t].join("."));
+    }
+  }
+  return out;
+}

@@ -56,14 +56,15 @@ export const okta: IdentityProvider = {
     type Group = { id: string; profile: { name: string; app?: string } };
     type User = { status: string; lastLogin: string | null; profile: { login: string } };
     const groups = await linked<Group>(api, "/api/v1/groups", (g) => g.id);
-    const apps = await linked<{ name: string; profile: { businessOwner?: string } }>(api, "/api/v1/apps", (a) => a.name);
+    // An app's name is its Okta template key ("bookmark", "oidc_client", "salesforce"); its label is the app.
+    const apps = await linked<{ id: string; label: string; profile: { businessOwner?: string } }>(api, "/api/v1/apps", (a) => a.id);
     const live = await linked<User>(api, "/api/v1/users", (u) => u.profile.login);
     const gone = await linked<User>(api, OKTA_DEPROVISIONED, (u) => u.profile.login);
     const users = [...live.items, ...gone.items.filter((g) => !live.items.some((u) => u.profile.login === g.profile.login))];
     const out: IdentitySnapshot = {
       groups: [],
       groupsComplete: groups.complete,
-      apps: { complete: apps.complete, items: apps.items.filter((a) => a.profile.businessOwner).map((a) => ({ name: a.name, owner: a.profile.businessOwner! })) },
+      apps: { complete: apps.complete, items: apps.items.filter((a) => a.profile.businessOwner).map((a) => ({ name: slug(a.label), owner: a.profile.businessOwner! })) },
       accounts: live.items.length || gone.items.length
         ? { complete: live.complete && gone.complete, items: users.map((u) => ({ email: u.profile.login, status: oktaStatus(u.status), last_login_at: u.lastLogin, admin_of: [] })) }
         : null,

@@ -42,6 +42,32 @@ const person = (email: string) => `person:${email.split("@")[0].toLowerCase()}`;
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
 const GRC = ["grc-lead"];
 
+const ISSUE_FIELDS = "nodes { identifier state { type } assignee { email } labels { nodes { name } } } pageInfo { hasNextPage endCursor }";
+
+/**
+ * The GraphQL documents behind the Linear connector's two named requests. The connector asks for
+ * "/graphql?query=projects" and "/graphql?query=project-issues&project=<slugId>&after=<cursor>"; a live
+ * transport sends the matching document (linearOperation). The contract test checks that every field
+ * the connector reads is selected here, and that every selection is in Linear's schema.
+ */
+export const LINEAR_QUERIES = {
+  projects: `query Projects { projects(first: 50) { nodes { slugId startDate lead { email } issues(first: 50) { ${ISSUE_FIELDS} } } } }`,
+  "project-issues": `query ProjectIssues($project: String!, $after: String) { project(id: $project) { issues(first: 50, after: $after) { ${ISSUE_FIELDS} } } }`,
+} as const;
+
+/** The GraphQL request for one of the connector's named Linear paths, or null for any other path. */
+export function linearOperation(path: string): { query: string; variables: Record<string, string> } | null {
+  const u = new URL(path, "https://linear.invalid");
+  const name = u.searchParams.get("query");
+  if (u.pathname !== "/graphql" || (name !== "projects" && name !== "project-issues")) return null;
+  const variables: Record<string, string> = {};
+  for (const k of ["project", "after"]) {
+    const v = u.searchParams.get(k);
+    if (v !== null) variables[k] = v;
+  }
+  return { query: LINEAR_QUERIES[name], variables };
+}
+
 /** Linear GraphQL: projects (launches) with start date and lead, and their issues with state, assignee and labels. */
 export const linear: TicketsProvider = {
   id: "linear", label: "Linear",

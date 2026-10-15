@@ -38,7 +38,7 @@ base.api = base.api.filter((r) => r.path !== "/api/v1/groups");
 base.api.push({ path: "/api/v1/groups", versions: oktaGroups });
 set("/api/v1/groups/00g-wsadmin/users", admins.map((a) => ({ id: `00u-${a}`, status: "ACTIVE", profile: { login: email(a) } })));
 const oktaApps = base.api.find((r) => r.path === "/api/v1/apps")!.versions[0].body as unknown[];
-set("/api/v1/apps", [...oktaApps, { id: "0oa-gws", name: "google-workspace", lastUpdated: "2026-08-01T10:00:00Z", profile: { businessOwner: email("dana") } }]);
+set("/api/v1/apps", [...oktaApps, { id: "0oa-gws", name: "google", label: "google-workspace", lastUpdated: "2026-08-01T10:00:00Z", profile: { businessOwner: email("dana") } }]);
 // Okta lists deprovisioned users only through the status filter; u02 is locked out, which is still a live account.
 set("/api/v1/users", staff.map((u) => ({ id: `00u-${u}`, status: u === "u02" ? "LOCKED_OUT" : "ACTIVE", lastLogin: "2026-10-10T08:00:00Z", profile: { login: email(u) } })));
 set(OKTA_DEPROVISIONED, [...deprovisioned].map((u) => ({ id: `00u-${u}`, status: "DEPROVISIONED", lastLogin: "2026-08-30T08:00:00Z", profile: { login: email(u) } })));

@@ -56,7 +56,7 @@ const controls = base.api.find((r) => r.path.startsWith("/v4/spreadsheets/contro
 const register = controls.versions[0].body as { modifiedTime: string; values: string[][] };
 controls.versions = [{ ...controls.versions[0], body: { ...register, values: [...register.values, ["D-01", "data:customer-pii", "customer_data", "true"], ["D-02", "data:payment-card", "customer_data", "true"]] } }];
 const apps = base.api.find((r) => r.path === "/api/v1/apps")!.versions[0].body as unknown[];
-set("/api/v1/apps", [...apps, { id: "0oa-checkout", name: "checkout", lastUpdated: "2026-08-01T10:00:00Z", profile: { businessOwner: email("priya") } }]);
+set("/api/v1/apps", [...apps, { id: "0oa-checkout", name: "bookmark", label: "checkout", lastUpdated: "2026-08-01T10:00:00Z", profile: { businessOwner: email("priya") } }]);
 
 export const NORTHWIND_TICKETS: CompanyFixture = {
   ...base,
