@@ -1,12 +1,13 @@
 // Acceptance criteria in docs/designs/acceptance-criteria.md: what a first paid pilot buys in its
-// first two months (P1 to P5), the regression checks already true on fixtures (R1 to R7), and the
+// first two months (P1 to P4.2), the regression checks already true on fixtures (R1 to R9), and the
 // later criteria behind the diligence appendix (L1 to L3). Each `it` is one criterion, named by ID.
 //   - A plain `it` is true today, on fixtures.
-//   - `it.fails` asserts the target behaviour and fails today, so the suite stays green. When the
-//     work lands the test starts passing, vitest reports it as an error, and the criterion's label
-//     must change here and in the doc.
+//   - `it.fails` asserts the target behaviour and fails today, so the suite stays green. It reaches
+//     the behaviour through the operation or module the work will add, and fails on the behavioural
+//     assertion while that is missing. When the work lands the test starts passing, vitest reports
+//     it as an error, and the criterion's label must change here and in the doc.
 // Fixtures only: no third-party data.
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
@@ -17,13 +18,23 @@ import { CONNECTORS } from "../../src/engine/connectors";
 import { demoOptions, startDemo } from "../../src/engine/demo";
 import { Engine } from "../../src/engine/engine";
 import { NORTHWIND } from "../../src/engine/fixture";
-import { runEngine } from "../../src/engine/port";
+import { isEngineOp, runEngine } from "../../src/engine/port";
 import { registerEngineTools } from "../../src/engine/tools";
 
 const Q = "Who should still have billing admin?";
 const demo = () => startDemo().then((d) => d.engine);
 const ROOT = join(import.meta.dirname, "../..");
 const built = (path: string) => existsSync(join(ROOT, path));
+/** A module the work will add, or null while it does not exist. The path is a variable so the bundler does not resolve it ahead of time. */
+const optional = async <T>(path: string): Promise<T | null> => import(/* @vite-ignore */ path).then((m) => m as T, () => null);
+/** Recorded responses from real APIs, one file per connector: { connector, responses: { path: body } }. */
+const RECORDED = join(ROOT, "test/fixtures/recorded");
+const twoDisputes = async () => {
+  const e = await demo();
+  await e.recordCall("move-unused-to-operator", "override", "tester", "Okta group sync lags", [], "okta");
+  const second = await e.recordCall("move-unused-to-operator", "override", "tester", "Still lags", [], "okta");
+  return { e, proposal: e.memory.list("proposal").at(-1)!, second };
+};
 const withSlack = (text: string) => {
   const f = structuredClone(NORTHWIND);
   f.api.find((r) => r.path.startsWith("/api/conversations.history"))!.versions[0].body = { messages: [{ ts: "1791468000.000100", user: "mallory", text }] };
@@ -36,45 +47,46 @@ describe("pilot criteria for mid-December: what a first paid pilot buys", () => 
     expect(typeof (e as unknown as { importKnowledgeBase?: unknown }).importKnowledgeBase).toBe("function");
   });
 
-  it.fails("P2 three real connectors, read-only, feed the weekly fix-or-drop list", () => {
-    expect(CONNECTORS.filter((c) => (c as { live?: boolean }).live === true).length).toBeGreaterThanOrEqual(3);
+  it.fails("P2 three real connectors read recorded responses from the real APIs and feed the weekly list", async () => {
+    const files = existsSync(RECORDED) ? readdirSync(RECORDED).filter((f) => f.endsWith(".json")) : [];
+    const read = await Promise.all(files.map(async (f) => {
+      const { connector, responses } = JSON.parse(readFileSync(join(RECORDED, f), "utf8")) as { connector: string; responses: Record<string, unknown> };
+      const c = CONNECTORS.find((x) => x.id === connector);
+      return c ? (await c.read(async (path) => responses[path] ?? null)).length : 0;
+    }));
+    expect(read.filter((n) => n > 0).length).toBeGreaterThanOrEqual(3);
   });
 
   it.fails("P2.1 prose from real sources is extracted live by Clef, with measured precision at 0.8 and recall on 50 labelled sentences", () => {
     expect(built("eval/clef-sample/labels.json") && built("eval/clef-sample/results.json")).toBe(true);
   });
 
-  it.fails("P3 the list arrives in the customer's Slack with citations, a named decider and a date, with no assistant deployed", () => {
-    expect(built("src/surfaces/slack.ts")).toBe(true);
+  it.fails("P3 the list arrives in the customer's Slack with citations, a named decider and a date, with no assistant deployed", async () => {
+    const slack = await optional<{ handleMention(e: Engine, m: { text: string; thread: string }): Promise<{ text: string }> }>("../../src/surfaces/slack");
+    const reply = slack ? await slack.handleMention(await demo(), { text: Q, thread: "C0GRC/1791468000.000100" }) : null;
+    expect(reply?.text ?? "").toMatch(/\[1\]/);
+    expect(reply?.text ?? "").toContain("Decides: Priya");
+    expect(reply?.text ?? "").toMatch(/Due /);
   });
 
-  it("P4 a recorded call changes the next answer, and the answer cites it (engine part, true on fixtures)", async () => {
+  it.fails("P4.1 a call recorded from a Slack thread keeps the thread permalink as its provenance, and the next answer cites it", async () => {
     const e = await demo();
-    await e.recordCall("move-unused-to-operator", "override", "tester", "4 of the 31 are break-glass accounts", [{ subject: "group:billing-admins", predicate: "break_glass_exempt", value: 4 }]);
-    const a = answerTopic(e, Q);
-    expect(a.answer.move!.title).toBe("Move the 27 unused billing admins to the Billing Operator role");
-    expect(a.sources.some((s) => s.label === "Decision memory")).toBe(true);
-  });
-
-  it.fails("P4.1 a call recorded from a Slack thread keeps the thread permalink as its provenance", () => {
-    expect(built("src/surfaces/slack.ts")).toBe(true);
+    const permalink = "https://northwind.slack.example/archives/C0GRC/p1791468000000100";
+    const r = (await runEngine(e, "tester", "record_call", {
+      action: "move-unused-to-operator", call: "override", reason: "Alex: 4 are break-glass",
+      assertions: [{ subject: "group:billing-admins", predicate: "break_glass_exempt", value: 4 }], provenance: { permalink },
+    }).catch(() => null)) as { recorded: { body: { provenance?: { permalink: string } } } } | null;
+    expect(r?.recorded.body.provenance?.permalink).toBe(permalink);
+    expect(JSON.stringify(answerTopic(e, Q).sources)).toContain(permalink);
   });
 
   it.fails("P4.2 repeated corrections yield a weight proposal; accepting it is recorded against the proposal and recomputes the ranking", async () => {
-    const e = await demo();
-    await e.recordCall("move-unused-to-operator", "override", "tester", "Okta group sync lags", [], "okta");
-    const second = await e.recordCall("move-unused-to-operator", "override", "tester", "Still lags", [], "okta");
-    expect(second.proposals).toHaveLength(1); // true today
-    expect(typeof (e as unknown as { acceptProposal?: unknown }).acceptProposal).toBe("function"); // not built
-  });
-
-  it("P5 the weekly brief reads in plain words: moves with sources, deciders and dates, hours back, evidence not used (format part, true on fixtures)", async () => {
-    const md = weeklyBrief(await demo()).markdown;
-    expect(md).toMatch(/^# Security brief, week of /);
-    expect(md).toMatch(/Sources: [^\n]*Okta/);
-    expect(md).toContain("Decides: Priya. Delivers: Alex. Due before audit prep");
-    expect(md).toContain("**Hours back this quarter:** 21 security");
-    expect(md).not.toMatch(/fictional|synthetic|group:|sheets:|person:/);
+    const { e, proposal, second } = await twoDisputes();
+    expect(second.proposals).toHaveLength(1);
+    const op: string = "accept_proposal";
+    const r = isEngineOp(op) ? ((await runEngine(e, "tester", op, { proposal: proposal.seq })) as { decision_diff: unknown }) : null;
+    expect(e.memory.list("weight_change").at(-1)?.body).toMatchObject({ connector: "okta", proposal: proposal.seq });
+    expect(JSON.stringify(r?.decision_diff ?? null)).toContain("okta");
   });
 });
 
@@ -146,6 +158,24 @@ describe("regression: already true on fixtures", () => {
     const r: any = await client.callTool({ name: "engine_decide", arguments: { question: Q } });
     expect(r.structuredContent.answer.move.title).toBe("Move the 31 unused billing admins to the Billing Operator role");
   });
+
+
+  it("R8 a recorded call changes the next answer, and the answer cites decision memory", async () => {
+    const e = await demo();
+    await e.recordCall("move-unused-to-operator", "override", "tester", "4 of the 31 are break-glass accounts", [{ subject: "group:billing-admins", predicate: "break_glass_exempt", value: 4 }]);
+    const a = answerTopic(e, Q);
+    expect(a.answer.move!.title).toBe("Move the 27 unused billing admins to the Billing Operator role");
+    expect(a.sources.some((s) => s.label === "Decision memory")).toBe(true);
+  });
+
+  it("R9 the weekly brief reads in plain words: moves with sources, deciders and dates, hours back, evidence not used", async () => {
+    const md = weeklyBrief(await demo()).markdown;
+    expect(md).toMatch(/^# Security brief, week of /);
+    expect(md).toMatch(/Sources: [^\n]*Okta/);
+    expect(md).toContain("Decides: Priya. Delivers: Alex. Due before audit prep");
+    expect(md).toContain("**Hours back this quarter:** 21 security");
+    expect(md).not.toMatch(/fictional|synthetic|group:|sheets:|person:/);
+  });
 });
 
 describe("later: diligence appendix, failing on purpose", () => {
@@ -157,8 +187,12 @@ describe("later: diligence appendix, failing on purpose", () => {
     expect(process.env.CROWBO_BASELINE_REPORT && existsSync(process.env.CROWBO_BASELINE_REPORT)).toBeTruthy();
   });
 
-  it.fails("L3 cross-customer learning only with recorded rights and consent per tenant", async () => {
-    const auth = (await import("../../src/app/auth")) as unknown as { consentSchema?: unknown };
-    expect(auth.consentSchema).toBeDefined();
+  it.fails("L3 cross-customer learning only with recorded rights and consent per tenant: a read without consent is refused", async () => {
+    const e = await demo();
+    const op: string = "cross_customer_benchmark";
+    const outcome = isEngineOp(op)
+      ? await runEngine(e, "tester", op, {}).then(() => "allowed", (err: Error) => err.message)
+      : "not built";
+    expect(outcome).toMatch(/consent/);
   });
 });
