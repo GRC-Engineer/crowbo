@@ -28,6 +28,37 @@ export interface SlackMessage {
 export interface Mention {
   text: string;
   thread: string;
+  /** The thread's permalink, from Slack's own API; required to record a call. */
+  permalink?: string | null;
+  /** Whether this person is on the workspace's list of recorders. */
+  canRecord?: boolean;
+}
+
+/**
+ * "record" in a mention: a call on an action, with optional facts, in a fixed form a person types.
+ * No model reads it. The engine accepts only the actions it knows and the predicates it lets a
+ * person assert; anything else is refused with the reason.
+ *   record override move-unused-to-operator because 4 of the 31 are break-glass accounts
+ *   assert group:billing-admins break_glass_exempt 4
+ */
+export const RECORD = /^record\s+(accept|override|defer|exception)\s+([a-z0-9-]{1,100})\s+because\s+(.{1,500})$/i;
+const ASSERT = /^assert\s+([a-z]+:[A-Za-z0-9._-]+)\s+([a-z][a-z0-9_]*)\s+(\S{1,200})$/;
+
+/** A mention is a record command only when it starts with "record" and a call word; "record of last audit?" is a question. */
+export const isRecordCommand = (text: string) => /^\s*record\s+(accept|override|defer|exception)\b/i.test(text);
+
+export function parseRecord(text: string): null | { action: string; call: string; reason: string; assertions: { subject: string; predicate: string; value: string | number }[] } | { problem: string } {
+  const [first, ...rest] = text.split("\n").map((l) => l.trim()).filter(Boolean);
+  if (!first || !isRecordCommand(first)) return null;
+  const m = RECORD.exec(first);
+  if (!m) return { problem: "Write it as: record <accept|override|defer|exception> <action> because <reason>, then one line per fact: assert <subject> <predicate> <value>" };
+  const assertions = [];
+  for (const line of rest) {
+    const a = ASSERT.exec(line);
+    if (!a) return { problem: `Not an assertion: "${line.slice(0, 80)}". Write it as: assert <subject> <predicate> <value>` };
+    assertions.push({ subject: a[1], predicate: a[2], value: /^-?\d+(\.\d+)?$/.test(a[3]) ? Number(a[3]) : a[3] });
+  }
+  return { action: m[2].toLowerCase(), call: m[1].toLowerCase(), reason: m[3].trim(), assertions };
 }
 
 /** Text from sources, people or models, made inert in Slack: no links, mentions or broadcasts. */
@@ -91,7 +122,8 @@ export function card(answer: Answer, summary: { text: string; generated_by: stri
     lines.push(`${kind}: ${escape(o.status)} (${escape(o.source)}, ${o.at.slice(0, 10)}).`);
   }
   if (a.conditions.length) lines.push(...a.conditions.map((c) => `• ${escape(c)}`));
-  lines.push("", "*Sources*", ...answer.sources.map((x) => `[${x.n}] ${escape(x.label)}: ${escape(x.claim)} (weight ${x.weight}, ${x.freshness}${x.used ? "" : ", not used"}${x.read_at ? `, read ${x.read_at}` : ""})`));
+  // A source's link is a Slack permalink the engine checked; escaped anyway, and shown as a plain URL.
+  lines.push("", "*Sources*", ...answer.sources.map((x) => `[${x.n}] ${escape(x.label)}: ${escape(x.claim)} (weight ${x.weight}, ${x.freshness}${x.used ? "" : ", not used"}${x.read_at ? `, read ${x.read_at}` : ""})${x.link ? ` ${escape(x.link)}` : ""}`));
   if (a.unresolved.length) lines.push("", "*Unresolved*", ...a.unresolved.map((u) => `• ${escape(u)}`));
   lines.push(
     "", `_Result ${answer.decision_id}. Recommendation only; nothing executes._`,
@@ -113,6 +145,9 @@ export async function handleMention(invoke: EngineInvoke, mention: Mention): Pro
   const question = mention.text.replace(/<@[A-Z0-9]+>/g, "").trim();
   if (!question) return { text: "Ask me a security question, or say \"brief\" for this week's list." };
   if (BRIEF.test(question)) return weeklyPost(invoke);
+  const record = parseRecord(question);
+  if (record && !mention.canRecord) return { text: "Nothing recorded: only the people this workspace registered as recorders can record calls." };
+  if (record) return recordCall(invoke, record, mention.permalink ?? null);
   try {
     const r = (await invoke("decide", { question })) as Answer & { summary: { text: string; generated_by: string } };
     const decision = (await invoke("next_moves", {})) as Decision;
@@ -121,6 +156,31 @@ export async function handleMention(invoke: EngineInvoke, mention: Mention): Pro
     const reason = refusal(error);
     if (reason === null) throw error;
     return { text: escape(reason) };
+  }
+}
+
+/** Record a call from a thread, with the thread as its provenance; refused without a permalink. */
+async function recordCall(invoke: EngineInvoke, record: NonNullable<ReturnType<typeof parseRecord>>, permalink: string | null): Promise<SlackMessage> {
+  if ("problem" in record) return { text: escape(record.problem) };
+  if (!permalink) return { text: "Nothing recorded: Slack did not give this thread's link, and a call is kept only with where it was made." };
+  try {
+    const r = (await invoke("slack_record_call", { ...record, provenance: { permalink } })) as {
+      recorded: { seq: number }; proposals: unknown[]; decision_diff: null | { after: string; changed_reasons: string[]; added: string[]; removed: string[] };
+    };
+    const d = r.decision_diff;
+    const changed = d ? [...d.changed_reasons, ...d.added.map((a) => `now proposed: ${a}`), ...d.removed.map((a) => `no longer proposed: ${a}`)] : [];
+    return {
+      text: [
+        `Recorded: ${record.call} on ${escape(record.action)}, kept in decision memory (entry ${r.recorded.seq}) with this thread as its source.`,
+        changed.length ? `What changed: ${changed.map(escape).join("; ")}.` : "The decision is unchanged.",
+        r.proposals.length ? "This source has been disputed more than once; a weight change is proposed for a person to accept." : "",
+      ].filter(Boolean).join("\n"),
+      ...(d ? { decision_id: d.after } : {}),
+    };
+  } catch (error) {
+    const reason = refusal(error);
+    if (reason === null) throw error;
+    return { text: `Nothing recorded: ${escape(reason)}` };
   }
 }
 

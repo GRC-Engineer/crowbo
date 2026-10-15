@@ -106,7 +106,7 @@ describe("pilot criteria for mid-December: what a first paid pilot buys", () => 
     const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
     const mac = Buffer.from(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`v0:${ts}:${body}`))).toString("hex");
     const request = new Request("https://crowbo.example/slack/events", { method: "POST", body, headers: { "x-slack-request-timestamp": ts, "x-slack-signature": `v0=${mac}` } });
-    await handleSlackEvent(request, { signingSecret: secret, now: () => Number(ts) * 1000, workspace: () => ({ channel: "C0GRCTEAM1", synthetic: true, invoke: () => invoke }), post });
+    await handleSlackEvent(request, { signingSecret: secret, now: () => Number(ts) * 1000, workspace: () => ({ channel: "C0GRCTEAM1", synthetic: true, recorders: [], invoke: () => invoke }), post });
     expect(posted).toHaveLength(2);
     const [weekly, reply] = posted;
     expect(weekly).toMatchObject({ channel: "C0GRCTEAM1", text: expect.stringMatching(/Sources: [^\n]*Okta/) });
@@ -118,13 +118,14 @@ describe("pilot criteria for mid-December: what a first paid pilot buys", () => 
     expect(reply.text).toContain("Due before audit prep (2026-11-24)");
   });
 
-  it.fails("P4.1 a call recorded from a Slack thread keeps the thread permalink as its provenance, and the next answer cites it", async () => {
+  it("P4.1 a call recorded from a Slack thread keeps the thread permalink as its provenance, and the next answer cites it (true on fixtures)", async () => {
     const e = await demo();
-    const permalink = "https://northwind.slack.example/archives/C0GRC/p1791468000000100";
-    const r = (await runEngine(e, "tester", "record_call", {
+    const permalink = "https://northwind.slack.com/archives/C0GRCTEAM1/p1791468000000100";
+    // The Slack surface records with the permalink it got from Slack; no other surface can.
+    const r = (await runEngine(e, "slack:U0ALEX0001", "slack_record_call", {
       action: "move-unused-to-operator", call: "override", reason: "Alex: 4 are break-glass",
       assertions: [{ subject: "group:billing-admins", predicate: "break_glass_exempt", value: 4 }], provenance: { permalink },
-    }).catch(() => null)) as { recorded: { body: { provenance?: { permalink: string } } } } | null;
+    }, "slack").catch(() => null)) as { recorded: { body: { provenance?: { permalink: string } } } } | null;
     expect(r?.recorded.body.provenance?.permalink).toBe(permalink);
     expect(JSON.stringify(answerTopic(e, Q).sources)).toContain(permalink);
   });

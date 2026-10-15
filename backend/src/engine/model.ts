@@ -52,6 +52,8 @@ export interface SourceRecord {
   label?: string;
   /** For a connector class with several providers (identity): which one read this record. */
   provider?: string;
+  /** Where a person can see the record in its tool (a Slack thread permalink for a call recorded there). */
+  link?: string;
 }
 
 /** A company's decision to let more people read one kind of record (e.g. the GRC lead reads terminations). */

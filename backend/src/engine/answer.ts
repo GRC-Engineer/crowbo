@@ -29,6 +29,8 @@ export interface Source {
   weight: number;
   /** Whether the decision used it: fresh and weighted at least MIN_WEIGHT. Stale is shown, not used. */
   used: boolean;
+  /** Where a person can open it (the Slack thread a call was recorded in). */
+  link?: string;
 }
 
 export interface Answer {
@@ -113,6 +115,7 @@ class Numbering {
         coverage: (r.coverage && r.coverage.days_with_data < r.coverage.window_days) || isPartial(r.completeness) ? "partial" : "full",
         freshness: stale ? "stale" : "fresh", ...(stale?.stale_reason ? { stale_reason: stale.stale_reason } : {}),
         fact_id: claimFact?.id ?? "",
+        ...(r.link ? { link: r.link } : {}),
       };
     });
   }

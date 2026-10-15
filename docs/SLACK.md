@@ -8,6 +8,17 @@ Crowbo answers in Slack where no AI assistant is deployed. Three things happen t
 
 A direct message carrying an export runs the knowledge-base import, but only in a workspace registered as synthetic.
 
+A person records a call in the thread, in a fixed form that no model reads:
+
+```text
+@crowbo record override move-unused-to-operator because 4 of the 31 are break-glass accounts
+assert group:billing-admins break_glass_exempt 4
+```
+
+The call is kept in decision memory with the thread's permalink, which Crowbo asks Slack for. The next answer cites it with the link. Only the predicates the engine lets a person assert are accepted; anything else is refused and nothing is kept.
+
+Only the people the workspace registers as recorders can record. Users from another organisation in a shared channel are not answered at all. A permalink is accepted only in the form `https://<workspace>.slack.com/archives/<channel>/p<16 digits>`, so Enterprise Grid links (`*.enterprise.slack.com`) are refused for now. Provenance comes only through this surface: the MCP tools have no field for it.
+
 The surface is staging only and runs on the demo company. It answers only the person who asked, and it never posts anywhere else or sends on anyone's behalf. The code is in [`surfaces/slack.ts`](../backend/src/surfaces/slack.ts), [`surfaces/slack-events.ts`](../backend/src/surfaces/slack-events.ts) and [`app/slack.ts`](../backend/src/app/slack.ts).
 
 ## How a request is checked
@@ -69,10 +80,10 @@ Setting up Slack changes two things outside this repository: a Slack app in your
    bunx wrangler secret put SLACK_WORKSPACES --env staging
    ```
 
-   `SLACK_WORKSPACES` registers each workspace: its team ID, the engine copy that answers it, the weekly channel, and whether its exports are synthetic.
+   `SLACK_WORKSPACES` registers each workspace: its team ID, the engine copy that answers it, the weekly channel, whether its exports are synthetic, and who may record calls.
 
    ```json
-   { "T0XXXXXXXX": { "tenant": "demo", "reader": "slack-workspace", "channel": "C0XXXXXXXX", "synthetic": true } }
+   { "T0XXXXXXXX": { "tenant": "demo", "reader": "slack-workspace", "channel": "C0XXXXXXXX", "synthetic": true, "recorders": ["U0XXXXXXXX"] } }
    ```
 
 4. **Deploy staging.** This also adds the Monday cron trigger.

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { answerTopic, pickTopic, weeklyBrief } from "./answer";
-import { type Engine, MEMORY_CAP, OUTCOME_STATUSES, replaySchedule } from "./engine";
+import { type Engine, MEMORY_CAP, OUTCOME_STATUSES, PERMALINK, replaySchedule } from "./engine";
 import { EngineError } from "./errors";
 import { draftFollowups, routeQuestion, summarise } from "./explain";
 import { DATE, KB_LIMITS } from "./kb";
@@ -23,6 +23,15 @@ export const ENGINE_INPUTS = {
     action: z.string().min(1).max(100), call, reason: z.string().min(1).max(500),
     assertions: z.array(z.strictObject({ subject: z.string().max(200), predicate: z.string().max(80), value })).max(10).default([]),
     disputes_source: z.string().min(1).max(50).optional(),
+  }),
+  /**
+   * Internal: a call recorded in a Slack thread, with the permalink the Slack surface got from
+   * Slack's API. Run only from the Slack surface (see SURFACE_OPS); never published as an MCP tool.
+   */
+  slack_record_call: z.strictObject({
+    action: z.string().min(1).max(100), call, reason: z.string().min(1).max(500),
+    assertions: z.array(z.strictObject({ subject: z.string().max(200), predicate: z.string().max(80), value })).max(10).default([]),
+    provenance: z.strictObject({ permalink: z.string().max(300).regex(PERMALINK) }),
   }),
   record_outcome: z.strictObject({ action: z.string().min(1).max(100), status: z.enum(OUTCOME_STATUSES as [string, ...string[]]), what_was_done: z.string().min(1).max(1000) }),
   what_if: z.strictObject({ weights: z.record(z.string().max(50), z.number().int().min(0).max(5)) }),
@@ -58,13 +67,19 @@ export const ENGINE_INPUTS = {
   reset: z.strictObject({ confirm: z.literal(true) }),
 } as const;
 
-const WRITES = new Set<EngineOp>(["record_call", "record_outcome", "advance_time", "set_weight", "import_knowledge_base"]);
+/** Where an operation may come from. Most come from any surface; some only from one. */
+export type Surface = "mcp" | "slack";
+const SURFACE_OPS: Partial<Record<EngineOp, Surface>> = { slack_record_call: "slack" };
+
+const WRITES = new Set<EngineOp>(["slack_record_call", "record_call", "record_outcome", "advance_time", "set_weight", "import_knowledge_base"]);
 
 export type EngineOp = keyof typeof ENGINE_INPUTS;
 export const isEngineOp = (name: string): name is EngineOp => Object.hasOwn(ENGINE_INPUTS, name);
 
 /** Run one operation on an open engine, as `actor`. */
-export async function runEngine(engine: Engine, actor: string, op: EngineOp, raw: unknown): Promise<unknown> {
+export async function runEngine(engine: Engine, actor: string, op: EngineOp, raw: unknown, surface: Surface = "mcp"): Promise<unknown> {
+  const only = SURFACE_OPS[op];
+  if (only && only !== surface) throw new EngineError(`${op} runs only from the ${only} surface`);
   const args: any = ENGINE_INPUTS[op].parse(raw ?? {});
   if (op === "reset") throw new EngineError("Reset is handled by the host that owns this copy's storage");
   if (WRITES.has(op) && engine.memory.list().length >= MEMORY_CAP) throw new EngineError(`This demo copy has reached ${MEMORY_CAP} kept entries; reset it to start over`);
@@ -84,6 +99,8 @@ export async function runEngine(engine: Engine, actor: string, op: EngineOp, raw
       return replaySchedule(engine.fixture, engine.options, args.minutes);
     case "record_call":
       return engine.recordCall(args.action, args.call, actor, args.reason, args.assertions, args.disputes_source);
+    case "slack_record_call":
+      return engine.recordCall(args.action, args.call, actor, args.reason, args.assertions, undefined, args.provenance);
     case "record_outcome":
       return engine.recordOutcome(args.action, args.status, args.what_was_done, actor);
     case "what_if":

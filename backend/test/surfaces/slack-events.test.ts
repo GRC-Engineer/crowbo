@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { slackConfig, slackPoster } from "../../src/app/slack";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { slackConfig, slackPermalink, slackPoster } from "../../src/app/slack";
+import { registerEngineTools } from "../../src/engine/tools";
 import type { Env } from "../../src/app/env";
 import { demoOptions, startDemo } from "../../src/engine/demo";
 import { Engine } from "../../src/engine/engine";
@@ -35,14 +39,14 @@ const mention = (event: Record<string, unknown> = {}) => ({
 });
 
 /** Deps over one in-process engine, recording every post and download. */
-async function setup(opts: { synthetic?: boolean; engine?: Engine; invoke?: EngineInvoke } = {}) {
+async function setup(opts: { synthetic?: boolean; engine?: Engine; invoke?: EngineInvoke; recorders?: string[] } = {}) {
   const engine = opts.engine ?? (await startDemo()).engine;
   const posts: Post[] = [];
   const downloads: string[] = [];
   const deps: SlackDeps = {
     signingSecret: SECRET,
     now: () => NOW * 1000,
-    workspace: (team) => (team === TEAM ? { channel: CHANNEL, synthetic: opts.synthetic ?? true, invoke: (actor) => opts.invoke ?? ((op, args) => runEngine(engine, actor, op, args)) } : null),
+    workspace: (team) => (team === TEAM ? { channel: CHANNEL, synthetic: opts.synthetic ?? true, recorders: opts.recorders ?? ["U0ALEX0001"], invoke: (actor) => opts.invoke ?? ((op, args) => runEngine(engine, actor, op, args, "slack")) } : null),
     post: async (m) => void posts.push(m),
     download: async (url) => {
       downloads.push(url);
@@ -153,6 +157,99 @@ describe("Slack events: an export by direct message", () => {
     expect(downloads).toEqual([]);
     expect(engine.memory.list().length).toBe(before);
     expect(posts[0].text).toMatch(/not registered for synthetic exports/);
+  });
+});
+
+describe("Slack events: \"record\" in a thread keeps the thread as the call's source", () => {
+  const PERMALINK = "https://northwind.slack.com/archives/C0GRCTEAM1/p1791468000000100";
+  const record = (text: string) => mention({ text: `<@U0CROWBO> ${text}` });
+
+  it("records the call with the thread permalink from Slack; the next answer in the thread cites it", async () => {
+    const { posts, deps, engine } = await setup();
+    const asked: string[] = [];
+    const withLink = { ...deps, permalink: async (channel: string, ts: string) => (asked.push(`${channel}/${ts}`), PERMALINK) };
+    await handleSlackEvent(await request(record("record override move-unused-to-operator because 4 of the 31 are break-glass accounts\nassert group:billing-admins break_glass_exempt 4")), withLink);
+    expect(asked).toEqual([`${CHANNEL}/1791468000.000100`]);
+    expect(posts[0].text).toMatch(/^Recorded: override on move-unused-to-operator, kept in decision memory \(entry \d+\) with this thread as its source\./);
+    expect(posts[0].text).toContain('What changed: move-unused-to-operator: now "Move the 27 unused billing admins to the Billing Operator role"');
+    expect(engine.memory.verify()).toBe(true);
+    const call = engine.memory.list("call").at(-1)!;
+    expect(call).toMatchObject({ actor: "slack:U0ALEX0001", body: { provenance: { permalink: PERMALINK }, assertions: [{ subject: "group:billing-admins", predicate: "break_glass_exempt", value: 4 }] } });
+    await handleSlackEvent(await request(mention()), withLink);
+    const source = posts[1].text.split("\n").find((l) => l.startsWith("[3] Decision memory:"))!;
+    expect(source).toMatch(/^\[3\] Decision memory: 31 unused minus 4 break-glass accounts kept by decision = 27 /);
+    expect(source.endsWith(` ${PERMALINK}`)).toBe(true);
+  });
+
+  it("without a permalink from Slack, nothing is recorded", async () => {
+    const { posts, deps, engine } = await setup();
+    const before = engine.memory.list().length;
+    await handleSlackEvent(await request(record("record override move-unused-to-operator because reasons")), { ...deps, permalink: async () => null });
+    expect(posts[0].text).toMatch(/^Nothing recorded: Slack did not give this thread's link/);
+    expect(engine.memory.list().length).toBe(before);
+  });
+
+  it("only the fixed form, only assertable predicates: anything else is refused and nothing is kept", async () => {
+    const { posts, deps, engine } = await setup();
+    const withLink = { ...deps, permalink: async () => PERMALINK };
+    const before = engine.memory.list().length;
+    await handleSlackEvent(await request(record("record override move-unused-to-operator since I said so")), withLink);
+    await handleSlackEvent(await request(record("record override move-unused-to-operator because the count is wrong\nassert group:billing-admins unused_90d 0")), withLink);
+    await handleSlackEvent(await request(record("record override no-such-action because why not")), withLink);
+    expect(posts.map((p) => p.text.split(":")[0])).toEqual(["Write it as", "Nothing recorded", "Nothing recorded"]);
+    expect(posts[1].text).toContain("unused_90d cannot be asserted in a call; assertable: break_glass_exempt");
+    expect(engine.memory.list().length).toBe(before);
+  });
+
+  it("the engine keeps only a Slack thread permalink as provenance", async () => {
+    const { engine } = await setup();
+    const call = { action: "move-unused-to-operator", call: "accept", reason: "ok" };
+    const bad = [
+      "https://evil.example/archives/C0GRCTEAM1/p1791468000000100", "data:text/plain,https://x.slack.com/archives/C0GRCTEAM1/p1791468000000100",
+      "https://northwind.slack.com/C0GRCTEAM1/p1791468000000100", "https://northwind.slack.com/archives/C0GRCTEAM1/p179146800000010",
+      "https://northwind.slack.com/archives/C0GRCTEAM1/p17914680000001000", "https://northwind.slack.com/archives/C0GRCTEAM1/p1791468000000100?thread_ts=1",
+      "https://northwind.slack.com/archives/C0GRCTEAM1/p1791468000000100#x", "https://acme.enterprise.slack.com/archives/C0GRCTEAM1/p1791468000000100",
+    ];
+    for (const permalink of bad) await expect(runEngine(engine, "slack:U1", "slack_record_call", { ...call, provenance: { permalink } }, "slack")).rejects.toThrow(/Invalid string|must match/);
+    await expect(engine.recordCall("move-unused-to-operator", "accept", "slack:U1", "ok", [], undefined, { permalink: "javascript:alert(1)" })).rejects.toThrow(/Slack thread permalink/);
+  });
+
+  it("provenance comes only from the Slack surface: refused over MCP, and the internal operation is not an MCP tool", async () => {
+    const { engine } = await setup();
+    const server = new McpServer({ name: "t", version: "0" });
+    registerEngineTools(server, (op, args) => runEngine(engine, "mcp-user", op, args));
+    const [x, y] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: "any", version: "0" });
+    await Promise.all([server.connect(x), client.connect(y)]);
+    expect((await client.listTools()).tools.map((t) => t.name)).not.toContain("engine_slack_record_call");
+    const r: any = await client.callTool({ name: "engine_record_call", arguments: { action: "move-unused-to-operator", call: "override", reason: "x", provenance: { permalink: PERMALINK } } });
+    expect(r.isError).toBe(true);
+    await expect(runEngine(engine, "mcp-user", "slack_record_call", { action: "move-unused-to-operator", call: "override", reason: "x", provenance: { permalink: PERMALINK } })).rejects.toThrow(/runs only from the slack surface/);
+    expect(engine.memory.list("call")).toEqual([]);
+  });
+
+  it("only registered recorders record; a user from another organisation is not answered at all", async () => {
+    const { posts, deps, engine } = await setup({ recorders: ["U0DANA0001"] });
+    const withLink = { ...deps, permalink: async () => PERMALINK };
+    await handleSlackEvent(await request(record("record override move-unused-to-operator because reasons")), withLink);
+    expect(posts[0].text).toMatch(/^Nothing recorded: only the people this workspace registered as recorders/);
+    await handleSlackEvent(await request(mention({ user_team: "T0OTHERORG1" })), withLink);
+    expect(posts).toHaveLength(1);
+    expect(engine.memory.list("call")).toEqual([]);
+  });
+
+  it("a mention is a command only as \"record <call> …\": \"record of last audit?\" is a question", async () => {
+    const { posts, deps } = await setup();
+    await handleSlackEvent(await request(record("record of last audit?")), { ...deps, permalink: async () => PERMALINK });
+    expect(posts[0].text).toMatch(/^No topic matches/);
+  });
+
+  it("asks Slack for the permalink only at slack.com, with the bot token", async () => {
+    const seen: string[] = [];
+    const get = slackPermalink("xoxb-test", async (url, init) => (seen.push(`${url} ${(init!.headers as Record<string, string>).authorization}`), Response.json({ ok: true, permalink: PERMALINK })));
+    expect(await get(CHANNEL, "1791468000.000100")).toBe(PERMALINK);
+    expect(seen).toEqual([`https://slack.com/api/chat.getPermalink?channel=${CHANNEL}&message_ts=1791468000.000100 Bearer xoxb-test`]);
+    expect(await slackPermalink("x", async () => Response.json({ ok: false, error: "message_not_found" }))(CHANNEL, "1.2")).toBeNull();
   });
 });
 
