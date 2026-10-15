@@ -56,9 +56,9 @@ export class DecisionMemory {
    */
   tuningProposals(weights: Map<string, number>): { connector: string; from: number; to: number; disputes: number }[] {
     const disputes = new Map<string, number>();
-    const proposed = new Set(this.list("proposal").map((e) => `${e.body.connector}->${e.body.to}`));
-    // Only disputes since the source's weight last changed: an accepted proposal settles the ones before it.
+    // Only disputes and proposals since the source's weight last changed: a weight change settles the ones before it.
     const changedAt = new Map(this.list("weight_change").map((e) => [String(e.body.connector), e.seq]));
+    const proposed = new Set(this.list("proposal").filter((e) => e.seq > (changedAt.get(String(e.body.connector)) ?? -1)).map((e) => `${e.body.connector}->${e.body.to}`));
     for (const e of this.list("call")) {
       const c = e.body.disputes_source;
       if (typeof c === "string" && e.seq > (changedAt.get(c) ?? -1)) disputes.set(c, (disputes.get(c) ?? 0) + 1);

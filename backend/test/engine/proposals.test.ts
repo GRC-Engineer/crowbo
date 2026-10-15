@@ -17,6 +17,36 @@ async function disputed() {
 const weight = (e: Engine) => e.weightsTable().find((w) => w.connector === "identity")!.weight;
 
 describe("weight proposals: nothing changes until a person accepts", () => {
+  it("a proposal is stale after any later weight change, even one that returns to the same value", async () => {
+    const { engine, proposal } = await disputed();
+    await engine.setWeight("identity", 3, "dana", "Testing");
+    await engine.setWeight("identity", 5, "dana", "Back");
+    await expect(runEngine(engine, "priya", "accept_proposal", { proposal: proposal.seq })).rejects.toThrow(/the weight has changed since \(now 5\)/);
+    expect(weight(engine)).toBe(5);
+  });
+
+  it("the counter resets, it does not stop: two new disputes after an acceptance propose the next step", async () => {
+    const { engine, proposal } = await disputed();
+    await engine.acceptProposal(proposal.seq, "priya");
+    await engine.recordCall("move-unused-to-operator", "override", "alex", "Lagging again", [], "identity");
+    const next = await engine.recordCall("move-unused-to-operator", "override", "alex", "Still lagging", [], "identity");
+    expect(next.proposals).toEqual([{ connector: "identity", from: 4, to: 3, disputes: 2 }]);
+  });
+
+  it("after a return to the same weight, fresh disputes can propose the same step again", async () => {
+    const { engine, proposal } = await disputed();
+    await engine.acceptProposal(proposal.seq, "priya");
+    await engine.setWeight("identity", 5, "dana", "Sync fixed");
+    await engine.recordCall("move-unused-to-operator", "override", "alex", "Lag is back", [], "identity");
+    const again = await engine.recordCall("move-unused-to-operator", "override", "alex", "Still", [], "identity");
+    expect(again.proposals).toEqual([{ connector: "identity", from: 5, to: 4, disputes: 2 }]);
+  });
+
+  it("accept_proposal runs only from MCP", async () => {
+    const { engine, proposal } = await disputed();
+    await expect(runEngine(engine, "slack:U1", "accept_proposal", { proposal: proposal.seq }, "slack")).rejects.toThrow(/runs only from the mcp surface/);
+  });
+
   it("repeated disputes yield a proposal, and ignoring it changes nothing", async () => {
     const { engine, proposal } = await disputed();
     expect(proposal.body).toMatchObject({ connector: "identity", from: 5, to: 4, disputes: 2, note: "Proposal only: a person accepts it with accept_proposal." });
@@ -45,7 +75,7 @@ describe("weight proposals: nothing changes until a person accepts", () => {
     await expect(engine.acceptProposal(proposal.seq, "priya")).rejects.toThrow(/already accepted/);
     const other = await disputed();
     await other.engine.setWeight("identity", 3, "dana", "Sync issues confirmed");
-    await expect(other.engine.acceptProposal(other.proposal.seq, "priya")).rejects.toThrow(/it is now 3, so the proposal no longer applies/);
+    await expect(other.engine.acceptProposal(other.proposal.seq, "priya")).rejects.toThrow(/the weight has changed since \(now 3\), so the proposal no longer applies/);
     await expect(engine.acceptProposal(9999, "priya")).rejects.toThrow(/No proposal 9999/);
   });
 
