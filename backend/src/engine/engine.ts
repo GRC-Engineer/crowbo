@@ -9,7 +9,7 @@ import type { ChatModel } from "./ai";
 import { DecisionMemory } from "./memory";
 import { PREDICATES } from "./predicates";
 import type { CompanyFixture, Condition, Connector, Decision, Edge, Extractor, Fact, MemoryEntry, SourceRecord, SourceWeight, Value } from "./model";
-import { checkLimits, KB_CONNECTOR, KB_DEFAULT_WEIGHT, type KbFile, type KbFileResult, kbProfile, toRecord } from "./kb";
+import { checkLimits, KB_CONNECTOR, KB_DEFAULT_WEIGHT, type KbFile, type KbFileResult, kbProfile, toRecords } from "./kb";
 import { type EngineState, type EngineStore, MemoryEngineStore } from "./store";
 
 /**
@@ -207,11 +207,16 @@ export class Engine {
     const started = performance.now();
     if (declaration?.synthetic !== true) throw new EngineError("Only an export declared synthetic is imported until the founders clear real exports");
     checkLimits(files);
-    const prepared = files.map((f) => ({ file: f, ...toRecord(f, this.fixture.viewer, this.asOf()) }));
+    const prepared: ({ file: KbFile } & Awaited<ReturnType<typeof toRecords>>)[] = [];
+    for (const f of files) prepared.push({ file: f, ...(await toRecords(f, this.fixture.viewer, this.asOf())) });
     const before = this.latest;
-    const results: KbFileResult[] = prepared.map(({ file, record, format, reason }) => {
-      const changed = record ? this.keep(record, record.observed_at) : false;
-      return { path: file.path, record: record?.id ?? null, format, revision: record ? this.records.get(record.id)!.revision : null, changed, ...(reason ? { reason } : {}) };
+    const results: KbFileResult[] = prepared.map(({ file, records, format, reason }) => {
+      const changed = records.map((r) => this.keep(r, r.observed_at)).some(Boolean);
+      const first = records[0];
+      return {
+        path: file.path, record: first?.id ?? null, ...(records.length > 1 ? { records: records.map((r) => r.id) } : {}),
+        format, revision: first ? this.records.get(first.id)!.revision : null, changed, ...(reason ? { reason } : {}),
+      };
     });
     if (results.some((r) => r.changed)) {
       if (!this.weights.has(KB_CONNECTOR)) {

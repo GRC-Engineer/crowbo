@@ -50,7 +50,8 @@ export const ENGINE_INPUTS = {
     synthetic: z.literal(true),
     files: z.array(z.strictObject({
       path: z.string().min(1).max(300),
-      content: z.string().max(KB_LIMITS.file_chars),
+      content: z.string().max(KB_LIMITS.base64_chars),
+      encoding: z.literal("base64").optional(),
       modified_at: z.string().regex(DATE).optional(),
       mapping: z.discriminatedUnion("shape", [
         z.strictObject({ shape: z.literal("triples") }),

@@ -17,6 +17,7 @@ import { answerTopic, weeklyBrief } from "../../src/engine/answer";
 import { CONNECTORS } from "../../src/engine/connectors";
 import { demoOptions, startDemo } from "../../src/engine/demo";
 import { Engine } from "../../src/engine/engine";
+import { scriptedExtractor } from "../../src/engine/extract";
 import { NORTHWIND } from "../../src/engine/fixture";
 import { NORTHWIND_KB_EXPORT } from "../../src/engine/kb-fixture";
 import { isEngineOp, runEngine } from "../../src/engine/port";
@@ -54,14 +55,16 @@ describe("pilot criteria for mid-December: what a first paid pilot buys", () => 
     expect(elapsed_ms).toBeGreaterThanOrEqual(0);
   });
 
-  it.fails("P1.1 PDF and DOCX files in the export are read: a PDF with known text yields a quoted fact", async () => {
+  it("P1.1 PDF and DOCX files in the export are read: a PDF with known text yields a quoted fact, anchored to its page (true on fixtures)", async () => {
     const pdf = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/Parent 2 0 R/Contents 4 0 R>>endobj 4 0 obj<</Length 60>>stream\nBT /F1 12 Tf 72 712 Td (Owner of Billing: priya@northwind.example) Tj ET\nendstream endobj\ntrailer<</Root 1 0 R>>\n%%EOF";
-    const e = await Engine.start(structuredClone(NORTHWIND), { ...demoOptions(), connectors: [] });
+    // The extractor stand-in labels page 1; the quote check proves the page text was read exactly.
+    const labels = { "kb:registers/owners.pdf#p1@1": [{ subject: "app:billing", predicate: "business_owner", value: "person:priya", quote: "Owner of Billing: priya@northwind.example" }] };
+    const e = await Engine.start(structuredClone(NORTHWIND), { ...demoOptions(), connectors: [], proseExtractors: [scriptedExtractor(labels)] });
     const r = (await runEngine(e, "grc-lead", "import_knowledge_base", {
       synthetic: true, files: [{ path: "registers/owners.pdf", content: btoa(pdf), encoding: "base64" }],
     }).catch(() => null)) as { profile: { files: { format: string }[] } } | null;
     expect(r?.profile.files[0].format).toBe("prose");
-    expect(e.facts.some((f) => f.source.record === "kb:registers/owners.pdf" && f.quote.includes("Owner of Billing"))).toBe(true);
+    expect(e.facts.some((f) => f.source.record === "kb:registers/owners.pdf#p1" && f.quote === "Owner of Billing: priya@northwind.example")).toBe(true);
   });
 
   it.fails("P1.2 an export produces first next moves from the profile's own defaults, with no pre-authored scenarios or actions", async () => {

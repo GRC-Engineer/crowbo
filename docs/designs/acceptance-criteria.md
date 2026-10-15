@@ -28,7 +28,7 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 | ID | Criterion | Label |
 | --- | --- | --- |
 | P1 | A knowledge-base export produces a first company profile within a day | True on fixtures (a synthetic export) |
-| P1.1 | PDF and DOCX files in the export are read: a PDF with known text yields a quoted fact | Failing until built |
+| P1.1 | PDF and DOCX files in the export are read: a PDF with known text yields a quoted fact | True on fixtures |
 | P1.2 | An export produces first next moves from the profile's own defaults, with no pre-authored scenarios or actions | Failing until built: needs the register |
 | P2 | Three real connectors, read-only, feed the weekly fix-or-drop list | Failing until built |
 | P2.1 | Prose from real sources is extracted live by Clef, with precision at 0.8 and recall measured on 50 labelled sentences | Failing until built |
@@ -66,6 +66,12 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 - **Build:** read their text in the Worker, or take text the harness already extracted.
 - **Check:** a PDF with known text, imported through the operation, is read as prose and yields a fact quoting that text.
 - **Size:** about 1 day.
+- **Built:** [`documents.ts`](../../backend/src/engine/documents.ts), with no library: the runtime's DecompressionStream inflates. Binary files are sent as base64.
+  - A PDF is read page by page in the page tree's order (literal, hex and TJ strings, deflated or plain streams); each page is its own prose record, so a quote is anchored to its page.
+  - A DOCX is read from `word/document.xml`, paragraph by paragraph.
+  - It fails closed. A PDF that keeps objects in object streams or its cross-reference in a stream, an encrypted PDF, a page tree with a missing or too-deep branch, a filter chain other than FlateDecode alone, or a font whose text is not readable is listed as not read, never returned with guessed text or a page number that might be wrong. Most PDFs written by current tools use object streams, so today this reads simple PDFs and refuses the rest honestly; whether to add a maintained parser that runs on Workers is Ayoub's call.
+  - Files are treated as hostile: every scan is linear, inflating is capped at 4 MB per part and 8 MB per file, text at 1M characters per file, the page tree is walked without recursion, and a stream referenced many times is read once. A reader failure lists that one file as not read; the rest of the import continues.
+  - The text is untrusted prose like any other: facts from it must quote it exactly.
 
 **P2. Three real connectors.**
 - **Build:** pick the three that the pilot's first case needs, likely the identity provider, the ticketing tool and the incumbent compliance platform.
@@ -136,7 +142,7 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 
 **Reviewed, not tested.** One more outcome is judged by the pilot, not by a test: a CISO at the pilot forwards the brief to their leadership without editing it. The brief should open with what the security lead did not already know that week.
 
-Build order, riskiest first: P1, P3, P2, P2.1, P4.1, P4.2. That totals about 3 weeks of focused work. P1, P3 and P3.1 are built. P1.1 follows when a pilot's export needs it, and P1.2 follows the register.
+Build order, riskiest first: P1, P3, P2, P2.1, P4.1, P4.2. That totals about 3 weeks of focused work. P1, P1.1, P3 and P3.1 are built. P1.1 follows when a pilot's export needs it, and P1.2 follows the register.
 
 ## Regression: already true on fixtures
 

@@ -1,5 +1,6 @@
 import { EngineError } from "./errors";
 import { line } from "./connectors";
+import { base64Bytes, type DocumentText, docxText, pdfText } from "./documents";
 import { isImportable, PREDICATES } from "./predicates";
 import type { Engine } from "./engine";
 import type { Move, SourceRecord, SourceWeight, Unresolved, Value } from "./model";
@@ -18,7 +19,8 @@ import type { Move, SourceRecord, SourceWeight, Unresolved, Value } from "./mode
 
 export const KB_CONNECTOR = "kb";
 
-export const KB_LIMITS = { files: 100, file_chars: 256_000, total_chars: 2_000_000, csv_rows: 5_000 } as const;
+/** file_chars caps a text file and each record's text; base64_chars caps a binary file as sent (about 1 MB). */
+export const KB_LIMITS = { files: 100, file_chars: 256_000, base64_chars: 1_400_000, total_chars: 4_000_000, csv_rows: 5_000 } as const;
 
 /** Used until the company sets its own: documents kept by hand, trusted while they are maintained. */
 export const KB_DEFAULT_WEIGHT: SourceWeight = {
@@ -45,6 +47,8 @@ export interface KbFile {
   /** Path inside the export, e.g. "registers/systems.csv". */
   path: string;
   content: string;
+  /** "base64" for binary files (PDF, DOCX); text files are sent as they are. */
+  encoding?: "base64";
   /** Last edit date in the source (YYYY-MM-DD); freshness follows it. Defaults to the import day. */
   modified_at?: string;
   mapping?: CsvMapping;
@@ -54,7 +58,9 @@ export type KbFormat = "lines" | "prose" | "not_read";
 
 export interface KbFileResult {
   path: string;
+  /** The file's first record; a PDF has one record per page, listed in records. */
   record: string | null;
+  records?: string[];
   format: KbFormat;
   revision: number | null;
   changed: boolean;
@@ -65,10 +71,7 @@ const PREFIX = /^[a-z]+$/;
 const PREDICATE = /^[a-z][a-z0-9_]*$/;
 export const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const PROSE = /\.(md|markdown|txt)$/i;
-const NOT_YET: Record<string, string> = {
-  pdf: "PDF text is not read yet (P1.1); export the file as Markdown or text",
-  docx: "DOCX text is not read yet (P1.1); export the file as Markdown or text",
-};
+const DOCUMENTS: Record<string, (raw: Uint8Array) => Promise<DocumentText>> = { pdf: pdfText, docx: docxText };
 
 /** A path cut short for an error message. */
 const short = (path: string) => (path.length > 80 ? `${path.slice(0, 80)}…` : path);
@@ -152,8 +155,31 @@ const csvProse = (rows: string[][]) => {
   return body.map((r, n) => `Row ${n + 1}. ${header.map((h, i) => `${h.trim()}: ${(r[i] ?? "").trim()}`).filter((c) => !c.endsWith(": ")).join("; ")}.`).join("\n");
 };
 
-/** One file as a source record (revision assigned by the engine), or the reason it was not read. */
-export function toRecord(file: KbFile, viewer: string, importedOn: string): { record: Omit<SourceRecord, "revision"> | null; format: KbFormat; reason?: string } {
+type Prepared = { records: Omit<SourceRecord, "revision">[]; format: KbFormat; reason?: string };
+
+/** A PDF or DOCX as prose records: one per PDF page, so a quote is anchored to its page. */
+async function documentRecords(file: KbFile, ext: string, base: Omit<SourceRecord, "revision" | "format" | "text">): Promise<Prepared> {
+  if (!file.content) return { records: [], format: "not_read", reason: "The file is empty" };
+  const raw = file.encoding === "base64" ? base64Bytes(file.content) : null;
+  if (!raw) return { records: [], format: "not_read", reason: `Send .${ext} files as base64 (encoding: "base64")` };
+  // A reader failure on one file lists that file as not read; it never aborts the import.
+  const doc = await DOCUMENTS[ext](raw).catch((): DocumentText => ({ ok: false, reason: "the file could not be read" }));
+  if (!doc.ok) return { records: [], format: "not_read", reason: `Not read: ${doc.reason}` };
+  const notes = [...doc.unread];
+  const records = doc.pages.map((p) => {
+    const cut = p.text.length > KB_LIMITS.file_chars;
+    if (cut) notes.push(`page ${p.n}: cut at ${KB_LIMITS.file_chars} characters`);
+    const text = cut ? p.text.slice(0, KB_LIMITS.file_chars) : p.text;
+    return ext === "pdf"
+      ? { ...base, id: `${base.id}#p${p.n}`, label: `${base.label}, page ${p.n}`, format: "prose" as const, text }
+      : { ...base, format: "prose" as const, text };
+  });
+  if (!records.length) return { records: [], format: "not_read", reason: notes.length ? `No text read: ${notes.join("; ")}` : "No text in the file" };
+  return { records, format: "prose", ...(notes.length ? { reason: `Read in part: ${notes.join("; ")}` } : {}) };
+}
+
+/** One file as source records (revisions assigned by the engine), or the reason it was not read. */
+export async function toRecords(file: KbFile, viewer: string, importedOn: string): Promise<Prepared> {
   const id = recordId(file.path);
   const ext = file.path.split(".").at(-1)?.toLowerCase() ?? "";
   if (file.modified_at !== undefined && (!DATE.test(file.modified_at) || Number.isNaN(Date.parse(file.modified_at)))) throw new EngineError(`modified_at must be a date (YYYY-MM-DD): ${short(file.path)}`);
@@ -162,13 +188,14 @@ export function toRecord(file: KbFile, viewer: string, importedOn: string): { re
   const base = { id, connector: KB_CONNECTOR, rail: "business" as const, observed_at: file.modified_at ?? importedOn, readers: [viewer], label: file.path.split("/").at(-1) };
   if (ext === "csv") {
     const rows = parseCsv(file.content);
-    if (!file.mapping) return { record: { ...base, format: "prose", text: csvProse(rows) }, format: "prose", reason: "Not mapped: read as prose, nothing typed" };
+    if (!file.mapping) return { records: [{ ...base, format: "prose", text: csvProse(rows) }], format: "prose", reason: "Not mapped: read as prose, nothing typed" };
     const { lines, skipped } = typedLines(rows, file.mapping);
     const reason = skipped.length ? `Rows stating ${skipped.join(", ")} were skipped: an export cannot state them` : undefined;
-    return { record: { ...base, format: "lines", text: lines.join("\n") }, format: "lines", ...(reason ? { reason } : {}) };
+    return { records: [{ ...base, format: "lines", text: lines.join("\n") }], format: "lines", ...(reason ? { reason } : {}) };
   }
-  if (PROSE.test(file.path)) return { record: { ...base, format: "prose", text: file.content }, format: "prose" };
-  return { record: null, format: "not_read", reason: NOT_YET[ext] ?? `.${ext.slice(0, 10)} files are not read; export as Markdown, text or CSV` };
+  if (PROSE.test(file.path)) return { records: [{ ...base, format: "prose", text: file.content }], format: "prose" };
+  if (DOCUMENTS[ext]) return documentRecords(file, ext, base);
+  return { records: [], format: "not_read", reason: `.${ext.slice(0, 10)} files are not read; export as Markdown, text, CSV, PDF or DOCX` };
 }
 
 export function checkLimits(files: KbFile[]) {
@@ -177,7 +204,8 @@ export function checkLimits(files: KbFile[]) {
   let total = 0;
   const seen = new Set<string>();
   for (const f of files) {
-    if (f.content.length > KB_LIMITS.file_chars) throw new EngineError(`${short(f.path)} is over ${KB_LIMITS.file_chars} characters`);
+    const cap = f.encoding === "base64" ? KB_LIMITS.base64_chars : KB_LIMITS.file_chars;
+    if (f.content.length > cap) throw new EngineError(`${short(f.path)} is over ${cap} characters`);
     total += f.content.length;
     const id = recordId(f.path);
     if (seen.has(id)) throw new EngineError(`Two files map to ${id}`);
