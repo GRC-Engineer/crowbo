@@ -147,7 +147,7 @@ export default function App() {
     <div className="d-app" data-open={open}>
       <header className="d-head">
         <a className="d-wordmark" href="/">crowbo</a>
-        <span className="d-surfaces">Runs in Claude Code, Cursor, Codex and Slack over MCP</span>
+        <span className="d-surfaces">Runs in Claude Code, Cursor and Codex over MCP</span>
       </header>
 
       <div className="d-body">
