@@ -9,6 +9,7 @@ import type { ChatModel } from "./ai";
 import { DecisionMemory } from "./memory";
 import { PREDICATES } from "./predicates";
 import type { CompanyFixture, Condition, Connector, Decision, Edge, Extractor, Fact, MemoryEntry, SourceRecord, SourceWeight, Value } from "./model";
+import { checkLimits, KB_CONNECTOR, KB_DEFAULT_WEIGHT, type KbFile, type KbFileResult, kbProfile, toRecord } from "./kb";
 import { type EngineState, type EngineStore, MemoryEngineStore } from "./store";
 
 /**
@@ -131,20 +132,7 @@ export class Engine {
     this.api.now = at;
     const before = { facts: new Set(this.facts.map((f) => f.id)), edges: new Set(this.graph.all().map((e) => `${e.from}|${e.rel}|${e.to}`)), decision: this.latest };
     let changed = 0;
-    for (const fresh of await c.read(this.api.fetch)) {
-      const prev = this.records.get(fresh.id);
-      const observed_at = c.live_state ? at.slice(0, 10) : fresh.observed_at;
-      const same = prev && prev.text === fresh.text && JSON.stringify(prev.readers) === JSON.stringify(fresh.readers) && JSON.stringify(prev.coverage ?? null) === JSON.stringify(fresh.coverage ?? null);
-      if (same) {
-        if (prev.observed_at !== observed_at) this.store.saveRecord({ ...prev, observed_at });
-        prev.observed_at = observed_at;
-        continue;
-      }
-      const next = { ...fresh, observed_at, revision: (prev?.revision ?? 0) + 1 };
-      this.store.saveRecord(next);
-      this.records.set(fresh.id, next);
-      changed++;
-    }
+    for (const fresh of await c.read(this.api.fetch)) if (this.keep(fresh, c.live_state ? at.slice(0, 10) : fresh.observed_at)) changed++;
     this.store.saveReadAt(c.id, at);
     this.readAt.set(c.id, at);
     if (changed) this.memory.append("read", c.id, { at, records_changed: changed });
@@ -154,6 +142,53 @@ export class Engine {
       facts_added: this.facts.filter((f) => !before.facts.has(f.id)).length,
       edges_added: this.graph.all().filter((e) => !before.edges.has(`${e.from}|${e.rel}|${e.to}`)).map(({ from, rel, to }) => ({ from, rel, to })),
       decision_diff: decision && decision.id !== before.decision?.id ? diff(before.decision, decision) : null,
+    };
+  }
+
+  /** Keep a record read from a source: a new revision when its text, readers or coverage changed. Returns whether it did. */
+  private keep(fresh: Omit<SourceRecord, "revision">, observed_at: string): boolean {
+    const prev = this.records.get(fresh.id);
+    const same = prev && prev.text === fresh.text && prev.format === fresh.format && JSON.stringify(prev.readers) === JSON.stringify(fresh.readers) && JSON.stringify(prev.coverage ?? null) === JSON.stringify(fresh.coverage ?? null);
+    if (same) {
+      if (prev.observed_at !== observed_at) this.store.saveRecord({ ...prev, observed_at });
+      prev.observed_at = observed_at;
+      return false;
+    }
+    const next = { ...fresh, observed_at, revision: (prev?.revision ?? 0) + 1 };
+    this.store.saveRecord(next);
+    this.records.set(fresh.id, next);
+    return true;
+  }
+
+  /**
+   * Import a knowledge-base export: each file becomes a "kb" record (typed lines or prose), facts are
+   * extracted through the same quote check as any source, and the decision is recomputed on the
+   * company's weights (a default for "kb" until it sets one). Re-importing an unchanged export writes
+   * nothing. An import that changed a file is kept in memory with a digest of each file, never its text.
+   */
+  async importKnowledgeBase(files: KbFile[], by: string) {
+    const started = performance.now();
+    checkLimits(files);
+    const prepared = files.map((f) => ({ file: f, ...toRecord(f, this.fixture.viewer, this.asOf()) }));
+    const before = this.latest;
+    if (!this.weights.has(KB_CONNECTOR)) {
+      this.store.saveWeight(KB_DEFAULT_WEIGHT);
+      this.weights.set(KB_CONNECTOR, { ...KB_DEFAULT_WEIGHT });
+    }
+    const results: KbFileResult[] = prepared.map(({ file, record, format, reason }) => {
+      const changed = record ? this.keep(record, record.observed_at) : false;
+      return { path: file.path, record: record?.id ?? null, format, revision: record ? this.records.get(record.id)!.revision : null, changed, ...(reason ? { reason } : {}) };
+    });
+    if (results.some((r) => r.changed)) {
+      this.memory.append("import", by, {
+        files: results.map((r, i) => ({ path: r.path, record: r.record, format: r.format, revision: r.revision, changed: r.changed, sha256: digest({ content: files[i].content }) })),
+      });
+    }
+    const after = await this.refresh(by);
+    return {
+      profile: kbProfile(this, results),
+      decision_diff: after.id !== before?.id ? diff(before, after) : null,
+      elapsed_ms: Math.round(performance.now() - started),
     };
   }
 

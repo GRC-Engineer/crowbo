@@ -5,6 +5,7 @@
 import { readFileSync, statSync } from "node:fs";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { NORTHWIND_KB_EXPORT } from "../src/engine/kb-fixture";
 
 const url = process.env.CROWBO_URL;
 const tokenFile = process.env.CROWBO_TOKEN_FILE;
@@ -33,7 +34,7 @@ if (process.argv.includes("--reset")) {
   client = await connect();
 }
 const tools = (await client.listTools()).tools.map((t) => t.name);
-check("fourteen engine tools offered", tools.filter((t) => t.startsWith("engine_")).length === 14, tools.filter((t) => t.startsWith("engine_")));
+check("fifteen engine tools offered", tools.filter((t) => t.startsWith("engine_")).length === 15, tools.filter((t) => t.startsWith("engine_")));
 
 const status = await call("engine_status");
 const fresh = status.layers["04_decision_memory"].entries <= 10 && status.now.startsWith("2026-10-13");
@@ -58,6 +59,11 @@ if (fresh) {
   check("a week later the outcome is recorded from the reads", JSON.stringify(week.outcomes.map((o: any) => [o.body.status, o.body.baseline, o.body.value])) === '[["done",27,0]]', week.outcomes.map((o: any) => o.body));
   const memory = await call("engine_memory", { kind: "outcome" });
   check("memory chain intact, outcome kept", memory.chain_intact === true && memory.entries.length === 1, memory.entries.length);
+  const kb = await call("engine_import_knowledge_base", { synthetic: true, files: NORTHWIND_KB_EXPORT });
+  const owners = kb.profile.systems.map((x: any) => `${x.id}=${x.owner}`).join(",");
+  check("a synthetic export gives a first profile", owners === "app:billing=person:priya,app:okta=person:dana" && kb.profile.files.filter((f: any) => f.format === "not_read").length === 1, owners);
+  const imports = await call("engine_memory", { kind: "import" });
+  check("the import is kept in memory", imports.chain_intact === true && imports.entries.length === 1, imports.entries.length);
 }
 
 await client.close();

@@ -90,7 +90,7 @@ describe("Stage 1", () => {
       return (await client.listTools()).tools.map((t) => t.name);
     };
     expect((await names(false)).some((n) => n.startsWith("engine_"))).toBe(false);
-    expect((await names(true)).filter((n) => n.startsWith("engine_"))).toHaveLength(14);
+    expect((await names(true)).filter((n) => n.startsWith("engine_"))).toHaveLength(15);
   });
 });
 

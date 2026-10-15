@@ -172,7 +172,7 @@ export interface Edge {
 
 // ---- 04 Decision memory ------------------------------------------------------------------------
 
-export type MemoryKind = "decision" | "call" | "weight_change" | "proposal" | "read" | "outcome" | "clock";
+export type MemoryKind = "decision" | "call" | "weight_change" | "proposal" | "read" | "outcome" | "clock" | "import";
 
 /** Append-only, hash-chained: every call, exception and weight change is kept. */
 export interface MemoryEntry {

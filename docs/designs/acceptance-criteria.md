@@ -25,7 +25,8 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 
 | ID | Criterion | Label |
 | --- | --- | --- |
-| P1 | A real knowledge-base export produces a first company profile and first next moves within a day | Failing until built |
+| P1 | A knowledge-base export produces a first company profile and first next moves within a day | True on a synthetic export |
+| P1.1 | PDF and DOCX files in the export are read | Failing until built |
 | P2 | Three real connectors, read-only, feed the weekly fix-or-drop list | Failing until built |
 | P2.1 | Prose from real sources is extracted live by Clef, with precision at 0.8 and recall measured on 50 labelled sentences | Failing until built |
 | P3 | The list arrives in the customer's Slack with citations, a named decider and a date, with no assistant needed | Failing until built |
@@ -41,8 +42,20 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 - **Input:** a folder or archive of the customer's policies, risk register and last audit report (PDF, DOCX, Markdown, CSV).
 - **Build:** an import operation that registers each file as a prose or typed record, extracts quoted facts through the evaluation gate, and registers the subjects it finds.
 - **Output:** a first next-moves list on default weights, plus a profile: the systems, owners, controls and stale entries it found.
-- **Check:** the import exists. On a synthetic export it returns a profile and a list in one run.
+- **Check:** on a synthetic export it returns a profile and a list in one run.
 - **Size:** about 3–4 days.
+- **Built:** `engine_import_knowledge_base`, over [`kb.ts`](../../backend/src/engine/kb.ts).
+  - Markdown and text are read as prose. A CSV is typed only with a `subject,field,value` header or an explicit column mapping; otherwise it is read as prose and nothing is typed.
+  - The export is one more source, `kb`, weighted 3 with a 180-day limit until the company sets its own. Each file's edit date drives freshness.
+  - Re-importing an unchanged file changes nothing. Memory keeps a digest of each file, never its text.
+  - The operation requires `synthetic: true` until counsel clears third-party data and Ayoub gives a written go.
+  - The profile keeps the current Scenario and Action shapes. The register is meant to replace `kbProfile`, not the import.
+
+**P1.1. PDF and DOCX.**
+- **Today:** listed as not read, with the reason.
+- **Build:** read their text in the Worker, or take text the harness already extracted.
+- **Check:** no file in the synthetic export is left unread.
+- **Size:** about 1 day.
 
 **P2. Three real connectors.**
 - **Build:** pick the three that the pilot's first case needs, likely the identity provider, the ticketing tool and the incumbent compliance platform.
@@ -80,7 +93,7 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 
 **P5.1** is judged by the pilot, not by a test. The brief should open with what the security lead did not already know that week.
 
-Build order, riskiest first: P1, P3, P2, P2.1, P4.1, P4.2. That totals about 3 weeks of focused work.
+Build order, riskiest first: P1, P3, P2, P2.1, P4.1, P4.2. That totals about 3 weeks of focused work. P1 is built; P1.1 follows when a pilot's export needs it.
 
 ## Regression: already true on fixtures
 

@@ -17,6 +17,7 @@ import { CONNECTORS } from "../../src/engine/connectors";
 import { demoOptions, startDemo } from "../../src/engine/demo";
 import { Engine } from "../../src/engine/engine";
 import { NORTHWIND } from "../../src/engine/fixture";
+import { NORTHWIND_KB_EXPORT } from "../../src/engine/kb-fixture";
 import { runEngine } from "../../src/engine/port";
 import { registerEngineTools } from "../../src/engine/tools";
 
@@ -31,9 +32,20 @@ const withSlack = (text: string) => {
 };
 
 describe("pilot criteria for mid-December: what a first paid pilot buys", () => {
-  it.fails("P1 a real knowledge-base export produces a first company profile and first next moves within a day", async () => {
-    const e = await demo();
-    expect(typeof (e as unknown as { importKnowledgeBase?: unknown }).importKnowledgeBase).toBe("function");
+  it("P1 a knowledge-base export produces a first company profile and first next moves in one run (true on a synthetic export)", async () => {
+    const e = await Engine.start(structuredClone(NORTHWIND), { ...demoOptions(), connectors: [] });
+    const { profile, elapsed_ms } = await e.importKnowledgeBase(NORTHWIND_KB_EXPORT, "grc-lead");
+    expect(profile.systems.map((s) => s.owner)).toEqual(["person:priya", "person:dana"]);
+    expect(profile.controls.length).toBeGreaterThan(0);
+    expect(profile.stale.length).toBeGreaterThan(0);
+    expect(profile.next_moves.map((m) => m.action)).toEqual(["drop-access-screenshots"]);
+    expect(elapsed_ms).toBeLessThan(60_000);
+  });
+
+  it.fails("P1.1 PDF and DOCX files in the export are read", async () => {
+    const e = await Engine.start(structuredClone(NORTHWIND), { ...demoOptions(), connectors: [] });
+    const { profile } = await e.importKnowledgeBase(NORTHWIND_KB_EXPORT, "grc-lead");
+    expect(profile.files.filter((f) => f.format === "not_read")).toEqual([]);
   });
 
   it.fails("P2 three real connectors, read-only, feed the weekly fix-or-drop list", () => {

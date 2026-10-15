@@ -3,6 +3,7 @@ import { answerTopic, pickTopic, weeklyBrief } from "./answer";
 import { type Engine, MEMORY_CAP, OUTCOME_STATUSES, replaySchedule } from "./engine";
 import { EngineError } from "./errors";
 import { draftFollowups, routeQuestion, summarise } from "./explain";
+import { KB_LIMITS } from "./kb";
 
 /**
  * The engine's operations, one table for every surface: the local MCP server runs them in-process,
@@ -30,13 +31,30 @@ export const ENGINE_INPUTS = {
   next_moves: z.strictObject({}),
   status: z.strictObject({}),
   graph: z.strictObject({ node: z.string().min(1).max(200), depth: z.number().int().min(1).max(3).default(2) }),
-  memory: z.strictObject({ kind: z.enum(["read", "decision", "call", "weight_change", "proposal", "outcome", "clock"]).optional() }),
+  memory: z.strictObject({ kind: z.enum(["read", "decision", "call", "weight_change", "proposal", "outcome", "clock", "import"]).optional() }),
   set_weight: z.strictObject({ connector: z.string().min(1).max(50), weight: z.number().int().min(0).max(5), reason: z.string().min(1).max(500) }),
+  /**
+   * A knowledge-base export, as text files. `synthetic: true` is required: until counsel clears
+   * third-party data and the founder gives a written go, only synthetic exports are imported.
+   */
+  import_knowledge_base: z.strictObject({
+    synthetic: z.literal(true),
+    files: z.array(z.strictObject({
+      path: z.string().min(1).max(300),
+      content: z.string().max(KB_LIMITS.file_chars),
+      modified_at: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      mapping: z.strictObject({
+        subject_column: z.string().min(1).max(100),
+        subject_prefix: z.string().min(1).max(30),
+        columns: z.record(z.string().max(100), z.strictObject({ predicate: z.string().min(1).max(80), node_prefix: z.string().min(1).max(30).optional() })),
+      }).optional(),
+    })).min(1).max(KB_LIMITS.files),
+  }),
   /** Start this copy over from the demo's first morning. Handled by the host, which owns the store. */
   reset: z.strictObject({ confirm: z.literal(true) }),
 } as const;
 
-const WRITES = new Set<EngineOp>(["record_call", "record_outcome", "advance_time", "set_weight"]);
+const WRITES = new Set<EngineOp>(["record_call", "record_outcome", "advance_time", "set_weight", "import_knowledge_base"]);
 
 export type EngineOp = keyof typeof ENGINE_INPUTS;
 export const isEngineOp = (name: string): name is EngineOp => Object.hasOwn(ENGINE_INPUTS, name);
@@ -80,5 +98,7 @@ export async function runEngine(engine: Engine, actor: string, op: EngineOp, raw
       return { chain_intact: engine.memory.verify(), entries: engine.memory.list(args.kind) };
     case "set_weight":
       return engine.setWeight(args.connector, args.weight, actor, args.reason);
+    case "import_knowledge_base":
+      return engine.importKnowledgeBase(args.files, actor);
   }
 }
