@@ -44,6 +44,8 @@
 
 **Source weight**: how much a company trusts one source, from 0 to 5. It is visible and editable, and every change is kept in decision memory.
 
+**Connection**: one company's consented, read-only credential for one provider, held in that company's tenant and revocable by the company's own administrator. A revoked connection makes every scenario that depends on it unresolved.
+
 **Context graph**: the relationships between people, teams, launches, controls and systems, each derived from quoted source revisions.
 
 **Decision memory**: the append-only record of every decision, call, exception, weight change and tuning proposal.
