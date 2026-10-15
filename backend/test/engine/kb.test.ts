@@ -27,7 +27,7 @@ describe("knowledge-base import", () => {
   it("says which files it did not read and why, and reads an unmapped CSV as prose with nothing typed", async () => {
     const { profile } = await (await fresh()).importKnowledgeBase(NORTHWIND_KB_EXPORT, "grc-lead", SYNTHETIC);
     const byPath = Object.fromEntries(profile.files.map((f) => [f.path, f]));
-    expect(byPath["board/q3-board-pack.pdf"]).toMatchObject({ format: "not_read", record: null, reason: expect.stringMatching(/PDF.*P1\.1/) });
+    expect(byPath["board/q3-board-pack.pdf"]).toMatchObject({ format: "not_read", record: null, reason: "The file is empty" });
     expect(byPath["registers/vendors.csv"]).toMatchObject({ format: "prose", reason: expect.stringMatching(/Not mapped.*nothing typed/) });
     expect(byPath["registers/risk-register.csv"]).toMatchObject({ format: "lines", reason: expect.stringMatching(/holders were skipped: an export cannot state them/) });
   });
@@ -114,7 +114,7 @@ describe("knowledge-base import: untrusted files", () => {
     expect(recordId("./registers\\systems.csv")).toBe("kb:registers/systems.csv");
     const e = await fresh();
     await expect(e.importKnowledgeBase([csv("a"), csv("b")], "grc-lead", SYNTHETIC)).rejects.toThrow(/Two files map to/);
-    const big = Array.from({ length: 9 }, (_, i) => csv("x".repeat(KB_LIMITS.file_chars), `f${i}.md`));
+    const big = Array.from({ length: 17 }, (_, i) => csv("x".repeat(KB_LIMITS.file_chars), `f${i}.md`));
     await expect(e.importKnowledgeBase(big, "grc-lead", SYNTHETIC)).rejects.toThrow(/import it in parts/);
     await expect(e.importKnowledgeBase([{ path: "a.md", content: "x", modified_at: "2027-01-01" }], "grc-lead", SYNTHETIC)).rejects.toThrow(/after the import date/);
   });

@@ -98,7 +98,7 @@ describe("Slack surface: a direct message with an export runs the import", () =>
     expect(r.text).toContain("*First profile from your export* (6 of 7 files read)");
     expect(r.text).toContain("• app:billing: person:priya");
     expect(r.text).toContain("• control:billing-admin-access, assigned to person:alex");
-    expect(r.text).toMatch(/• board\/q3-board-pack\.pdf: PDF text is not read yet/);
+    expect(r.text).toMatch(/• board\/q3-board-pack\.pdf: The file is empty/);
     expect(e.memory.list("import")[0].actor).toBe("slack:U0ALEX");
   });
 

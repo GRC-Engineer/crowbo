@@ -62,8 +62,15 @@ if (fresh) {
   const kb = await call("engine_import_knowledge_base", { synthetic: true, files: NORTHWIND_KB_EXPORT });
   const owners = kb.profile.systems.map((x: any) => `${x.id}=${x.owner}`).join(",");
   check("a synthetic export gives a first profile", owners === "app:billing=person:priya,app:okta=person:dana" && kb.profile.files.filter((f: any) => f.format === "not_read").length === 1, owners);
+  // A deflated PDF, read inside the Worker (DecompressionStream), one record per page.
+  const content = "BT (Owner of Billing: Priya) Tj ET";
+  const flate = new Uint8Array(await new Response(new Blob([content]).stream().pipeThrough(new CompressionStream("deflate"))).arrayBuffer());
+  const head = `%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/Contents 4 0 R>>endobj\n4 0 obj<</Length ${flate.length}/Filter/FlateDecode>>stream\n`;
+  const pdf = new Uint8Array([...new TextEncoder().encode(head), ...flate, ...new TextEncoder().encode("\nendstream endobj\ntrailer<</Root 1 0 R>>\n%%EOF")]);
+  const read = await call("engine_import_knowledge_base", { synthetic: true, files: [{ path: "audits/owners.pdf", encoding: "base64", content: btoa(String.fromCharCode(...pdf)) }] });
+  check("a deflated PDF is read in the Worker, page by page", read.profile.files[0].format === "prose" && read.profile.files[0].record === "kb:audits/owners.pdf#p1", read.profile.files[0]);
   const imports = await call("engine_memory", { kind: "import" });
-  check("the import is kept in memory", imports.chain_intact === true && imports.entries.length === 1, imports.entries.length);
+  check("both imports are kept in memory", imports.chain_intact === true && imports.entries.length === 2, imports.entries.length);
 }
 
 await client.close();
