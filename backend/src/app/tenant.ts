@@ -9,6 +9,12 @@ import { Engine } from "../engine/engine";
 import { NORTHWIND } from "../engine/fixture";
 import { isEngineOp, runEngine, type Surface } from "../engine/port";
 import { SqlEngineStore } from "../engine/store";
+import { parseKeyring } from "../connections/crypto";
+import { MANIFESTS } from "../connections/manifests";
+import { SqlConnectionStore } from "../connections/store";
+import { ConnectionError, ConnectionVault } from "../connections/vault";
+import { fixedHostFetch } from "../providers/http";
+import type { ConnectOp } from "./connect";
 
 /** Read a key that is either a plain secret or a Secrets Store binding. Missing means null. */
 async function secret(value: string | SecretsStoreSecret | undefined): Promise<string | null> {
@@ -37,6 +43,52 @@ export class TenantStore extends DurableObject<Env> {
   }
 
   private engine: Promise<Engine> | null = null;
+
+  /**
+   * This tenant's connections. The tenant name is fixed on first use, so a call naming another tenant
+   * cannot reach these secrets; each secret is sealed under that tenant's derived key.
+   */
+  async connections(tenant: string, op: ConnectOp): Promise<{ ok: true; result: unknown } | { ok: false; error: string }> {
+    try {
+      const sql = this.ctx.storage.sql;
+      sql.exec("CREATE TABLE IF NOT EXISTS connection_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
+      const bound = sql.exec<{ value: string }>("SELECT value FROM connection_meta WHERE key = 'tenant'").toArray()[0]?.value;
+      if (bound && bound !== tenant) return { ok: false, error: "This object belongs to another tenant" };
+      if (!bound) sql.exec("INSERT INTO connection_meta (key, value) VALUES ('tenant', ?)", tenant);
+      const kek = await secret(this.env.CONNECTIONS_KEK);
+      if (!kek) return { ok: false, error: "Connections are not configured" };
+      const vault = new ConnectionVault(tenant, new SqlConnectionStore(this.ctx.storage), parseKeyring(kek));
+      const clients = JSON.parse((await secret(this.env.CONNECT_CLIENTS)) ?? "{}") as Record<string, { id: string; secret: string }>;
+      const client = (p: string) => {
+        const c = clients[p];
+        if (!c) throw new ConnectionError(`No app is registered for ${MANIFESTS[p]?.label ?? p}`);
+        return c;
+      };
+      switch (op.op) {
+        case "start":
+          return { ok: true, result: await vault.startConsent(op.provider, client(op.provider).id, op.redirectUri) };
+        case "callback": {
+          const m = MANIFESTS[op.provider];
+          if (m.flow.kind !== "authorization_code") return { ok: false, error: `${m.label} has no consent redirect` };
+          const c = await vault.completeConsent(op.provider, op.nonce, op.code, { ...client(op.provider), redirectUri: op.redirectUri }, fixedHostFetch(new URL(m.flow.token).host, 100_000));
+          return { ok: true, result: { provider: c.provider, scopes: c.scopes, missing_scopes: vault.missingScopes(op.provider) } };
+        }
+        case "okta_setup":
+          return { ok: true, result: await vault.setupOkta(op.host, op.clientId) };
+        case "paste": {
+          const c = await vault.storePasted(op.provider, { client_id: op.clientId, secret: op.secret });
+          return { ok: true, result: { provider: c.provider, rotation_due: c.rotation_due } };
+        }
+        case "rekey":
+          return { ok: true, result: await vault.rekey() };
+        case "status":
+          return { ok: true, result: { connections: new SqlConnectionStore(this.ctx.storage).list(), report: vault.report() } };
+      }
+    } catch (error) {
+      if (error instanceof ConnectionError) return { ok: false, error: error.message };
+      return { ok: false, error: "The connection could not be completed" };
+    }
+  }
 
   /**
    * The demo engine for this tenant, opened on the tenant's own SQLite and kept warm in the object.

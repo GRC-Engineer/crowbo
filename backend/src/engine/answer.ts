@@ -211,6 +211,14 @@ function basisFor(engine: Engine, decision: Decision, topic: Topic): Answer["bas
 }
 
 /** The weekly brief a CISO can take to the board: moves with their sources, what was decided, hours back, evidence not used. */
+/** The sources the brief must name: not read since a revocation, unused for weeks, or a secret past its rotation date. */
+function sourcesNotRead(engine: Engine): string[] {
+  const problems = engine.options.sourceReport?.() ?? [];
+  if (!problems.length) return [];
+  const words = { revoked: "not read since", unused: "not used by a scheduled read since", rotation_due: "secret due for rotation since" } as const;
+  return ["## Sources not read", ...problems.map((p) => `- ${p.label}: ${words[p.problem]} ${p.since.slice(0, 10)} (${p.detail}). Answers that depend on it stay unresolved.`), ""];
+}
+
 export function weeklyBrief(engine: Engine): { markdown: string; decision_id: string } {
   const d: Decision = engine.nextMoves();
   const money = (n: number) => `$${Math.round(n / 1000)}k`;
@@ -259,6 +267,7 @@ export function weeklyBrief(engine: Engine): { markdown: string; decision_id: st
     "## Evidence we did not use",
     ...(notUsed.length ? notUsed : ["- None."]),
     "",
+    ...sourcesNotRead(engine),
     "Recommendations only; nothing executes.",
   ].join("\n");
   return { markdown: md, decision_id: d.id };

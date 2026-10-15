@@ -4,6 +4,7 @@ import type { Env } from "./app/env";
 import { buildServer } from "./app/mcp";
 import { oauthProvider } from "./app/oauth";
 import { readCapped } from "./app/body";
+import { type ConnectCall, connectAuthed, connectCallback } from "./app/connect";
 import { isOperation } from "./app/operations";
 import { slackConfig, slackDeps, slackPoster, weeklyTargets } from "./app/slack";
 import { handleSlackEvent, postWeekly, WEEKLY_CRON } from "./surfaces/slack-events";
@@ -42,6 +43,9 @@ function tenant(env: Env, name: string) {
   return namespace.get(namespace.idFromName(name));
 }
 
+/** A tenant's connections live in the tenant's own object. */
+const connectCaller = (env: Env): ConnectCall => (tenantName, op) => tenant(env, tenantName).connections(tenantName, op);
+
 /** A demo engine copy's operations, by its key (tenant::engine::reader). */
 /** The Slack surface's calls into a workspace's engine copy, marked as coming from Slack. */
 const engineCaller = (env: Env) => (key: string) => (actor: string, op: string, args: unknown) => tenant(env, key).engineCall(actor, op, args, "slack");
@@ -56,6 +60,9 @@ function invoker(env: Env, config: OperatorConfig) {
 /** Serve an authenticated operator's request: MCP at /mcp, operations at /v1/operations/<name>. */
 async function serve(request: Request, env: Env, config: OperatorConfig): Promise<Response> {
   const url = new URL(request.url);
+  // Connecting a source: handled first, it reads its own small JSON body.
+  const connected = await connectAuthed(request, env, config.tenant, config.roles, connectCaller(env));
+  if (connected) return withSecurityHeaders(connected);
   const invoke = invoker(env, config);
   const body = request.method === "GET" || request.method === "HEAD" ? new Uint8Array() : await boundedBody(request);
   if (body instanceof Response) return body;
@@ -115,6 +122,9 @@ export default {
     if (url.pathname === "/health") return json({ ok: true, service: "crowbo-api" });
     // Claude shows a connector's favicon: point it at the crow on the public site.
     if (url.pathname === "/favicon.ico") return Response.redirect("https://crowbo.ai/assets/favicon-32.png", 301);
+    // A provider's consent callback: public, its state names the tenant and a one-time nonce.
+    const callback = await connectCallback(request, env, connectCaller(env));
+    if (callback) return withSecurityHeaders(callback);
     // Slack's Events API: signed by Slack, not by an operator token, so it is checked before auth.
     if (url.pathname === "/slack/events") {
       let config;

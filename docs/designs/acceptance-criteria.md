@@ -142,6 +142,8 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 
 **Reviewed, not tested.** One more outcome is judged by the pilot, not by a test: a CISO at the pilot forwards the brief to their leadership without editing it. The brief should open with what the security lead did not already know that week.
 
+**Decision latency on staging with the three connectors:** deferred. It needs the sandbox accounts and live connections from the dress rehearsal, and a staging deploy Ayoub confirms. It will be recorded here as a p50 and p95.
+
 Build order, riskiest first: P1, P3, P2, P2.1, P4.1, P4.2. That totals about 3 weeks of focused work. P1, P1.1, P3 and P3.1 are built. P1.1 follows when a pilot's export needs it, and P1.2 follows the register.
 
 ## Regression: already true on fixtures
