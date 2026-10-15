@@ -28,6 +28,8 @@ export const slackWorkspace = z.strictObject({
   synthetic: z.boolean(),
   /** Slack user ids who may record calls here. Empty: nobody records. */
   recorders: z.array(z.string().regex(/^[UW][A-Z0-9]{8,32}$/)).max(200).default([]),
+  /** Slack user ids who may import an export by direct message. Empty: nobody imports. */
+  importers: z.array(z.string().regex(/^[UW][A-Z0-9]{8,32}$/)).max(200).default([]),
 });
 export type SlackWorkspace = z.infer<typeof slackWorkspace>;
 export const slackWorkspaces = z.record(z.string().regex(/^T[A-Z0-9]{8,32}$/), slackWorkspace);
@@ -43,7 +45,7 @@ export interface SlackDeps {
   signingSecret: string;
   now: () => number;
   /** The registered workspace for a team, with an engine invoker acting as the Slack user; null when not registered. */
-  workspace(team: string): (Pick<SlackWorkspace, "channel" | "synthetic" | "recorders"> & { invoke(actor: string): EngineInvoke }) | null;
+  workspace(team: string): (Pick<SlackWorkspace, "channel" | "synthetic" | "recorders" | "importers"> & { invoke(actor: string): EngineInvoke }) | null;
   post(message: Post): Promise<void>;
   /** The permalink of a message, from Slack's own API; null when Slack does not give one. */
   permalink?(channel: string, ts: string): Promise<string | null>;
@@ -135,9 +137,11 @@ export async function handleSlackEvent(request: Request, deps: SlackDeps): Promi
     work = async () => handleMention(invoke, { text: e.text ?? "", thread: thread_ts, canRecord, permalink: command && canRecord && deps.permalink ? await deps.permalink(e.channel!, thread_ts) : null });
   }
   else if (e.type === "message" && e.channel_type === "im" && e.files?.length && (!e.subtype || e.subtype === "file_share")) {
-    work = ws.synthetic
-      ? async () => handleExport(invoke, await exportFiles(e.files, deps), { synthetic: true })
-      : async () => ({ text: "This workspace is not registered for synthetic exports. Real exports wait until the founders clear them." });
+    work = !ws.synthetic
+      ? async () => ({ text: "This workspace is not registered for synthetic exports. Real exports wait until the founders clear them." })
+      : !ws.importers.includes(e.user)
+        ? async () => ({ text: "Nothing imported: only the people this workspace registered as importers can import an export." })
+        : async () => handleExport(invoke, await exportFiles(e.files, deps), { synthetic: true });
   }
   if (!work) return new Response("OK", { status: 200 });
 

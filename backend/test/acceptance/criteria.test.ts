@@ -109,7 +109,7 @@ describe("pilot criteria for mid-December: what a first paid pilot buys", () => 
     const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
     const mac = Buffer.from(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`v0:${ts}:${body}`))).toString("hex");
     const request = new Request("https://crowbo.example/slack/events", { method: "POST", body, headers: { "x-slack-request-timestamp": ts, "x-slack-signature": `v0=${mac}` } });
-    await handleSlackEvent(request, { signingSecret: secret, now: () => Number(ts) * 1000, workspace: () => ({ channel: "C0GRCTEAM1", synthetic: true, recorders: [], invoke: () => invoke }), post });
+    await handleSlackEvent(request, { signingSecret: secret, now: () => Number(ts) * 1000, workspace: () => ({ channel: "C0GRCTEAM1", synthetic: true, recorders: [], importers: [], invoke: () => invoke }), post });
     expect(posted).toHaveLength(2);
     const [weekly, reply] = posted;
     expect(weekly).toMatchObject({ channel: "C0GRCTEAM1", text: expect.stringMatching(/Sources: [^\n]*Okta/) });

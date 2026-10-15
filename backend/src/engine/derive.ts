@@ -37,8 +37,26 @@ export function derive(usable: Fact[], asOf: string, windowDays = 90): Fact[] {
   const groups = uniq(by("member_of").filter((f) => String(f.value).startsWith("group:")).map((f) => String(f.value)));
   const since = isoDay(at(asOf) - windowDays * DAY);
 
+  // A list counts only when every record that stated it says it was read completely (a stated total,
+  // or a last page), and at least one listing exists. Unknown completeness is incomplete. When a join
+  // is skipped for a partial read, a read_in_part fact on the join's subject says how much was read.
+  const listings = (name: string) => by("read").filter((f) => f.subject.startsWith("listing:") && f.subject.endsWith(`.${name}`));
+  const whole = (facts: Fact[]) => facts.every((f) => f.completeness !== undefined && !isPartial(f.completeness));
+  const readInPart = (subject: string, facts: Fact[]) => {
+    const partial = facts.find((f) => f.completeness === undefined || isPartial(f.completeness));
+    if (!partial) return;
+    const c = partial.completeness;
+    out.push(derived(subject, "read_in_part", true, c ? `${c.of} read in part (${c.read} of ${c.total ?? "an unknown number of"} ${c.of})` : "read without a stated completeness", [partial]));
+  };
+
+
   for (const group of groups) {
     const memberships = by("member_of").filter((f) => f.value === group);
+    // Counts over a membership list read in part would be wrong, not just uncertain.
+    if (!whole(memberships)) {
+      readInPart(group, memberships);
+      continue;
+    }
     const holders = uniq(memberships.map((f) => f.subject));
     out.push(derived(group, "holders", holders.length, `${holders.length} people hold ${nodeName(group)} (identity provider group membership)`, memberships));
 
@@ -69,23 +87,36 @@ export function derive(usable: Fact[], asOf: string, windowDays = 90): Fact[] {
       [...permits, ...theirActions, ...usage], coverage));
   }
 
-  // Standing admin access and its last review: a group that administers an app, joined with the date
-  // it was last reviewed. With no review date there is nothing to compute, and the gap stays missing.
-  for (const admin of by("grants_admin_on")) {
-    const reviewed = by("last_reviewed_at").filter((f) => f.subject === admin.subject).sort((x, y) => (String(x.value) < String(y.value) ? 1 : -1))[0];
+  // Standing admin access to an app and its last review: who administers the app (people flagged as
+  // its admins, and members of groups that administer it), joined with the date the app's admin access
+  // was last reviewed. No review date: nothing to compute, the gap stays missing. Lists read in part:
+  // unresolved. No group name or vendor decides who is an admin.
+  for (const app of uniq([...by("admin_of"), ...by("grants_admin_on")].map((f) => String(f.value)))) {
+    const reviewed = by("last_reviewed_at").filter((f) => f.subject === app).sort((x, y) => (String(x.value) < String(y.value) ? 1 : -1))[0];
     if (!reviewed) continue;
+    const direct = by("admin_of").filter((f) => f.value === app);
+    const groupsOf = by("grants_admin_on").filter((f) => f.value === app);
+    const viaGroups = by("member_of").filter((m) => groupsOf.some((g) => g.subject === m.value));
+    // A group list read in part may have missed a group that grants admin on this app.
+    const groupLists = listings("groups");
+    if (!whole([...direct, ...viaGroups, ...groupLists])) {
+      readInPart(app, [...groupLists, ...direct, ...viaGroups]);
+      continue;
+    }
+    const admins = uniq([...direct, ...viaGroups].map((f) => f.subject));
     const age = Math.round((at(asOf) - at(String(reviewed.value))) / DAY);
     const overdue = age > windowDays;
-    out.push(derived(admin.subject, "review_overdue", overdue,
-      `Admin access through ${nodeName(admin.subject)} on ${nodeName(String(admin.value))} last reviewed ${reviewed.value}, ${age} days ago${overdue ? `, past the ${windowDays}-day limit` : `, within the ${windowDays}-day limit`}`,
-      [admin, reviewed]));
+    out.push(derived(app, "review_overdue", overdue,
+      `Admin access to ${nodeName(app)} (${admins.length} admins) last reviewed ${reviewed.value}, ${age} days ago${overdue ? `, past the ${windowDays}-day limit` : `, within the ${windowDays}-day limit`}`,
+      [reviewed, ...direct, ...groupsOf, ...viaGroups]));
   }
 
   // Leavers still active: people HR shows as gone, joined with accounts the identity provider shows as
   // active. Computed only when both are readable, so a viewer without HR access gets nothing to join.
   const left = by("terminated_on").filter((f) => String(f.value) <= asOf);
   const statuses = by("account_status");
-  if (left.length && statuses.length) {
+  if (left.length && statuses.length && !whole(statuses)) readInPart("directory:accounts", statuses);
+  else if (left.length && statuses.length) {
     const active = left.filter((t) => statuses.some((st) => st.subject === t.subject && st.value === "active"));
     const names = uniq(active.map((t) => t.subject));
     out.push(derived("directory:accounts", "leavers_active", names.length,
@@ -115,18 +146,6 @@ export function derive(usable: Fact[], asOf: string, windowDays = 90): Fact[] {
       inputs));
     if (exposed) out.push(derived(launch, "depends_on", "control:security-review", `${nodeName(launch)} needs its security review before ${start.value}`, inputs));
   }
-
-  // A list counts only when every record that stated it says it was read completely (a stated total,
-  // or a last page), and at least one listing exists. Unknown completeness is incomplete. When a join
-  // is skipped for a partial read, a read_in_part fact on the join's subject says how much was read.
-  const listings = (name: string) => by("read").filter((f) => f.subject.startsWith("listing:") && f.subject.endsWith(`.${name}`));
-  const whole = (facts: Fact[]) => facts.every((f) => f.completeness !== undefined && !isPartial(f.completeness));
-  const readInPart = (subject: string, facts: Fact[]) => {
-    const partial = facts.find((f) => f.completeness === undefined || isPartial(f.completeness));
-    if (!partial) return;
-    const c = partial.completeness;
-    out.push(derived(subject, "read_in_part", true, c ? `${c.of} read in part (${c.read} of ${c.total ?? "an unknown number of"} ${c.of})` : "read without a stated completeness", [partial]));
-  };
 
   // S5: vendors that handle customer data with no security review in a year (or never).
   const vendorListing = listings("vendors");

@@ -1,5 +1,6 @@
 import { line } from "./connectors";
 import type { Connector, FetchJson, SourceRecord } from "./model";
+import { collect, MAX_PAGES } from "./paging";
 
 /**
  * The GRC platform connector, read-only: one class, several providers (Vanta, Drata). A provider
@@ -63,12 +64,16 @@ const GRC = ["grc-lead"];
 /** A list as read: the items, and how many the provider said there are (null when it did not say). */
 type Listing<T> = { list: T[]; total: number | null };
 
-type Page<T> = { results: { data: T[]; pageInfo?: { hasNextPage: boolean } } };
-const vantaPage = async <T>(api: FetchJson, path: string): Promise<Listing<T>> => {
-  const r = (await api(path)) as Page<T> | null;
-  const list = r?.results.data ?? [];
-  // Complete only when the page says there is no next one; no pageInfo means unknown, which is incomplete.
-  return { list, total: r?.results.pageInfo?.hasNextPage === false ? list.length : null };
+type Page<T> = { results: { data: T[]; pageInfo?: { hasNextPage: boolean; endCursor?: string | null } } };
+/** Vanta pages by cursor; complete only when the last page read says there is no next one. */
+const vantaPage = async <T extends { id: string }>(api: FetchJson, path: string): Promise<Listing<T>> => {
+  const l = await collect<T>(path, async (p) => {
+    const r = (await api(p)) as Page<T> | null;
+    if (!r) return null;
+    const info = r.results.pageInfo;
+    return { items: r.results.data, next: info?.hasNextPage === false ? null : info?.hasNextPage && info.endCursor ? `${path}?pageCursor=${encodeURIComponent(info.endCursor)}` : undefined };
+  }, (x) => x.id);
+  return { list: l.items, total: l.complete ? l.items.length : null };
 };
 
 /** Vanta REST API: controls (owner, automation, test results, links), vendors, and exceptions. */
@@ -88,9 +93,24 @@ export const vanta: GrcProvider = {
 };
 
 type DrataList<T> = { data: T[]; total?: number };
-const drataList = async <T>(api: FetchJson, path: string): Promise<Listing<T>> => {
-  const r = (await api(path)) as DrataList<T> | null;
-  return { list: r?.data ?? [], total: typeof r?.total === "number" ? r.total : null };
+/**
+ * Drata pages by number against a stated total. Items are counted once by id, so a server that
+ * ignores the page number cannot reach the total with repeats: a page of repeats stops the read.
+ */
+const drataList = async <T>(api: FetchJson, path: string, id: (item: T) => string): Promise<Listing<T>> => {
+  const list: T[] = [];
+  const seen = new Set<string>();
+  let total: number | null = null;
+  for (let n = 1; n <= MAX_PAGES; n++) {
+    const r = (await api(n === 1 ? path : `${path}?page=${n}`)) as DrataList<T> | null;
+    if (!r) break;
+    const fresh = r.data.filter((x) => !seen.has(id(x)));
+    for (const x of fresh) (seen.add(id(x)), list.push(x));
+    total = typeof r.total === "number" ? r.total : null;
+    if (total === null || list.length >= total || !fresh.length) break;
+  }
+  // Complete only when the distinct items read reach the stated total.
+  return { list, total: total !== null && list.length >= total ? list.length : total };
 };
 
 /** Drata public API: controls (owners, monitors, frameworks), vendors, and exceptions. */
@@ -100,7 +120,7 @@ export const drata: GrcProvider = {
     type C = { code: string; owners: { email: string }[]; monitored: boolean; monitors?: { passing: number; total: number } | null; evidenceUpdatedAt?: string | null; effortHoursPerQuarter?: number | null; risks: { code: string }[]; requirements: { code: string }[]; commitments: { code: string }[] };
     type V = { name: string; dataTypes: string[]; reviewedAt?: string | null };
     type E = { code: string; control?: { code: string } | null; signedBy?: { email: string } | null; reviewDate?: string | null };
-    const [c, v, e] = [await drataList<C>(api, "/public/controls"), await drataList<V>(api, "/public/vendors"), await drataList<E>(api, "/public/exceptions")];
+    const [c, v, e] = [await drataList<C>(api, "/public/controls", (x) => x.code), await drataList<V>(api, "/public/vendors", (x) => x.name), await drataList<E>(api, "/public/exceptions", (x) => x.code)];
     return {
       controls: { total: c.total, list: c.list.map((x) => ({ key: x.code, owner: x.owners[0]?.email ?? null, assurance: x.monitored ? "automated" : "manual", tests: x.monitors ?? null, evidence_at: x.evidenceUpdatedAt ?? null, hours_per_quarter: x.effortHoursPerQuarter ?? null, risks: x.risks.map((r) => r.code), obligations: x.requirements.map((r) => r.code), commitments: x.commitments.map((r) => r.code) })) },
       vendors: { total: v.total, list: v.list.map((x) => ({ key: x.name, data_classes: x.dataTypes, last_reviewed_at: x.reviewedAt ?? null })) },

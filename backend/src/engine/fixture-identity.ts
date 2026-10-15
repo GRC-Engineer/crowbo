@@ -1,4 +1,5 @@
 import { NORTHWIND } from "./fixture";
+import { OKTA_DEPROVISIONED } from "./identity";
 import type { CompanyFixture, FakeApiRoute } from "./model";
 
 /**
@@ -38,16 +39,16 @@ base.api.push({ path: "/api/v1/groups", versions: oktaGroups });
 set("/api/v1/groups/00g-wsadmin/users", admins.map((a) => ({ id: `00u-${a}`, status: "ACTIVE", profile: { login: email(a) } })));
 const oktaApps = base.api.find((r) => r.path === "/api/v1/apps")!.versions[0].body as unknown[];
 set("/api/v1/apps", [...oktaApps, { id: "0oa-gws", name: "google-workspace", lastUpdated: "2026-08-01T10:00:00Z", profile: { businessOwner: email("dana") } }]);
-set("/api/v1/users", [...staff, "u41"].map((u) => ({
-  id: `00u-${u}`, status: deprovisioned.has(u) ? "DEPROVISIONED" : "ACTIVE", lastLogin: "2026-10-10T08:00:00Z", profile: { login: email(u) },
-})));
+// Okta lists deprovisioned users only through the status filter; u02 is locked out, which is still a live account.
+set("/api/v1/users", staff.map((u) => ({ id: `00u-${u}`, status: u === "u02" ? "LOCKED_OUT" : "ACTIVE", lastLogin: "2026-10-10T08:00:00Z", profile: { login: email(u) } })));
+set(OKTA_DEPROVISIONED, [...deprovisioned].map((u) => ({ id: `00u-${u}`, status: "DEPROVISIONED", lastLogin: "2026-08-30T08:00:00Z", profile: { login: email(u) } })));
 
 // Google Workspace: the same people, groups and admins in the Directory API's shape.
 set("/admin/directory/v1/users?customer=my_customer", {
   users: [...staff, "u41"].map((u) => ({ primaryEmail: email(u), suspended: false, archived: deprovisioned.has(u), isAdmin: admins.includes(u), lastLoginTime: "2026-10-10T08:00:00.000Z" })),
 });
 set("/admin/directory/v1/groups?customer=my_customer", { groups: [{ id: "03gbilling", email: `billing-admins@${DOMAIN}` }] });
-set("/admin/directory/v1/groups/03gbilling/members", { members: ids.map((u) => ({ email: email(u), role: "MEMBER", status: "ACTIVE" })) });
+set("/admin/directory/v1/groups/03gbilling/members?maxResults=200", { members: ids.map((u) => ({ email: email(u), role: "MEMBER", status: "ACTIVE" })) });
 
 // HR: u41's termination, alongside u37's in the default fixture.
 const workers = base.api.find((r) => r.path === "/ccx/api/v1/workers")!.versions[0].body as { asOf: string; data: unknown[] };
@@ -56,7 +57,7 @@ set("/ccx/api/v1/workers", { ...workers, total: workers.data.length + 1, data: [
 // The controls register records when the standing admins were last reviewed.
 const controls = base.api.find((r) => r.path.startsWith("/v4/spreadsheets/controls-register"))!;
 const register = controls.versions[0].body as { modifiedTime: string; values: string[][] };
-controls.versions = [{ ...controls.versions[0], body: { ...register, values: [...register.values, ["C-09", "group:workspace-super-admins", "last_reviewed_at", "2026-03-01"]] } }];
+controls.versions = [{ ...controls.versions[0], body: { ...register, values: [...register.values, ["C-09", "app:google-workspace", "last_reviewed_at", "2026-03-01"]] } }];
 
 export const NORTHWIND_IDENTITY: CompanyFixture = {
   ...base,
@@ -67,7 +68,7 @@ export const NORTHWIND_IDENTITY: CompanyFixture = {
       id: "standing-admin-unreviewed", title: "Standing admin access that nobody has reviewed is misused",
       frequency_per_year: { low: 0.1, high: 0.4 }, loss_per_event: { low: 100_000, high: 600_000 },
       basis: "Invented expert range for the demo",
-      gap: { subject: "group:workspace-super-admins", predicate: "review_overdue", op: "eq", value: true },
+      gap: { subject: "app:google-workspace", predicate: "review_overdue", op: "eq", value: true },
     },
     {
       id: "leaver-access", title: "Someone who left still signs in",
@@ -84,7 +85,7 @@ export const NORTHWIND_IDENTITY: CompanyFixture = {
       reduces: [{ scenario: "standing-admin-unreviewed", fraction: { low: 0.5, high: 0.8 } }],
       requires: [], conditions: ["The system owner signs the review"],
       effort: { security_hours: { low: 3, high: 5 }, engineering_hours: { low: 1, high: 2 }, cash: { low: 0, high: 0 } },
-      expect: { subject: "group:workspace-super-admins", predicate: "review_overdue", op: "eq", value: false },
+      expect: { subject: "app:google-workspace", predicate: "review_overdue", op: "eq", value: false },
       basis: "Invented estimate",
     },
     {
@@ -101,8 +102,8 @@ export const NORTHWIND_IDENTITY: CompanyFixture = {
     ...base.topics,
     {
       id: "standing-admin", question: "Who has standing admin, and when was it last reviewed?", keywords: ["standing", "super admin", "privileged", "reviewed"],
-      subject: "group:workspace-super-admins", scenario: "standing-admin-unreviewed", actions: ["review-standing-admins"],
-      finding: [{ predicate: "holders" }, { predicate: "review_overdue" }], notify: "#grc",
+      subject: "app:google-workspace", scenario: "standing-admin-unreviewed", actions: ["review-standing-admins"],
+      finding: [{ predicate: "review_overdue" }], notify: "#grc",
     },
     {
       id: "leavers", question: "Who left but can still sign in?", keywords: ["left", "leaver", "leavers", "offboard", "terminated"],

@@ -1,5 +1,6 @@
 import { line } from "./connectors";
 import type { Connector, FetchJson, SourceRecord } from "./model";
+import { collect } from "./paging";
 
 /**
  * The tickets connector: one class, several providers (Linear, Jira). A provider reads its own API
@@ -47,16 +48,31 @@ export const linear: TicketsProvider = {
   async launches(api) {
     type Issue = { state?: { type: string }; assignee: { email: string } | null; labels: { nodes: { name: string }[] } };
     // Linear states completeness only through pageInfo; without it the total is unknown.
-    type Issues = { nodes: Issue[]; pageInfo?: { hasNextPage: boolean } };
+    type Issues = { nodes: Issue[]; pageInfo?: { hasNextPage: boolean; endCursor?: string | null } };
+    /** A project's issues: the first page from the projects query, the rest by cursor until a page says it is the last. */
+    const allIssues = async (slugId: string, first: Issues) => {
+      const l = await collect<Issue>("first", async (cursor) => {
+        const page = cursor === "first" ? first : ((await api(`/graphql?query=project-issues&project=${encodeURIComponent(slugId)}&after=${encodeURIComponent(cursor)}`)) as null | { data: { project: { issues: Issues } } })?.data.project.issues;
+        if (!page) return null;
+        const info = page.pageInfo;
+        return { items: page.nodes, next: info?.hasNextPage === false ? null : info?.hasNextPage && info.endCursor ? info.endCursor : undefined };
+      }, (i) => (i as { identifier?: string }).identifier ?? JSON.stringify(i));
+      return { nodes: l.items, complete: l.complete };
+    };
     const r = (await api("/graphql?query=projects")) as null | {
       data: { projects: { nodes: { slugId: string; startDate: string | null; lead?: { email: string } | null; issues: Issues }[] } };
     };
-    return (r?.data.projects.nodes ?? []).map((p) => ({
-      key: p.slugId, start_date: p.startDate, lead: p.lead?.email ?? null,
-      issues: p.issues.nodes.map((i) => ({ labels: i.labels.nodes.map((l) => l.name), done: i.state?.type === "completed", cancelled: i.state?.type === "canceled", assignee: i.assignee?.email ?? null })),
-      issues_total: p.issues.pageInfo?.hasNextPage === false ? p.issues.nodes.length : null,
-      listing: { read: p.issues.nodes.length, total: p.issues.pageInfo?.hasNextPage === false ? p.issues.nodes.length : null },
-    }));
+    const out: Launch[] = [];
+    for (const p of r?.data.projects.nodes ?? []) {
+      const { nodes, complete } = await allIssues(p.slugId, p.issues);
+      out.push({
+        key: p.slugId, start_date: p.startDate, lead: p.lead?.email ?? null,
+        issues: nodes.map((i) => ({ labels: i.labels.nodes.map((l) => l.name), done: i.state?.type === "completed", cancelled: i.state?.type === "canceled", assignee: i.assignee?.email ?? null })),
+        issues_total: complete ? nodes.length : null,
+        listing: { read: nodes.length, total: complete ? nodes.length : null },
+      });
+    }
+    return out;
   },
 };
 
@@ -65,15 +81,27 @@ export const jira: TicketsProvider = {
   id: "jira", label: "Jira",
   async launches(api) {
     type Project = { key: string; lead?: { emailAddress?: string } };
-    type Issue = { fields: { labels: string[]; status: { statusCategory: { key: string } }; resolution?: { name: string } | null; assignee: { emailAddress?: string } | null; fixVersions: { name: string }[] } };
+    type Issue = { key?: string; fields: { labels: string[]; status: { statusCategory: { key: string } }; resolution?: { name: string } | null; assignee: { emailAddress?: string } | null; fixVersions: { name: string }[] } };
     const projects = ((await api("/rest/api/3/project/search")) as null | { values: Project[] })?.values ?? [];
     const out: Launch[] = [];
     for (const p of projects) {
       const versions = ((await api(`/rest/api/3/project/${p.key}/versions`)) ?? []) as { name: string; releaseDate?: string; released: boolean }[];
-      const page = (await api(`/rest/api/3/search?jql=project%3D${p.key}`)) as null | { issues: Issue[]; total?: number; isLast?: boolean };
-      const issues = page?.issues ?? [];
-      // Complete only when Jira says so: the last page, or a total no larger than what was read.
-      const complete = page !== null && (page.isLast === true || (typeof page.total === "number" && page.total <= issues.length));
+      // Search pages by nextPageToken; complete only when a page says it is the last (isLast), or a stated
+      // total is no larger than what was read. A page that says neither leaves the list incomplete.
+      // The enhanced search endpoint pages by nextPageToken and marks the last page with isLast.
+      const base = `/rest/api/3/search/jql?jql=project%3D${p.key}`;
+      let total: number | null = null;
+      let read = 0;
+      const listing = await collect<Issue>(base, async (path) => {
+        const page = (await api(path)) as null | { issues: Issue[]; total?: number; isLast?: boolean; nextPageToken?: string };
+        if (!page) return null;
+        read += page.issues.length;
+        if (typeof page.total === "number") total = page.total;
+        const last = page.isLast === true || (total !== null && total <= read);
+        return { items: page.issues, next: last ? null : page.nextPageToken ? `${base}&nextPageToken=${encodeURIComponent(page.nextPageToken)}` : undefined };
+      }, (i) => i.key ?? JSON.stringify(i));
+      const issues = listing.items;
+      const complete = listing.complete;
       for (const v of versions.filter((x) => !x.released)) {
         const mine = issues.filter((i) => i.fields.fixVersions.some((f) => f.name === v.name));
         out.push({
@@ -83,7 +111,7 @@ export const jira: TicketsProvider = {
             return { labels: i.fields.labels, done: i.fields.status.statusCategory.key === "done" && !cancelled, cancelled, assignee: i.fields.assignee?.emailAddress ?? null };
           }),
           issues_total: complete ? mine.length : null,
-          listing: { read: issues.length, total: typeof page?.total === "number" ? page.total : complete ? issues.length : null },
+          listing: { read: issues.length, total: total ?? (complete ? issues.length : null) },
         });
       }
     }

@@ -45,7 +45,7 @@ set("/rest/api/3/project/NW/versions", [
 const issue = (labels: string[], assignee: string, version: string, done = false) => ({
   fields: { labels, status: { statusCategory: { key: done ? "done" : "indeterminate" } }, assignee: { emailAddress: email(assignee) }, fixVersions: [{ name: version }] },
 });
-set("/rest/api/3/search?jql=project%3DNW", {
+set("/rest/api/3/search/jql?jql=project%3DNW", {
   total: 3,
   issues: [issue(["control:billing-admin-access"], "alex", "audit-prep"), ...checkout.map((i) => issue(i.labels, i.assignee, "checkout-v2"))],
 });

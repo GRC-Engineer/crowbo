@@ -48,6 +48,7 @@ export const PREDICATES: Record<string, PredicateRule> = {
   hours_per_quarter: { importable: true },
   last_reviewed_at: { importable: true },
   account_status: {},
+  admin_of: { multi: true, relation: true },
   last_login: {},
   terminated_on: {},
   permits: { multi: true },

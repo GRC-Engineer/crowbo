@@ -90,7 +90,10 @@ export class Engine {
   static async open(fixture: CompanyFixture, options: EngineOptions, store: EngineStore = new MemoryEngineStore(), firstRead = `${fixture.as_of}T09:00:00Z`): Promise<Engine> {
     const state = store.load();
     const engine = new Engine(fixture, options, store, state);
-    if (state) engine.migrate();
+    if (state) {
+      // A renamed connector is read again at once, so the first decision after a rename is not an empty one.
+      for (const id of engine.migrate()) await engine.read(engine.connector(id), engine.now, false);
+    }
     if (!state) {
       engine.setNow(firstRead);
       for (const c of options.connectors) await engine.read(c, firstRead, false);
@@ -109,15 +112,19 @@ export class Engine {
    * logged weight change, so the chain says why decision IDs changed; the old connector's records and
    * last read are dropped, and the class reads its source again on the next request.
    */
-  private migrate() {
+  private migrate(): string[] {
+    const migrated: string[] = [];
     for (const [old, now] of Object.entries(RENAMED)) {
       const held = this.weights.has(old) || this.readAt.has(old) || [...this.records.values()].some((r) => r.connector === old);
       if (!held || !this.options.connectors.some((c) => c.id === now)) continue;
       // The company's own weight if it set one, otherwise the default it was using.
-      const w = this.weights.get(old) ?? this.fixture.weights.find((x) => x.connector === now);
+      migrated.push(now);
+      // The company's own weight if it set one, otherwise the default it was using, marked as such.
+      const own = this.weights.get(old);
+      const w = own ?? this.fixture.weights.find((x) => x.connector === now);
       if (w) {
         const next = { ...w, connector: now };
-        this.memory.append("weight_change", "engine", { connector: now, renamed_from: old, from: w.weight, to: w.weight, reason: `connector class rename: ${old} is now a provider of the ${now} connector` });
+        this.memory.append("weight_change", "engine", { connector: now, renamed_from: old, from: w.weight, to: w.weight, reason: `connector class rename: ${old} is now a provider of the ${now} connector`, ...(own ? {} : { default: true }) });
         this.store.deleteWeight(old);
         this.store.saveWeight(next);
         this.weights.delete(old);
@@ -130,6 +137,7 @@ export class Engine {
       this.store.deleteReadAt(old);
       this.readAt.delete(old);
     }
+    return migrated;
   }
 
   asOf(): string {
