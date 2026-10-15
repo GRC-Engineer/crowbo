@@ -40,7 +40,7 @@ export const NORTHWIND: CompanyFixture = {
     { connector: "workday", weight: 4, max_age_days: 7, set_by: "grc-lead", reason: "Org chart and teams" },
     { connector: "memory", weight: 4, max_age_days: 365, set_by: "grc-lead", reason: "Calls the team recorded, attributed" },
     { connector: "sheets", weight: 3, max_age_days: 90, set_by: "grc-lead", reason: "Registers kept by hand; trust them while they are maintained" },
-    { connector: "linear", weight: 3, max_age_days: 7, set_by: "grc-lead", reason: "Launch plans; dates move" },
+    { connector: "tickets", weight: 3, max_age_days: 7, set_by: "grc-lead", reason: "Launch plans; dates move" },
     { connector: "vendor-docs", weight: 3, max_age_days: 180, set_by: "grc-lead", reason: "What the vendor says its product does" },
     { connector: "slack", weight: 2, max_age_days: 30, set_by: "grc-lead", reason: "Conversation: useful context, weak proof" },
   ],

@@ -1,4 +1,5 @@
 import { identityConnector, okta } from "./identity";
+import { linear, ticketsConnector } from "./tickets";
 import type { AudienceGrant, Connector, FakeApiRoute, FetchJson, SourceRecord } from "./model";
 
 /**
@@ -79,30 +80,6 @@ export const sheets: Connector = {
   },
 };
 
-/** Linear GraphQL: projects (launches), their start dates, and the issues tied to controls. */
-export const linear: Connector = {
-  id: "linear", label: "Linear", rail: "engineering", every_minutes: 15, live_state: true,
-  async read(api) {
-    const r = (await api("/graphql?query=projects")) as null | {
-      data: { projects: { nodes: { slugId: string; startDate: string; updatedAt: string; issues: { nodes: { assignee: { email: string } | null; labels: { nodes: { name: string }[] } }[] } }[] } };
-    };
-    if (!r) return [];
-    return r.data.projects.nodes.map((p) => {
-      const launch = `launch:${p.slugId}`;
-      return record({
-        id: `linear:project/${p.slugId}`, connector: "linear", rail: "engineering", observed_at: day(p.updatedAt), readers: GRC,
-        lines: [
-          ...line(launch, "start_date", p.startDate),
-          ...p.issues.nodes.flatMap((i) => i.labels.nodes.filter((l) => l.name.startsWith("control:")).flatMap((l) => [
-            ...line(launch, "depends_on", l.name),
-            ...(i.assignee ? line(l.name, "assigned_to", person(i.assignee.email)) : []),
-          ])),
-        ],
-      });
-    });
-  },
-};
-
 /** A vendor's release notes page: prose, so facts come from the model extractor. */
 export const vendorDocs: Connector = {
   id: "vendor-docs", label: "Vendor docs", rail: "business", every_minutes: 10080, live_state: false,
@@ -143,7 +120,7 @@ export const slack: Connector = {
   },
 };
 
-export const CONNECTORS: Connector[] = [identityConnector(okta), billing, sheets, linear, vendorDocs, workday, slack];
+export const CONNECTORS: Connector[] = [identityConnector(okta), billing, sheets, ticketsConnector(linear), vendorDocs, workday, slack];
 
 /**
  * Keep only what the viewer may read: the record's own readers, plus any audience the company granted

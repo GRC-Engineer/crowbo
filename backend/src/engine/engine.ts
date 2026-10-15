@@ -29,7 +29,7 @@ export const MEMORY_CAP = 2000;
 export type Call = "accept" | "override" | "defer" | "exception";
 
 /** Connectors that became a class: the old id, the class id. A stored engine is migrated on open. */
-const RENAMED: Record<string, string> = { okta: "identity" };
+const RENAMED: Record<string, string> = { okta: "identity", linear: "tickets" };
 export type Assertion = { subject: string; predicate: string; value: Value };
 
 export interface EngineOptions {

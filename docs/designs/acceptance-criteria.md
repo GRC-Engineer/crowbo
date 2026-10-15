@@ -78,6 +78,10 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
   - The fixture [`NORTHWIND_IDENTITY`](../../backend/src/engine/fixture-identity.ts) exercises three identity scenarios: unused privileged access, standing admin access nobody has reviewed, and leavers whose accounts are still active. The default demo is unchanged.
   - Leavers join HR terminations with active accounts. A viewer without the company's HR grant gets the scenario as unresolved.
   - A stored engine from before the class moves its `okta` weight to `identity` with a logged weight change.
+- **Also built:** the tickets connector, one class with two providers, Linear and Jira ([`tickets.ts`](../../backend/src/engine/tickets.ts)), on fixtures.
+  - It reads launches with their dates and leads, the controls they depend on, the features they include and the data classes those features handle, and their security-review issues.
+  - [`NORTHWIND_TICKETS`](../../backend/src/engine/fixture-tickets.ts) exercises S10: a launch handling customer data with no security review before its date. The review becomes due before the launch.
+  - Which data classes are customer data comes from the company's register, not from label names. "No security review" is stated only when every issue of the launch was read, so a partial read leaves S10 unresolved.
   - P2 stays failing: it needs recorded responses from three real APIs.
 
 **P2.1. Clef live.**
