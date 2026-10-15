@@ -73,6 +73,12 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
   - Each has read-only scopes, a sync schedule and stores no credentials in the repo.
 - **Check:** at least three connectors each read a recorded response from the real API (`backend/test/fixtures/recorded/`) into records.
 - **Size:** 1–2 days each.
+- **Built so far:** the identity connector, one class with two providers, Okta and Google Workspace ([`identity.ts`](../../backend/src/engine/identity.ts)), on fixtures.
+  - Scenarios and weights name the class, never the vendor. Each record keeps its provider, and citations show the provider's label.
+  - The fixture [`NORTHWIND_IDENTITY`](../../backend/src/engine/fixture-identity.ts) exercises three identity scenarios: unused privileged access, standing admin access nobody has reviewed, and leavers whose accounts are still active. The default demo is unchanged.
+  - Leavers join HR terminations with active accounts. A viewer without the company's HR grant gets the scenario as unresolved.
+  - A stored engine from before the class moves its `okta` weight to `identity` with a logged weight change.
+  - P2 stays failing: it needs recorded responses from three real APIs.
 
 **P2.1. Clef live.**
 - **Build:** run the Clef extractor through the Workers AI binding on the pilot's prose sources. Write and label 50 sentences, and report precision at the 0.8 threshold and recall.

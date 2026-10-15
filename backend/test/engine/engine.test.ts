@@ -44,7 +44,7 @@ describe("02 classify and weight", () => {
     const e = await demo();
     const unused = e.facts.find((f) => f.predicate === "unused_90d")!;
     expect(unused.value).toBe(31);
-    expect(unused.derived_from).toEqual([{ record: "billing:audit/90d", revision: 1 }, { record: "okta:group/billing-admins", revision: 1 }]);
+    expect(unused.derived_from).toEqual([{ record: "billing:audit/90d", revision: 1 }, { record: "identity:okta/group/billing-admins", revision: 1 }]);
     expect(unused.source.connector).toBe("derived");
     expect(unused.coverage).toMatchObject({ window_days: 90, days_with_data: 87 });
     expect(e.facts.find((f) => f.predicate === "holders" && f.kind === "derived")!.value).toBe(40);
@@ -131,10 +131,10 @@ describe("04 decision memory", () => {
 
   it("is hash chained, and tuning is only proposed", async () => {
     const e = await demo();
-    await e.recordCall("move-unused-to-operator", "override", "alex", "Okta group sync is lagging", [], "okta");
-    const second = await e.recordCall("move-unused-to-operator", "override", "alex", "Still lagging", [], "okta");
-    expect(second.proposals).toEqual([{ connector: "okta", from: 5, to: 4, disputes: 2 }]);
-    expect(e.weightsTable().find((w) => w.connector === "okta")!.weight).toBe(5);
+    await e.recordCall("move-unused-to-operator", "override", "alex", "Okta group sync is lagging", [], "identity");
+    const second = await e.recordCall("move-unused-to-operator", "override", "alex", "Still lagging", [], "identity");
+    expect(second.proposals).toEqual([{ connector: "identity", from: 5, to: 4, disputes: 2 }]);
+    expect(e.weightsTable().find((w) => w.connector === "identity")!.weight).toBe(5);
     expect(e.memory.verify()).toBe(true);
     (e.memory.list()[1].body as any).records_changed = 99;
     expect(e.memory.verify()).toBe(false);

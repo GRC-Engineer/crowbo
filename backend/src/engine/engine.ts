@@ -27,6 +27,9 @@ export const OUTCOME_STATUSES: OutcomeStatus[] = ["done", "partly_done", "not_do
 export const MEMORY_CAP = 2000;
 
 export type Call = "accept" | "override" | "defer" | "exception";
+
+/** Connectors that became a class: the old id, the class id. A stored engine is migrated on open. */
+const RENAMED: Record<string, string> = { okta: "identity" };
 export type Assertion = { subject: string; predicate: string; value: Value };
 
 export interface EngineOptions {
@@ -84,6 +87,7 @@ export class Engine {
   static async open(fixture: CompanyFixture, options: EngineOptions, store: EngineStore = new MemoryEngineStore(), firstRead = `${fixture.as_of}T09:00:00Z`): Promise<Engine> {
     const state = store.load();
     const engine = new Engine(fixture, options, store, state);
+    if (state) engine.migrate();
     if (!state) {
       engine.setNow(firstRead);
       for (const c of options.connectors) await engine.read(c, firstRead, false);
@@ -95,6 +99,34 @@ export class Engine {
   /** A ready engine on a fresh in-memory store (tests, the local server). */
   static start(fixture: CompanyFixture, options: EngineOptions, at?: string): Promise<Engine> {
     return Engine.open(fixture, options, new MemoryEngineStore(), at);
+  }
+
+  /**
+   * Carry a stored engine across a connector rename. The company's weight moves to the class with a
+   * logged weight change, so the chain says why decision IDs changed; the old connector's records and
+   * last read are dropped, and the class reads its source again on the next request.
+   */
+  private migrate() {
+    for (const [old, now] of Object.entries(RENAMED)) {
+      const held = this.weights.has(old) || this.readAt.has(old) || [...this.records.values()].some((r) => r.connector === old);
+      if (!held || !this.options.connectors.some((c) => c.id === now)) continue;
+      // The company's own weight if it set one, otherwise the default it was using.
+      const w = this.weights.get(old) ?? this.fixture.weights.find((x) => x.connector === now);
+      if (w) {
+        const next = { ...w, connector: now };
+        this.memory.append("weight_change", "engine", { connector: now, renamed_from: old, from: w.weight, to: w.weight, reason: `connector class rename: ${old} is now a provider of the ${now} connector` });
+        this.store.deleteWeight(old);
+        this.store.saveWeight(next);
+        this.weights.delete(old);
+        this.weights.set(now, next);
+      }
+      for (const r of [...this.records.values()].filter((x) => x.connector === old)) {
+        this.store.deleteRecord(r.id);
+        this.records.delete(r.id);
+      }
+      this.store.deleteReadAt(old);
+      this.readAt.delete(old);
+    }
   }
 
   asOf(): string {
@@ -206,7 +238,7 @@ export class Engine {
    * judge: they change what Crowbo knows, not what anyone did.
    */
   async refresh(actor: string, judge = false): Promise<Decision> {
-    const { readable: visible, withheld } = readable([...this.records.values()], this.fixture.viewer);
+    const { readable: visible, withheld } = readable([...this.records.values()], this.fixture.viewer, this.fixture.grants);
     let rejected = 0;
     const extracted: Fact[] = [];
     for (const r of visible) {

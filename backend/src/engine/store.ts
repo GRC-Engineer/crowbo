@@ -21,6 +21,10 @@ export interface EngineStore {
   appendMemory(entry: MemoryEntry): void;
   saveReadAt(connector: string, at: string): void;
   saveNow(now: string): void;
+  /** Used only when a connector is renamed: its records, weight and last read are dropped and read again. */
+  deleteRecord(id: string): void;
+  deleteWeight(connector: string): void;
+  deleteReadAt(connector: string): void;
 }
 
 /** In-process store for tests and the local MCP server. */
@@ -51,6 +55,17 @@ export class MemoryEngineStore implements EngineStore {
   }
   saveNow(now: string) {
     this.s().now = now;
+  }
+  deleteRecord(id: string) {
+    const s = this.s();
+    s.records = s.records.filter((r) => r.id !== id);
+  }
+  deleteWeight(connector: string) {
+    const s = this.s();
+    s.weights = s.weights.filter((w) => w.connector !== connector);
+  }
+  deleteReadAt(connector: string) {
+    delete this.s().readAt[connector];
   }
 }
 
@@ -94,5 +109,14 @@ export class SqlEngineStore implements EngineStore {
   }
   saveNow(now: string) {
     this.sql.exec("INSERT INTO engine_meta (key, value) VALUES ('now', ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value", now);
+  }
+  deleteRecord(id: string) {
+    this.sql.exec("DELETE FROM engine_records WHERE id = ?", id);
+  }
+  deleteWeight(connector: string) {
+    this.sql.exec("DELETE FROM engine_weights WHERE connector = ?", connector);
+  }
+  deleteReadAt(connector: string) {
+    this.sql.exec("DELETE FROM engine_meta WHERE key = ?", `read:${connector}`);
   }
 }

@@ -29,6 +29,10 @@ export const PREDICATES: Record<string, PredicateRule> = {
   issues_found_last_4: { importable: true },
   superseded_by: { importable: true },
   hours_per_quarter: { importable: true },
+  last_reviewed_at: { importable: true },
+  account_status: {},
+  last_login: {},
+  terminated_on: {},
   permits: { multi: true },
   billing_actions: { multi: true },
   break_glass_exempt: {

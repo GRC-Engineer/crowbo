@@ -35,7 +35,7 @@ export const NORTHWIND: CompanyFixture = {
   as_of: "2026-10-13",
   connected_at: "2026-10-13T08:00:00Z",
   weights: [
-    { connector: "okta", weight: 5, max_age_days: 1, set_by: "grc-lead", reason: "System of record for access; read hourly" },
+    { connector: "identity", weight: 5, max_age_days: 1, set_by: "grc-lead", reason: "System of record for access; read hourly" },
     { connector: "billing", weight: 4, max_age_days: 7, set_by: "grc-lead", reason: "The app's own audit log" },
     { connector: "workday", weight: 4, max_age_days: 7, set_by: "grc-lead", reason: "Org chart and teams" },
     { connector: "memory", weight: 4, max_age_days: 365, set_by: "grc-lead", reason: "Calls the team recorded, attributed" },
@@ -93,7 +93,7 @@ export const NORTHWIND: CompanyFixture = {
   capacity: { security_hours: 24, engineering_hours: 24, cash: 10_000, horizon_days: 90, drop_risk_tolerance_per_year: 5_000 },
   api: [
     {
-      path: "/api/v1/groups?q=billing-admins",
+      path: "/api/v1/groups",
       versions: [
         { from: "2025-01-01T00:00:00Z", body: [{ id: "00g-billing", lastMembershipUpdated: "2026-10-12T17:20:00Z", profile: { name: "billing-admins", app: "billing" } }] },
         { from: LATER, body: [{ id: "00g-billing", lastMembershipUpdated: LATER, profile: { name: "billing-admins", app: "billing" } }] },
@@ -107,7 +107,7 @@ export const NORTHWIND: CompanyFixture = {
         { from: LATER, body: [...ids.slice(0, 9), ...ids.slice(9, 13)].map((id) => ({ id: `00u-${id}`, status: "ACTIVE", profile: { login: email(id) } })) },
       ],
     },
-    { path: "/api/v1/apps?q=billing", versions: [{ from: "2025-01-01T00:00:00Z", body: [{ id: "0oa-billing", name: "billing", lastUpdated: "2026-09-02T10:00:00Z", profile: { businessOwner: email("priya") } }] }] },
+    { path: "/api/v1/apps", versions: [{ from: "2025-01-01T00:00:00Z", body: [{ id: "0oa-billing", name: "billing", lastUpdated: "2026-09-02T10:00:00Z", profile: { businessOwner: email("priya") } }] }] },
     {
       path: "/v1/audit/summary?window=90d",
       versions: [{ from: LATER, body: { ...billingSummary(), generated_at: LATER } }, {

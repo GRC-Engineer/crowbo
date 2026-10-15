@@ -36,6 +36,14 @@ export interface SourceRecord {
   coverage?: Coverage;
   /** Display name when one connector holds several kinds of record (e.g. "Risk register"). */
   label?: string;
+  /** For a connector class with several providers (identity): which one read this record. */
+  provider?: string;
+}
+
+/** A company's decision to let more people read one kind of record (e.g. the GRC lead reads terminations). */
+export interface AudienceGrant {
+  record: string;
+  readers: string[];
 }
 
 export type FetchJson = (path: string) => Promise<unknown>;
@@ -289,5 +297,7 @@ export interface CompanyFixture {
   actions: Action[];
   topics: Topic[];
   capacity: Capacity;
+  /** Audiences the company granted beyond each record's own readers. */
+  grants?: AudienceGrant[];
   api: FakeApiRoute[];
 }

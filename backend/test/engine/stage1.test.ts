@@ -78,7 +78,7 @@ describe("Stage 1", () => {
     expect(answer.basis.scenario).toMatchObject({ frequency_per_year: { low: 0.2, high: 0.6 }, loss_per_event: { low: 150000, high: 900000 }, confidence: 0.8, state: "gap_supported" });
     expect(answer.basis.action).toMatchObject({ id: "move-unused-to-operator", rank: 2, reduces: [{ scenario: "billing-exposure", fraction: { low: 0.6, high: 0.8 } }] });
     expect(answer.basis.alternatives.map((a: any) => a.action)).toEqual(["drop-access-screenshots"]);
-    expect(answer.basis.weights.find((w: any) => w.connector === "okta")).toEqual({ connector: "okta", weight: 5, max_age_days: 1 });
+    expect(answer.basis.weights.find((w: any) => w.connector === "identity")).toEqual({ connector: "identity", weight: 5, max_age_days: 1 });
   });
 
   it("the Worker offers engine tools only where synthetic data is allowed", async () => {
