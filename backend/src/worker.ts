@@ -79,7 +79,11 @@ async function serve(request: Request, env: Env, config: OperatorConfig): Promis
   if (url.pathname === "/mcp") {
     // Stateless: a fresh server and transport per request; identity is the bearer token.
     const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
-    const server = buildServer(invoke, { synthetic: env.ALLOW_SYNTHETIC_GATES === "true" });
+    const synthetic = env.ALLOW_SYNTHETIC_GATES === "true";
+      // Each person's demo engine lives in its own object, keyed by tenant and reader, so two tokens can
+      // never share a clock or a memory even if they share a tenant. Their reader name is the actor.
+      const engine = synthetic ? (op: string, args: unknown) => tenant(env, `${config.tenant}::engine::${config.reader}`).engineCall(config.reader, op, args) : undefined;
+      const server = buildServer(invoke, { synthetic, engine });
     await server.connect(transport);
     try {
       const buffered = new Request(request.url, {

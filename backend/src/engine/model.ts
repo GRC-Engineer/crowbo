@@ -142,6 +142,11 @@ export interface Action {
   effort: Effort;
   /** Hours a year given back to each team (drops). */
   frees?: { security_hours: Range; engineering_hours: Range };
+  /**
+   * What should be true once the move is done (e.g. movable_unused = 0). Later reads are checked
+   * against it, so what was actually done is recorded next to the decision without anyone typing it.
+   */
+  expect?: Condition;
   basis: string;
 }
 
@@ -167,7 +172,7 @@ export interface Edge {
 
 // ---- 04 Decision memory ------------------------------------------------------------------------
 
-export type MemoryKind = "decision" | "call" | "weight_change" | "proposal" | "read";
+export type MemoryKind = "decision" | "call" | "weight_change" | "proposal" | "read" | "outcome" | "clock";
 
 /** Append-only, hash-chained: every call, exception and weight change is kept. */
 export interface MemoryEntry {

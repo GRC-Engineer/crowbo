@@ -1,3 +1,4 @@
+import { EngineError } from "./errors";
 import { digest } from "../domain/canonical";
 import type { MemoryEntry, MemoryKind } from "./model";
 
@@ -10,7 +11,18 @@ import type { MemoryEntry, MemoryKind } from "./model";
 export class DecisionMemory {
   private entries: MemoryEntry[] = [];
 
-  constructor(private clock: () => string = () => new Date().toISOString()) {}
+  /**
+   * `sink` persists each entry before it is visible here. `restored` reloads a stored chain,
+   * refusing it if it does not verify (an edited or truncated history is never silently used).
+   */
+  constructor(
+    private clock: () => string = () => new Date().toISOString(),
+    private sink: (entry: MemoryEntry) => void = () => {},
+    restored: MemoryEntry[] = [],
+  ) {
+    this.entries = restored.map((e) => structuredClone(e));
+    if (!this.verify()) throw new EngineError("Stored decision memory failed its hash-chain check");
+  }
 
   append(kind: MemoryKind, actor: string, body: Record<string, unknown>): MemoryEntry {
     const prev = this.entries.at(-1)?.hash ?? null;
@@ -18,6 +30,7 @@ export class DecisionMemory {
     const at = this.clock();
     const entry = { seq, at, kind, actor, body, prev };
     const full = { ...entry, hash: digest(entry) };
+    this.sink(full);
     this.entries.push(full);
     return full;
   }

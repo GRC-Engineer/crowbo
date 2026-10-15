@@ -7,6 +7,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import fixture from "../../proof/fixtures/programme.json";
 import { localModels, startDemo } from "../src/engine/demo";
+import { runEngine } from "../src/engine/port";
 import { CROW_ICON_INLINE, CROW_ICON_URL, ENGINE_INSTRUCTIONS, registerEngineTools } from "../src/engine/tools";
 import { PROGRAMME_INSTRUCTIONS, registerProgrammeTools } from "../src/programme/tools";
 
@@ -15,7 +16,12 @@ const server = new McpServer(
   { instructions: `${ENGINE_INSTRUCTIONS} ${PROGRAMME_INSTRUCTIONS}` },
 );
 const { ai, ingestModel, answerer } = localModels(process.env);
-const { engine, options } = await startDemo(ai, ingestModel, answerer);
-registerEngineTools(server, engine, options);
+let { engine } = await startDemo(ai, ingestModel, answerer);
+registerEngineTools(server, async (op, args) => {
+  if (op !== "reset") return runEngine(engine, "you (local)", op, args);
+  if ((args as { confirm?: unknown } | null)?.confirm !== true) throw new Error("Pass confirm: true to reset this copy");
+  ({ engine } = await startDemo(ai, ingestModel, answerer));
+  return { reset: true };
+});
 registerProgrammeTools(server, structuredClone(fixture));
 await server.connect(new StdioServerTransport());

@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import fixture from "../../../proof/fixtures/programme.json";
 import { decisionRequest } from "../domain/decision-request";
-import { CROW_ICON_URL } from "../engine/tools";
+import { CROW_ICON_URL, ENGINE_INSTRUCTIONS, registerEngineTools } from "../engine/tools";
 import { PROGRAMME_INSTRUCTIONS, registerProgrammeTools } from "../programme/tools";
 import { question, WORKFLOWS } from "../standing/model";
 
@@ -24,10 +24,23 @@ const readOnly = { readOnlyHint: true, destructiveHint: false, openWorldHint: tr
  * `synthetic` adds the programme tools over the synthetic Northstar fixture; only environments
  * that allow synthetic material (staging, local) pass it, so production never serves fiction.
  */
-export function buildServer(invoke: Invoke, options: { synthetic?: boolean } = {}): McpServer {
-  const instructions = options.synthetic ? `${INSTRUCTIONS} ${PROGRAMME_INSTRUCTIONS}` : INSTRUCTIONS;
-  const server = new McpServer({ name: "Crowbo", version: "0.3.0", icons: [CROW_ICON_URL] }, { instructions });
+export function buildServer(invoke: Invoke, options: { synthetic?: boolean; engine?: Invoke } = {}): McpServer {
+  const instructions = options.synthetic ? `${INSTRUCTIONS} ${ENGINE_INSTRUCTIONS} ${PROGRAMME_INSTRUCTIONS}` : INSTRUCTIONS;
+  const server = new McpServer({ name: "Crowbo", version: "0.4.0", icons: [CROW_ICON_URL] }, { instructions });
   if (options.synthetic) registerProgrammeTools(server, structuredClone(fixture));
+  if (options.synthetic && options.engine) {
+    const engine = options.engine;
+    registerEngineTools(server, async (op, args) => {
+      let outcome: Awaited<ReturnType<Invoke>>;
+      try {
+        outcome = await engine(op, args);
+      } catch {
+        outcome = { ok: false, error: "Crowbo could not complete this operation" };
+      }
+      if (!outcome.ok) throw new Error(outcome.error);
+      return outcome.result;
+    });
+  }
   const call = async (operation: string, args: unknown) => {
     let outcome: Awaited<ReturnType<Invoke>>;
     try {
