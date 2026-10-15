@@ -29,6 +29,7 @@ export const PREDICATES: Record<string, PredicateRule> = {
   security_review: {},
   customer_data: { importable: true },
   read: {},
+  read_in_part: {},
   assurance_class: {},
   coverage: {},
   evidence_collected_at: {},

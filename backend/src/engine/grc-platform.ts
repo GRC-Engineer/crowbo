@@ -112,7 +112,7 @@ export const drata: GrcProvider = {
 export const GRC_PROVIDERS = { vanta, drata } as const;
 
 const complete = (l: { list: unknown[]; total: number | null }) => l.total !== null && l.list.length >= l.total;
-const listing = (name: string, l: { list: unknown[]; total: number | null }) => line(`listing:${name}`, "read", complete(l) ? "complete" : "partial");
+const listing = (name: string, l: { list: unknown[]; total: number | null }) => line(`listing:${GRC_PLATFORM}.${name}`, "read", complete(l) ? "complete" : "partial");
 
 export function controlLines(c: GrcControl): string[] {
   const control = node("control", c.key);

@@ -147,6 +147,7 @@ export const NORTHWIND: CompanyFixture = {
         from: "2026-10-13T03:00:00Z",
         body: {
           asOf: "2026-10-13T03:00:00Z",
+          total: 4,
           data: [
             { email: email("priya"), org: "Finance Systems", isManager: true },
             { email: email("alex"), org: "IT", isManager: false },

@@ -93,18 +93,21 @@ export const vendorDocs: Connector = {
 export const workday: Connector = {
   id: "workday", label: "Workday", rail: "business", every_minutes: 1440, live_state: true,
   async read(api) {
-    const r = (await api("/ccx/api/v1/workers")) as null | { asOf: string; data: { email: string; org: string; isManager: boolean; terminated?: string }[] };
+    const r = (await api("/ccx/api/v1/workers")) as null | { asOf: string; total?: number; data: { email: string; org: string; isManager: boolean; terminated?: string }[] };
     if (!r) return [];
+    // Complete only when the response states a total no larger than what was read.
+    const completeness = { read: r.data.length, total: typeof r.total === "number" ? r.total : null, of: "workers" };
+    const complete = completeness.total !== null && completeness.read >= completeness.total;
     const team = (org: string) => `team:${org.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
     return [
       record({
-        id: "workday:workers", connector: "workday", rail: "business", observed_at: day(r.asOf), readers: GRC,
+        id: "workday:workers", connector: "workday", rail: "business", observed_at: day(r.asOf), readers: GRC, completeness,
         lines: r.data.filter((w) => !w.terminated).flatMap((w) => [...line(person(w.email), "member_of", team(w.org)), ...(w.isManager ? line(person(w.email), "leads", team(w.org)) : [])]),
       }),
       record({
-        id: "workday:terminations", connector: "workday", rail: "business", observed_at: day(r.asOf), readers: ["people-team"],
-        // The listing line lets a join tell "nobody left" from "terminations not readable".
-        lines: [...line("listing:terminations", "read", "complete"), ...r.data.filter((w) => w.terminated).flatMap((w) => line(person(w.email), "terminated_on", w.terminated!))],
+        id: "workday:terminations", connector: "workday", rail: "business", observed_at: day(r.asOf), readers: ["people-team"], completeness,
+        // The listing line lets a join tell "nobody left" from "terminations not readable" or "read in part".
+        lines: [...line("listing:workday.terminations", "read", complete ? "complete" : "partial"), ...r.data.filter((w) => w.terminated).flatMap((w) => line(person(w.email), "terminated_on", w.terminated!))],
       }),
     ];
   },

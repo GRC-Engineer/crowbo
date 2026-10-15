@@ -51,7 +51,7 @@ set("/admin/directory/v1/groups/03gbilling/members", { members: ids.map((u) => (
 
 // HR: u41's termination, alongside u37's in the default fixture.
 const workers = base.api.find((r) => r.path === "/ccx/api/v1/workers")!.versions[0].body as { asOf: string; data: unknown[] };
-set("/ccx/api/v1/workers", { ...workers, data: [...workers.data, { email: email("u41"), org: "Sales", isManager: false, terminated: "2026-08-31" }] });
+set("/ccx/api/v1/workers", { ...workers, total: workers.data.length + 1, data: [...workers.data, { email: email("u41"), org: "Sales", isManager: false, terminated: "2026-08-31" }] });
 
 // The controls register records when the standing admins were last reviewed.
 const controls = base.api.find((r) => r.path.startsWith("/v4/spreadsheets/controls-register"))!;
