@@ -45,7 +45,7 @@ Setting up Slack changes two things outside this repository: a Slack app in your
          - files:read
    settings:
      event_subscriptions:
-       request_url: https://crowbo-api-staging.grcengineeringpodcast.workers.dev/slack/events
+       request_url: https://<your-staging-worker>.workers.dev/slack/events
        bot_events:
          - app_mention
          - message.im
