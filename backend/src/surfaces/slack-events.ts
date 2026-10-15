@@ -43,6 +43,8 @@ export interface SlackDeps {
   /** The registered workspace for a team, with an engine invoker acting as the Slack user; null when not registered. */
   workspace(team: string): (Pick<SlackWorkspace, "channel" | "synthetic"> & { invoke(actor: string): EngineInvoke }) | null;
   post(message: Post): Promise<void>;
+  /** The permalink of a message, from Slack's own API; null when Slack does not give one. */
+  permalink?(channel: string, ts: string): Promise<string | null>;
   /** Fetch a file's text from Slack; null when it cannot be read. */
   download?(url: string): Promise<string | null>;
   /** Run the work after acknowledging, so Slack gets its answer within three seconds. Absent: run inline. */
@@ -120,7 +122,11 @@ export async function handleSlackEvent(request: Request, deps: SlackDeps): Promi
   const thread_ts = e.thread_ts ?? e.ts;
 
   let work: (() => Promise<SlackMessage>) | null = null;
-  if (e.type === "app_mention") work = () => handleMention(invoke, { text: e.text ?? "", thread: thread_ts });
+  if (e.type === "app_mention") {
+    // Only a record command needs the thread's link; it comes from Slack, never from the message text.
+    const wantsLink = /^\s*(<@[A-Z0-9]+>\s*)*record\b/i.test(e.text ?? "");
+    work = async () => handleMention(invoke, { text: e.text ?? "", thread: thread_ts, permalink: wantsLink && deps.permalink ? await deps.permalink(e.channel!, thread_ts) : null });
+  }
   else if (e.type === "message" && e.channel_type === "im" && e.files?.length && (!e.subtype || e.subtype === "file_share")) {
     work = ws.synthetic
       ? async () => handleExport(invoke, await exportFiles(e.files, deps), { synthetic: true })

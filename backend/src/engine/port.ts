@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { answerTopic, pickTopic, weeklyBrief } from "./answer";
-import { type Engine, MEMORY_CAP, OUTCOME_STATUSES, replaySchedule } from "./engine";
+import { type Engine, MEMORY_CAP, OUTCOME_STATUSES, PERMALINK, replaySchedule } from "./engine";
 import { EngineError } from "./errors";
 import { draftFollowups, routeQuestion, summarise } from "./explain";
 import { DATE, KB_LIMITS } from "./kb";
@@ -23,6 +23,8 @@ export const ENGINE_INPUTS = {
     action: z.string().min(1).max(100), call, reason: z.string().min(1).max(500),
     assertions: z.array(z.strictObject({ subject: z.string().max(200), predicate: z.string().max(80), value })).max(10).default([]),
     disputes_source: z.string().min(1).max(50).optional(),
+    /** Where the call was made; set by a surface (Slack) from its own API, never typed by a person. */
+    provenance: z.strictObject({ permalink: z.string().max(300).regex(PERMALINK) }).optional(),
   }),
   record_outcome: z.strictObject({ action: z.string().min(1).max(100), status: z.enum(OUTCOME_STATUSES as [string, ...string[]]), what_was_done: z.string().min(1).max(1000) }),
   what_if: z.strictObject({ weights: z.record(z.string().max(50), z.number().int().min(0).max(5)) }),
@@ -83,7 +85,7 @@ export async function runEngine(engine: Engine, actor: string, op: EngineOp, raw
     case "run_schedule":
       return replaySchedule(engine.fixture, engine.options, args.minutes);
     case "record_call":
-      return engine.recordCall(args.action, args.call, actor, args.reason, args.assertions, args.disputes_source);
+      return engine.recordCall(args.action, args.call, actor, args.reason, args.assertions, args.disputes_source, args.provenance);
     case "record_outcome":
       return engine.recordOutcome(args.action, args.status, args.what_was_done, actor);
     case "what_if":

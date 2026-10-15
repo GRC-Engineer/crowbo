@@ -45,6 +45,16 @@ export function slackPoster(botToken: string, http = fixedHostFetch("slack.com",
   };
 }
 
+/** chat.getPermalink: the message's link as Slack states it, or null. */
+export function slackPermalink(botToken: string, http = fixedHostFetch("slack.com", 100_000)): NonNullable<SlackDeps["permalink"]> {
+  return async (channel, ts) => {
+    const url = `https://slack.com/api/chat.getPermalink?channel=${encodeURIComponent(channel)}&message_ts=${encodeURIComponent(ts)}`;
+    const res = await http(url, { headers: { authorization: `Bearer ${botToken}` } }).catch(() => null);
+    const body = (await res?.json().catch(() => null)) as { ok?: boolean; permalink?: string } | null;
+    return body?.ok && typeof body.permalink === "string" ? body.permalink : null;
+  };
+}
+
 export function slackDeps(config: SlackConfig, engineFor: (key: string) => EngineCall, defer?: SlackDeps["defer"]): SlackDeps {
   const files = fixedHostFetch("files.slack.com", 300_000);
   return {
@@ -57,6 +67,7 @@ export function slackDeps(config: SlackConfig, engineFor: (key: string) => Engin
       return { channel: ws.channel, synthetic: ws.synthetic, invoke: (actor) => invoker(call, actor) };
     },
     post: slackPoster(config.botToken),
+    permalink: slackPermalink(config.botToken),
     async download(url) {
       const res = await files(url, { headers: { authorization: `Bearer ${config.botToken}` } }).catch(() => null);
       return res?.ok ? res.text() : null;

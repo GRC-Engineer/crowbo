@@ -31,6 +31,9 @@ export type Call = "accept" | "override" | "defer" | "exception";
 /** Connectors that became a class: the old id, the class id. A stored engine is migrated on open. */
 const RENAMED: Record<string, string> = { okta: "identity", linear: "tickets" };
 export type Assertion = { subject: string; predicate: string; value: Value };
+/** Where a call was made: a Slack thread's permalink. Checked here, at the boundary of what memory keeps. */
+export type Provenance = { permalink: string };
+export const PERMALINK = /^https:\/\/[a-z0-9-]{1,63}\.slack\.com\/archives\/[CDG][A-Z0-9]{8,32}\/p\d{16}$/;
 
 export interface EngineOptions {
   connectors: Connector[];
@@ -318,8 +321,9 @@ export class Engine {
    * break-glass accounts") become a memory record, attributed to the person, that goes through the
    * same pipeline as any source, so the next answer uses it and cites it.
    */
-  async recordCall(actionId: string, call: Call, by: string, reason: string, assertions: Assertion[] = [], disputesSource?: string) {
+  async recordCall(actionId: string, call: Call, by: string, reason: string, assertions: Assertion[] = [], disputesSource?: string, provenance?: Provenance) {
     if (!this.fixture.actions.some((a) => a.id === actionId)) throw new EngineError(`Unknown action ${actionId}`);
+    if (provenance && !PERMALINK.test(provenance.permalink)) throw new EngineError("A call's provenance must be a Slack thread permalink");
     if (!reason.trim()) throw new EngineError("A call needs a reason");
     if (disputesSource && !this.weights.has(disputesSource)) throw new EngineError(`Unknown source ${disputesSource}`);
     // Validate everything before anything is kept: a rejected call leaves memory untouched.
@@ -333,13 +337,14 @@ export class Engine {
       if (problem) throw new EngineError(problem);
     }
     const before = this.latest!;
-    const entry = this.memory.append("call", by, { action: actionId, call, reason, decision: before.id, assertions, ...(disputesSource ? { disputes_source: disputesSource } : {}) });
+    const entry = this.memory.append("call", by, { action: actionId, call, reason, decision: before.id, assertions, ...(disputesSource ? { disputes_source: disputesSource } : {}), ...(provenance ? { provenance } : {}) });
     if (assertions.length) {
       const id = `memory:${entry.seq}`;
       const record: SourceRecord = {
         id, connector: "memory", rail: "business", revision: 1, observed_at: this.asOf(), readers: [this.fixture.viewer], label: "Decision memory",
         // Only the validated assertions; the reason and author stay in the memory entry, never parsed.
         format: "lines", text: assertions.map((a) => `${a.subject} ${a.predicate} ${a.value}`).join("\n"),
+        ...(provenance ? { link: provenance.permalink } : {}),
       };
       this.store.saveRecord(record);
       this.records.set(id, record);

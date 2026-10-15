@@ -118,9 +118,9 @@ describe("pilot criteria for mid-December: what a first paid pilot buys", () => 
     expect(reply.text).toContain("Due before audit prep (2026-11-24)");
   });
 
-  it.fails("P4.1 a call recorded from a Slack thread keeps the thread permalink as its provenance, and the next answer cites it", async () => {
+  it("P4.1 a call recorded from a Slack thread keeps the thread permalink as its provenance, and the next answer cites it (true on fixtures)", async () => {
     const e = await demo();
-    const permalink = "https://northwind.slack.example/archives/C0GRC/p1791468000000100";
+    const permalink = "https://northwind.slack.com/archives/C0GRCTEAM1/p1791468000000100";
     const r = (await runEngine(e, "tester", "record_call", {
       action: "move-unused-to-operator", call: "override", reason: "Alex: 4 are break-glass",
       assertions: [{ subject: "group:billing-admins", predicate: "break_glass_exempt", value: 4 }], provenance: { permalink },

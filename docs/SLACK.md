@@ -8,6 +8,15 @@ Crowbo answers in Slack where no AI assistant is deployed. Three things happen t
 
 A direct message carrying an export runs the knowledge-base import, but only in a workspace registered as synthetic.
 
+A person records a call in the thread, in a fixed form that no model reads:
+
+```text
+@crowbo record override move-unused-to-operator because 4 of the 31 are break-glass accounts
+assert group:billing-admins break_glass_exempt 4
+```
+
+The call is kept in decision memory with the thread's permalink, which Crowbo asks Slack for. The next answer cites it with the link. Only the predicates the engine lets a person assert are accepted; anything else is refused and nothing is kept.
+
 The surface is staging only and runs on the demo company. It answers only the person who asked, and it never posts anywhere else or sends on anyone's behalf. The code is in [`surfaces/slack.ts`](../backend/src/surfaces/slack.ts), [`surfaces/slack-events.ts`](../backend/src/surfaces/slack-events.ts) and [`app/slack.ts`](../backend/src/app/slack.ts).
 
 ## How a request is checked

@@ -34,8 +34,8 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 | P2.1 | Prose from real sources is extracted live by Clef, with precision at 0.8 and recall measured on 50 labelled sentences | Failing until built |
 | P3 | A mention in Slack answers with the card: citations, a named decider and a date, with no assistant needed | True on fixtures |
 | P3.1 | The list arrives in the customer's Slack with citations, a named decider and a date, with no assistant needed: the weekly post on schedule, and a signed mention answered in its thread | True on fixtures |
-| P4 | A call recorded where the pilot works changes the next answer, and the answer cites it | Failing until built: P4.1 and P4.2. The engine part is R8 |
-| P4.1 | A call recorded from a Slack thread keeps the thread's permalink as provenance | Failing until built |
+| P4 | A call recorded where the pilot works changes the next answer, and the answer cites it | Failing until built: P4.2. P4.1 is built; the engine part is R8 |
+| P4.1 | A call recorded from a Slack thread keeps the thread's permalink as provenance | True on fixtures |
 | P4.2 | Repeated corrections yield a weight proposal; accepting it is recorded and recomputes the ranking | Failing until built |
 | P5 | The weekly brief reaches the security lead in plain words: moves with sources, deciders and dates, hours back, evidence not used | True on fixtures: delivery is P3.1, the format is R9 |
 
@@ -122,6 +122,7 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 **P4.1. Corrections from Slack.**
 - **Build:** "record this" in a thread writes the call. The thread's permalink becomes the call's provenance.
 - **Check:** a call recorded with a thread permalink keeps it as provenance, and the next answer cites it.
+- **Built:** "record" in a thread mention, in a fixed form with no model: `record <accept|override|defer|exception> <action> because <reason>`, then `assert <subject> <predicate> <value>` lines limited to the assertable predicates. The permalink comes from Slack's `chat.getPermalink` for the thread, through signed events only; without it nothing is recorded. The engine keeps only a Slack thread permalink as provenance, on the call and on the memory record its facts become, and the next card shows it beside the source.
 - **Size:** about 1 day, on top of P3.
 
 **P4.2. From correction to weight.**
