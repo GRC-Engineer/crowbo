@@ -80,10 +80,10 @@ Setting up Slack changes two things outside this repository: a Slack app in your
    bunx wrangler secret put SLACK_WORKSPACES --env staging
    ```
 
-   `SLACK_WORKSPACES` registers each workspace: its team ID, the engine copy that answers it, the weekly channel, whether its exports are synthetic, and who may record calls.
+   `SLACK_WORKSPACES` registers each workspace: its team ID, the engine copy that answers it, the weekly channel, whether its exports are synthetic, who may record calls, and who may import an export by direct message.
 
    ```json
-   { "T0XXXXXXXX": { "tenant": "demo", "reader": "slack-workspace", "channel": "C0XXXXXXXX", "synthetic": true, "recorders": ["U0XXXXXXXX"] } }
+   { "T0XXXXXXXX": { "tenant": "demo", "reader": "slack-workspace", "channel": "C0XXXXXXXX", "synthetic": true, "recorders": ["U0XXXXXXXX"], "importers": ["U0XXXXXXXX"] } }
    ```
 
 4. **Deploy staging.** This also adds the Monday cron trigger.
@@ -92,5 +92,5 @@ Until all three secrets are set, `/slack/events` returns 404. On production it a
 
 ## Known limits
 
-- **Imports in a shared workspace.** Any member of a workspace registered as synthetic can import an export by direct message into that workspace's one engine copy. That is fine for fixtures. Before any real workspace, imports need a per-tenant rule for who may import.
+- **Imports.** Only the people a workspace registers as importers can import an export by direct message, and only in a workspace registered as synthetic.
 - **"brief" goes through the reply path.** "brief" in a mention is answered in the thread like any question; only the scheduled post goes to the channel itself.

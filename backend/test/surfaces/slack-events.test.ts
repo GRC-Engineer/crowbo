@@ -39,14 +39,14 @@ const mention = (event: Record<string, unknown> = {}) => ({
 });
 
 /** Deps over one in-process engine, recording every post and download. */
-async function setup(opts: { synthetic?: boolean; engine?: Engine; invoke?: EngineInvoke; recorders?: string[] } = {}) {
+async function setup(opts: { synthetic?: boolean; engine?: Engine; invoke?: EngineInvoke; recorders?: string[]; importers?: string[] } = {}) {
   const engine = opts.engine ?? (await startDemo()).engine;
   const posts: Post[] = [];
   const downloads: string[] = [];
   const deps: SlackDeps = {
     signingSecret: SECRET,
     now: () => NOW * 1000,
-    workspace: (team) => (team === TEAM ? { channel: CHANNEL, synthetic: opts.synthetic ?? true, recorders: opts.recorders ?? ["U0ALEX0001"], invoke: (actor) => opts.invoke ?? ((op, args) => runEngine(engine, actor, op, args, "slack")) } : null),
+    workspace: (team) => (team === TEAM ? { channel: CHANNEL, synthetic: opts.synthetic ?? true, recorders: opts.recorders ?? ["U0ALEX0001"], importers: opts.importers ?? ["U0ALEX0001"], invoke: (actor) => opts.invoke ?? ((op, args) => runEngine(engine, actor, op, args, "slack")) } : null),
     post: async (m) => void posts.push(m),
     download: async (url) => {
       downloads.push(url);
@@ -148,6 +148,15 @@ describe("Slack events: an export by direct message", () => {
     expect(downloads.map((d) => d.split("/").at(-1))).toEqual(["systems.csv", "controls.csv", "risk-register.csv", "vendors.csv", "access-control.md", "soc2-2025-report.md"]);
     expect(posts[0].text).toContain("*First profile from your export*");
     expect(engine.memory.list("import")[0].body.declared).toBe("synthetic");
+  });
+
+  it("only a registered importer imports: anyone else is refused and nothing is kept", async () => {
+    const { posts, downloads, deps, engine } = await setup({ importers: ["U0DANA0001"] });
+    const before = engine.memory.list().length;
+    await handleSlackEvent(await request(dm([{ name: "policies/access-control.md", size: 100 }])), deps);
+    expect(downloads).toEqual([]);
+    expect(engine.memory.list().length).toBe(before);
+    expect(posts[0].text).toMatch(/^Nothing imported: only the people this workspace registered as importers/);
   });
 
   it("in a workspace not registered as synthetic, imports nothing and says why", async () => {

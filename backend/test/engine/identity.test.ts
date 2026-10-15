@@ -17,7 +17,7 @@ describe("identity: one connector class, two providers", () => {
   it("Okta and Google Workspace give the same identity exposure: the same facts, scenarios and moves", async () => {
     const [a, b] = [await start(okta), await start(googleWorkspace)];
     for (const e of [a, b]) {
-      expect(value(e, "group:workspace-super-admins", "review_overdue")).toBe(true);
+      expect(value(e, "app:google-workspace", "review_overdue")).toBe(true);
       expect(value(e, "directory:accounts", "leavers_active")).toBe(1);
       expect(e.nextMoves().scenarios.map((s) => [s.scenario, s.state])).toEqual([["billing-exposure", "gap_supported"], ["standing-admin-unreviewed", "gap_supported"], ["leaver-access", "gap_supported"]]);
       expect(e.nextMoves().next_moves.map((m) => m.action).filter((x) => IDENTITY_MOVES.includes(x)).sort()).toEqual(IDENTITY_MOVES);
@@ -61,7 +61,7 @@ describe("identity: the three scenarios", () => {
     const controls = recent.api.find((r) => r.path.startsWith("/v4/spreadsheets/controls-register"))!.versions[0].body as { values: string[][] };
     controls.values = controls.values.map((row) => (row[2] === "last_reviewed_at" ? [...row.slice(0, 3), "2026-09-15"] : row));
     const e = await start(okta, recent);
-    expect(value(e, "group:workspace-super-admins", "review_overdue")).toBe(false);
+    expect(value(e, "app:google-workspace", "review_overdue")).toBe(false);
     expect(e.nextMoves().scenarios.find((s) => s.scenario === "standing-admin-unreviewed")!.state).toBe("no_gap_observed");
 
     const none = structuredClone(NORTHWIND_IDENTITY);

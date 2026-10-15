@@ -62,7 +62,11 @@ export interface AudienceGrant {
   readers: string[];
 }
 
-export type FetchJson = (path: string) => Promise<unknown>;
+/**
+ * A tool's API: the JSON body at a path, and, where the transport can see it, the next page an HTTP
+ * Link header points to (page). Without page, a Link-paged list's completeness is unknown.
+ */
+export type FetchJson = ((path: string) => Promise<unknown>) & { page?: (path: string) => Promise<{ body: unknown; next: string | null } | null> };
 
 /** Reads one tool on its own schedule through its API. Nothing is migrated or typed in. */
 export interface Connector {
@@ -299,7 +303,8 @@ export interface Topic {
 /** Fake API responses with the time each became true, so a schedule can replay them. */
 export interface FakeApiRoute {
   path: string;
-  versions: { from: string; body: unknown }[];
+  /** next: the path an HTTP Link header would point to for the next page; absent on a last page. */
+  versions: { from: string; body: unknown; next?: string }[];
 }
 
 /** Everything a company configures, plus its synthetic tools (prototype only). */

@@ -1,5 +1,6 @@
 import { line } from "./connectors";
 import type { Connector, FetchJson, SourceRecord } from "./model";
+import { collect, MAX_PAGES } from "./paging";
 
 /**
  * The GRC platform connector, read-only: one class, several providers (Vanta, Drata). A provider
@@ -63,12 +64,16 @@ const GRC = ["grc-lead"];
 /** A list as read: the items, and how many the provider said there are (null when it did not say). */
 type Listing<T> = { list: T[]; total: number | null };
 
-type Page<T> = { results: { data: T[]; pageInfo?: { hasNextPage: boolean } } };
+type Page<T> = { results: { data: T[]; pageInfo?: { hasNextPage: boolean; endCursor?: string | null } } };
+/** Vanta pages by cursor; complete only when the last page read says there is no next one. */
 const vantaPage = async <T>(api: FetchJson, path: string): Promise<Listing<T>> => {
-  const r = (await api(path)) as Page<T> | null;
-  const list = r?.results.data ?? [];
-  // Complete only when the page says there is no next one; no pageInfo means unknown, which is incomplete.
-  return { list, total: r?.results.pageInfo?.hasNextPage === false ? list.length : null };
+  const l = await collect<T>(path, async (p) => {
+    const r = (await api(p)) as Page<T> | null;
+    if (!r) return null;
+    const info = r.results.pageInfo;
+    return { items: r.results.data, next: info?.hasNextPage === false ? null : info?.hasNextPage && info.endCursor ? `${path}?pageCursor=${encodeURIComponent(info.endCursor)}` : undefined };
+  });
+  return { list: l.items, total: l.complete ? l.items.length : null };
 };
 
 /** Vanta REST API: controls (owner, automation, test results, links), vendors, and exceptions. */
@@ -88,9 +93,18 @@ export const vanta: GrcProvider = {
 };
 
 type DrataList<T> = { data: T[]; total?: number };
+/** Drata pages by number against a stated total; complete when what was read reaches it. */
 const drataList = async <T>(api: FetchJson, path: string): Promise<Listing<T>> => {
-  const r = (await api(path)) as DrataList<T> | null;
-  return { list: r?.data ?? [], total: typeof r?.total === "number" ? r.total : null };
+  const list: T[] = [];
+  let total: number | null = null;
+  for (let n = 1; n <= MAX_PAGES; n++) {
+    const r = (await api(n === 1 ? path : `${path}?page=${n}`)) as DrataList<T> | null;
+    if (!r) break;
+    list.push(...r.data);
+    total = typeof r.total === "number" ? r.total : null;
+    if (total === null || list.length >= total || !r.data.length) break;
+  }
+  return { list, total };
 };
 
 /** Drata public API: controls (owners, monitors, frameworks), vendors, and exceptions. */

@@ -34,11 +34,21 @@ const prose = (r: Omit<SourceRecord, "revision" | "format">): SourceRecord => ({
 export class FakeApi {
   constructor(private routes: FakeApiRoute[], public now: string) {}
 
-  fetch: FetchJson = async (path) => {
+  private live(path: string) {
     const route = this.routes.find((r) => r.path === path);
-    const live = route?.versions.filter((v) => v.from <= this.now).sort((a, b) => (a.from < b.from ? -1 : 1)).at(-1);
+    return route?.versions.filter((v) => v.from <= this.now).sort((a, b) => (a.from < b.from ? -1 : 1)).at(-1);
+  }
+
+  /** The body, and (like an HTTP Link header) the next page's path when the route names one. */
+  fetch: FetchJson = Object.assign(async (path: string) => {
+    const live = this.live(path);
     return live ? structuredClone(live.body) : null;
-  };
+  }, {
+    page: async (path: string) => {
+      const live = this.live(path);
+      return live ? { body: structuredClone(live.body), next: live.next ?? null } : null;
+    },
+  });
 }
 
 /** The billing app's audit API: last action and the actions each person has taken. */
