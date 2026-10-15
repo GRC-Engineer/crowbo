@@ -69,7 +69,8 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 - **Built:** [`documents.ts`](../../backend/src/engine/documents.ts), with no library: the runtime's DecompressionStream inflates. Binary files are sent as base64.
   - A PDF is read page by page in the page tree's order (literal, hex and TJ strings, deflated or plain streams); each page is its own prose record, so a quote is anchored to its page.
   - A DOCX is read from `word/document.xml`, paragraph by paragraph.
-  - What cannot be read reliably is listed, never guessed: an encrypted PDF, a filter not handled, a font whose encoding is not read here. Inflated parts are capped at 4 MB, so a small file cannot expand into a large one.
+  - It fails closed. A PDF that keeps objects in object streams or its cross-reference in a stream, an encrypted PDF, a page tree with a missing or too-deep branch, a filter chain other than FlateDecode alone, or a font whose text is not readable is listed as not read, never returned with guessed text or a page number that might be wrong. Most PDFs written by current tools use object streams, so today this reads simple PDFs and refuses the rest honestly; whether to add a maintained parser that runs on Workers is Ayoub's call.
+  - Files are treated as hostile: every scan is linear, inflating is capped at 4 MB per part and 8 MB per file, text at 1M characters per file, the page tree is walked without recursion, and a stream referenced many times is read once. A reader failure lists that one file as not read; the rest of the import continues.
   - The text is untrusted prose like any other: facts from it must quote it exactly.
 
 **P2. Three real connectors.**

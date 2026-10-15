@@ -162,7 +162,8 @@ async function documentRecords(file: KbFile, ext: string, base: Omit<SourceRecor
   if (!file.content) return { records: [], format: "not_read", reason: "The file is empty" };
   const raw = file.encoding === "base64" ? base64Bytes(file.content) : null;
   if (!raw) return { records: [], format: "not_read", reason: `Send .${ext} files as base64 (encoding: "base64")` };
-  const doc = await DOCUMENTS[ext](raw);
+  // A reader failure on one file lists that file as not read; it never aborts the import.
+  const doc = await DOCUMENTS[ext](raw).catch((): DocumentText => ({ ok: false, reason: "the file could not be read" }));
   if (!doc.ok) return { records: [], format: "not_read", reason: `Not read: ${doc.reason}` };
   const notes = [...doc.unread];
   const records = doc.pages.map((p) => {
