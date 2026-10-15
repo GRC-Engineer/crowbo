@@ -32,11 +32,12 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 | P1.2 | An export produces first next moves from the profile's own defaults, with no pre-authored scenarios or actions | Failing until built: needs the register |
 | P2 | Three real connectors, read-only, feed the weekly fix-or-drop list | Failing until built |
 | P2.1 | Prose from real sources is extracted live by Clef, with precision at 0.8 and recall measured on 50 labelled sentences | Failing until built |
-| P3 | The list arrives in the customer's Slack with citations, a named decider and a date, with no assistant needed | Failing until built |
+| P3 | A mention in Slack answers with the card: citations, a named decider and a date, with no assistant needed | True on fixtures |
+| P3.1 | The card and the weekly list are delivered to a workspace: a signed event gets a threaded reply, and the weekly post goes out on schedule | Failing until built |
 | P4 | A call recorded where the pilot works changes the next answer, and the answer cites it | Failing until built: P4.1 and P4.2. The engine part is R8 |
 | P4.1 | A call recorded from a Slack thread keeps the thread's permalink as provenance | Failing until built |
 | P4.2 | Repeated corrections yield a weight proposal; accepting it is recorded and recomputes the ranking | Failing until built |
-| P5 | The weekly brief reaches the security lead in plain words: moves with sources, deciders and dates, hours back, evidence not used | Failing until built: delivery is P3. The format is R9 |
+| P5 | The weekly brief reaches the security lead in plain words: moves with sources, deciders and dates, hours back, evidence not used | Failing until built: delivery is P3.1. The format is R9 |
 
 ### Build specs
 
@@ -86,6 +87,16 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
   - It never posts unprompted except the weekly list, and never sends on anyone's behalf.
 - **Check:** on fixtures, a scripted mention returns the card with numbered citations, the decider and a date.
 - **Size:** about 3–4 days.
+- **Built:** [`surfaces/slack.ts`](../../backend/src/surfaces/slack.ts), over the same operations as MCP.
+  - A mention answers with the card: the question, the case and method version, the next action, the trade-off and what it was ranked against, the status (decider, deliverer, due date, last outcome), numbered sources with weight and freshness, unresolved evidence, and the result ID.
+  - "brief" returns the weekly list. A direct message carrying an export runs the P1 import and replies with the first profile.
+  - Without a model, the card is the computed answer alone. With one, the model only routes the question and phrases a summary checked against the sources; the ranking is the same either way.
+  - Text from questions, sources and models is escaped, so it cannot become a link, a mention or a broadcast.
+
+**P3.1. Delivered to a workspace.**
+- **Build:** the events endpoint that verifies Slack's signature and replay window, replies in the thread, and posts the weekly list to one configured channel on a schedule. Plus the app manifest and setup steps.
+- **Check:** a signed `app_mention` event, with a fake Slack API, produces one threaded reply carrying the card.
+- **Size:** about 1–2 days.
 
 **P4.1. Corrections from Slack.**
 - **Build:** "record this" in a thread writes the call. The thread's permalink becomes the call's provenance.
@@ -102,7 +113,7 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 
 **Reviewed, not tested.** One more outcome is judged by the pilot, not by a test: a CISO at the pilot forwards the brief to their leadership without editing it. The brief should open with what the security lead did not already know that week.
 
-Build order, riskiest first: P1, P3, P2, P2.1, P4.1, P4.2. That totals about 3 weeks of focused work. P1 is built. P1.1 follows when a pilot's export needs it, and P1.2 follows the register.
+Build order, riskiest first: P1, P3, P2, P2.1, P4.1, P4.2. That totals about 3 weeks of focused work. P1 and P3 are built. P3.1 delivers P3 to a workspace. P1.1 follows when a pilot's export needs it, and P1.2 follows the register.
 
 ## Regression: already true on fixtures
 
