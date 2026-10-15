@@ -8,14 +8,14 @@
         "weight": 5,
         "used": true,
         "n": 1,
-        "connector": "okta",
+        "connector": "identity",
         "label": "Okta",
-        "record": "okta:group/billing-admins",
-        "claim": "40 people hold billing-admins (Okta group membership)",
+        "record": "identity:okta/group/billing-admins",
+        "claim": "40 people hold billing-admins (identity provider group membership)",
         "read_at": "2026-10-13T09:00:00Z",
         "coverage": "full",
         "freshness": "fresh",
-        "fact_id": "b23b4aa61c7a"
+        "fact_id": "47c5bd56eb42"
       },
       {
         "weight": 4,
@@ -47,14 +47,14 @@
         "weight": 3,
         "used": true,
         "n": 4,
-        "connector": "linear",
+        "connector": "tickets",
         "label": "Linear",
-        "record": "linear:project/audit-prep",
+        "record": "tickets:linear/launch/audit-prep",
         "claim": "launch:audit-prep start_date 2026-11-24",
         "read_at": "2026-10-13T09:00:00Z",
         "coverage": "full",
         "freshness": "fresh",
-        "fact_id": "ba2c68a8121b"
+        "fact_id": "b4d307b6b668"
       },
       {
         "weight": 3,
@@ -77,12 +77,12 @@
     "answer": {
       "finding": [
         {
-          "text": "40 people hold billing-admins (Okta group membership)",
+          "text": "40 people hold billing-admins (identity provider group membership)",
           "cites": [
             1
           ],
           "deciding": true,
-          "fact_id": "b23b4aa61c7a"
+          "fact_id": "47c5bd56eb42"
         },
         {
           "text": "31 of 40 holders have no billing action since 2026-07-15, 87 of 90 days of logs",
@@ -160,9 +160,115 @@
         "[5] group:billing-admins holders 12: stale (last updated 2026-03-04, 223 days old, past the 90-day limit for Risk register); conflicts with [1]"
       ]
     },
-    "decision_id": "4d7e0de088964331210834a42d05dc907b3c824986c58c7d724d6bbfddaaf2a3",
+    "basis": {
+      "method": "Expected annual loss = frequency × loss per event (ranges). Risk removed = expected loss × reduction × evidence confidence (strongest fresh source weight / 5), counted only where a gap is evidenced; risk a drop adds counts in full. Stale facts are shown, never used. Drops within tolerance go first and give hours back; the rest are taken by risk removed per hour while they fit at upper effort bounds.",
+      "scenario": {
+        "title": "Billing data misused through admin access nobody needs",
+        "frequency_per_year": {
+          "low": 0.2,
+          "high": 0.6
+        },
+        "loss_per_event": {
+          "low": 150000,
+          "high": 900000
+        },
+        "estimate_basis": "Invented expert range for the demo",
+        "expected_loss_per_year": {
+          "low": 30000,
+          "high": 540000
+        },
+        "state": "gap_supported",
+        "confidence": 0.8
+      },
+      "action": {
+        "id": "move-unused-to-operator",
+        "reduces": [
+          {
+            "scenario": "billing-exposure",
+            "fraction": {
+              "low": 0.6,
+              "high": 0.8
+            }
+          }
+        ],
+        "effort": {
+          "security_hours": {
+            "low": 4,
+            "high": 6
+          },
+          "engineering_hours": {
+            "low": 2,
+            "high": 4
+          },
+          "cash": {
+            "low": 0,
+            "high": 0
+          }
+        },
+        "score": 18000,
+        "rank": 2,
+        "expect": {
+          "subject": "group:billing-admins",
+          "predicate": "movable_unused",
+          "op": "eq",
+          "value": 0
+        }
+      },
+      "alternatives": [
+        {
+          "action": "drop-access-screenshots",
+          "title": "Stop the quarterly access screenshots; the auditor accepts the Okta export",
+          "mode": "drop",
+          "score": -675
+        }
+      ],
+      "weights": [
+        {
+          "connector": "identity",
+          "weight": 5,
+          "max_age_days": 1
+        },
+        {
+          "connector": "billing",
+          "weight": 4,
+          "max_age_days": 7
+        },
+        {
+          "connector": "memory",
+          "weight": 4,
+          "max_age_days": 365
+        },
+        {
+          "connector": "workday",
+          "weight": 4,
+          "max_age_days": 7
+        },
+        {
+          "connector": "sheets",
+          "weight": 3,
+          "max_age_days": 90
+        },
+        {
+          "connector": "tickets",
+          "weight": 3,
+          "max_age_days": 7
+        },
+        {
+          "connector": "vendor-docs",
+          "weight": 3,
+          "max_age_days": 180
+        },
+        {
+          "connector": "slack",
+          "weight": 2,
+          "max_age_days": 30
+        }
+      ]
+    },
+    "outcomes": [],
+    "decision_id": "6c573d67a37d0a1f8b096273bbf7a0309d2bb61c2c39240b94a6bec3237fdf76",
     "synthetic": true,
-    "lookup_ms": 0.6,
+    "lookup_ms": 0.5,
     "summary": {
       "text": "",
       "generated_by": "none (no answering model configured; the harness model explains the answer)"
@@ -212,7 +318,7 @@
     "log": [
       {
         "at": "2026-10-13T08:00:00Z",
-        "connector": "okta",
+        "connector": "identity",
         "records_changed": 2,
         "facts_added": 43,
         "edges_added": [
@@ -429,7 +535,7 @@
         ],
         "decision_diff": {
           "before": null,
-          "after": "cce233bdf2157f8b185aca632bce73bb704c0ddc579d896423270ee6a2459a3b",
+          "after": "bbf81e30ad0e00a130aa031fb71ceea322b403bcf082852f76d516e9066fe93e",
           "added": [],
           "removed": [],
           "changed_reasons": [
@@ -445,8 +551,8 @@
         "facts_added": 60,
         "edges_added": [],
         "decision_diff": {
-          "before": "cce233bdf2157f8b185aca632bce73bb704c0ddc579d896423270ee6a2459a3b",
-          "after": "9923aac8061d5dcc84e72cd054a9c1476493de2f3a5b347939b4736eba7aabf6",
+          "before": "bbf81e30ad0e00a130aa031fb71ceea322b403bcf082852f76d516e9066fe93e",
+          "after": "f47027cb3ba855f3a9f62e45b410141f75c176b72b91837d17f360d929dbdafc",
           "added": [],
           "removed": [],
           "changed_reasons": []
@@ -465,8 +571,8 @@
           }
         ],
         "decision_diff": {
-          "before": "9923aac8061d5dcc84e72cd054a9c1476493de2f3a5b347939b4736eba7aabf6",
-          "after": "b1cd828d3ef06107dc2f9f4bd215edc87f8b39c4283770bb0da6261a64cefbd1",
+          "before": "f47027cb3ba855f3a9f62e45b410141f75c176b72b91837d17f360d929dbdafc",
+          "after": "5019020c743ed0a11cb90dfc2d7c9fffdea36182bc72475d29e2a6863d208cd3",
           "added": [],
           "removed": [],
           "changed_reasons": [
@@ -476,9 +582,9 @@
       },
       {
         "at": "2026-10-13T08:15:00Z",
-        "connector": "linear",
+        "connector": "tickets",
         "records_changed": 1,
-        "facts_added": 3,
+        "facts_added": 4,
         "edges_added": [
           {
             "from": "launch:audit-prep",
@@ -492,8 +598,8 @@
           }
         ],
         "decision_diff": {
-          "before": "b1cd828d3ef06107dc2f9f4bd215edc87f8b39c4283770bb0da6261a64cefbd1",
-          "after": "d253614fc8f6097ce9faf3c90c47f7726eaf8d5ab1c8cc6b81fd4fe0863d8131",
+          "before": "5019020c743ed0a11cb90dfc2d7c9fffdea36182bc72475d29e2a6863d208cd3",
+          "after": "ab213b26c03aacd7389fab9107f01069eaefc3208241a86faec6cbba6e65b2ca",
           "added": [],
           "removed": [],
           "changed_reasons": []
@@ -506,8 +612,8 @@
         "facts_added": 4,
         "edges_added": [],
         "decision_diff": {
-          "before": "d253614fc8f6097ce9faf3c90c47f7726eaf8d5ab1c8cc6b81fd4fe0863d8131",
-          "after": "48bc9aa27348caf5aceb3da69d5552152296a0daeabe83f8c09de330839f66f0",
+          "before": "ab213b26c03aacd7389fab9107f01069eaefc3208241a86faec6cbba6e65b2ca",
+          "after": "22813efd8d7306fd99091fb3a25cf60cb0025591ed8c47e38b8f1a32908d7f9c",
           "added": [
             "move-unused-to-operator"
           ],
@@ -548,8 +654,8 @@
           }
         ],
         "decision_diff": {
-          "before": "48bc9aa27348caf5aceb3da69d5552152296a0daeabe83f8c09de330839f66f0",
-          "after": "5eda0b6d57e49e3c156db79e289c322d23d240fcd56f08940abe293388a3ddf1",
+          "before": "22813efd8d7306fd99091fb3a25cf60cb0025591ed8c47e38b8f1a32908d7f9c",
+          "after": "b3a66f34541550d00400816a16fc6945913d9bacade1db079ab819a19f6a8a8e",
           "added": [],
           "removed": [],
           "changed_reasons": []
@@ -557,7 +663,7 @@
       },
       {
         "at": "2026-10-13T08:30:00Z",
-        "connector": "linear",
+        "connector": "tickets",
         "records_changed": 0,
         "facts_added": 0,
         "edges_added": [],
@@ -570,8 +676,8 @@
         "facts_added": 1,
         "edges_added": [],
         "decision_diff": {
-          "before": "5eda0b6d57e49e3c156db79e289c322d23d240fcd56f08940abe293388a3ddf1",
-          "after": "4d7e0de088964331210834a42d05dc907b3c824986c58c7d724d6bbfddaaf2a3",
+          "before": "b3a66f34541550d00400816a16fc6945913d9bacade1db079ab819a19f6a8a8e",
+          "after": "6c573d67a37d0a1f8b096273bbf7a0309d2bb61c2c39240b94a6bec3237fdf76",
           "added": [
             "drop-access-screenshots"
           ],
@@ -581,7 +687,7 @@
       },
       {
         "at": "2026-10-13T08:45:00Z",
-        "connector": "linear",
+        "connector": "tickets",
         "records_changed": 0,
         "facts_added": 0,
         "edges_added": [],
@@ -597,7 +703,7 @@
       },
       {
         "at": "2026-10-13T09:00:00Z",
-        "connector": "okta",
+        "connector": "identity",
         "records_changed": 0,
         "facts_added": 0,
         "edges_added": [],
@@ -605,7 +711,7 @@
       },
       {
         "at": "2026-10-13T09:00:00Z",
-        "connector": "linear",
+        "connector": "tickets",
         "records_changed": 0,
         "facts_added": 0,
         "edges_added": [],
@@ -621,10 +727,10 @@
       }
     ],
     "final": {
-      "id": "4d7e0de088964331210834a42d05dc907b3c824986c58c7d724d6bbfddaaf2a3",
-      "inputs_hash": "d6e84063c8108e07ec369c07dbe5237ce5390a1d916e04087a56bdbbd0d67271",
+      "id": "6c573d67a37d0a1f8b096273bbf7a0309d2bb61c2c39240b94a6bec3237fdf76",
+      "inputs_hash": "6b2967920c687e9bcc36e306d9fa04426993e7006014dc1cc3b6c87220682d2c",
       "viewer": "grc-lead",
-      "computed_at": "2026-10-13T15:19:37.846Z",
+      "computed_at": "2026-10-13T09:00:00Z",
       "next_moves": [
         {
           "action": "drop-access-screenshots",
@@ -717,8 +823,8 @@
             },
             {
               "quote": "launch:audit-prep start_date 2026-11-24",
-              "connector": "linear",
-              "record": "linear:project/audit-prep",
+              "connector": "tickets",
+              "record": "tickets:linear/launch/audit-prep",
               "revision": 1,
               "weight": 3,
               "kind": "extracted",
@@ -799,14 +905,14 @@
   "engine_record_call": {
     "recorded": {
       "seq": 9,
-      "at": "2026-10-13T15:19:37.853Z",
+      "at": "2026-10-13T09:00:00Z",
       "kind": "call",
-      "actor": "grc-lead (via MCP)",
+      "actor": "you (local)",
       "body": {
         "action": "move-unused-to-operator",
         "call": "override",
         "reason": "Alex: 4 of the 31 are break-glass accounts and must keep admin",
-        "decision": "4d7e0de088964331210834a42d05dc907b3c824986c58c7d724d6bbfddaaf2a3",
+        "decision": "6c573d67a37d0a1f8b096273bbf7a0309d2bb61c2c39240b94a6bec3237fdf76",
         "assertions": [
           {
             "subject": "group:billing-admins",
@@ -815,13 +921,13 @@
           }
         ]
       },
-      "prev": "e45107c17e128db03b4ab42d5745f85d2abb12165e0c55408d95e2a299080d4e",
-      "hash": "ccaa645fc94e6b82baa144eedcd3cedb1791358d221000df71ad8c597b5bfb48"
+      "prev": "d64a0e51a7ccf0c34b95445caf88faefe83f2d3bc3c17fa7e19eb42d70363dd6",
+      "hash": "f094c008d620d944df1396e149add3ae55c25a5b19858fc4a66c550170bf6ba4"
     },
     "proposals": [],
     "decision_diff": {
-      "before": "4d7e0de088964331210834a42d05dc907b3c824986c58c7d724d6bbfddaaf2a3",
-      "after": "64e080247653a2ca27fa6d02ae2253cd70236a37306995e46d6e7e9865a03c71",
+      "before": "6c573d67a37d0a1f8b096273bbf7a0309d2bb61c2c39240b94a6bec3237fdf76",
+      "after": "a4ba7e0573fcac1eb2da93e1740d99ec7ee3b49d9962c8d21ae927c6ec5071a1",
       "added": [],
       "removed": [],
       "changed_reasons": [
@@ -838,14 +944,14 @@
         "weight": 5,
         "used": true,
         "n": 1,
-        "connector": "okta",
+        "connector": "identity",
         "label": "Okta",
-        "record": "okta:group/billing-admins",
-        "claim": "40 people hold billing-admins (Okta group membership)",
+        "record": "identity:okta/group/billing-admins",
+        "claim": "40 people hold billing-admins (identity provider group membership)",
         "read_at": "2026-10-13T09:00:00Z",
         "coverage": "full",
         "freshness": "fresh",
-        "fact_id": "b23b4aa61c7a"
+        "fact_id": "47c5bd56eb42"
       },
       {
         "weight": 4,
@@ -890,14 +996,14 @@
         "weight": 3,
         "used": true,
         "n": 5,
-        "connector": "linear",
+        "connector": "tickets",
         "label": "Linear",
-        "record": "linear:project/audit-prep",
+        "record": "tickets:linear/launch/audit-prep",
         "claim": "launch:audit-prep start_date 2026-11-24",
         "read_at": "2026-10-13T09:00:00Z",
         "coverage": "full",
         "freshness": "fresh",
-        "fact_id": "ba2c68a8121b"
+        "fact_id": "b4d307b6b668"
       },
       {
         "weight": 3,
@@ -920,12 +1026,12 @@
     "answer": {
       "finding": [
         {
-          "text": "40 people hold billing-admins (Okta group membership)",
+          "text": "40 people hold billing-admins (identity provider group membership)",
           "cites": [
             1
           ],
           "deciding": true,
-          "fact_id": "b23b4aa61c7a"
+          "fact_id": "47c5bd56eb42"
         },
         {
           "text": "31 of 40 holders have no billing action since 2026-07-15, 87 of 90 days of logs",
@@ -1005,7 +1111,113 @@
         "[6] group:billing-admins holders 12: stale (last updated 2026-03-04, 223 days old, past the 90-day limit for Risk register); conflicts with [1]"
       ]
     },
-    "decision_id": "64e080247653a2ca27fa6d02ae2253cd70236a37306995e46d6e7e9865a03c71",
+    "basis": {
+      "method": "Expected annual loss = frequency × loss per event (ranges). Risk removed = expected loss × reduction × evidence confidence (strongest fresh source weight / 5), counted only where a gap is evidenced; risk a drop adds counts in full. Stale facts are shown, never used. Drops within tolerance go first and give hours back; the rest are taken by risk removed per hour while they fit at upper effort bounds.",
+      "scenario": {
+        "title": "Billing data misused through admin access nobody needs",
+        "frequency_per_year": {
+          "low": 0.2,
+          "high": 0.6
+        },
+        "loss_per_event": {
+          "low": 150000,
+          "high": 900000
+        },
+        "estimate_basis": "Invented expert range for the demo",
+        "expected_loss_per_year": {
+          "low": 30000,
+          "high": 540000
+        },
+        "state": "gap_supported",
+        "confidence": 0.8
+      },
+      "action": {
+        "id": "move-unused-to-operator",
+        "reduces": [
+          {
+            "scenario": "billing-exposure",
+            "fraction": {
+              "low": 0.6,
+              "high": 0.8
+            }
+          }
+        ],
+        "effort": {
+          "security_hours": {
+            "low": 4,
+            "high": 6
+          },
+          "engineering_hours": {
+            "low": 2,
+            "high": 4
+          },
+          "cash": {
+            "low": 0,
+            "high": 0
+          }
+        },
+        "score": 18000,
+        "rank": 2,
+        "expect": {
+          "subject": "group:billing-admins",
+          "predicate": "movable_unused",
+          "op": "eq",
+          "value": 0
+        }
+      },
+      "alternatives": [
+        {
+          "action": "drop-access-screenshots",
+          "title": "Stop the quarterly access screenshots; the auditor accepts the Okta export",
+          "mode": "drop",
+          "score": -675
+        }
+      ],
+      "weights": [
+        {
+          "connector": "identity",
+          "weight": 5,
+          "max_age_days": 1
+        },
+        {
+          "connector": "billing",
+          "weight": 4,
+          "max_age_days": 7
+        },
+        {
+          "connector": "memory",
+          "weight": 4,
+          "max_age_days": 365
+        },
+        {
+          "connector": "workday",
+          "weight": 4,
+          "max_age_days": 7
+        },
+        {
+          "connector": "sheets",
+          "weight": 3,
+          "max_age_days": 90
+        },
+        {
+          "connector": "tickets",
+          "weight": 3,
+          "max_age_days": 7
+        },
+        {
+          "connector": "vendor-docs",
+          "weight": 3,
+          "max_age_days": 180
+        },
+        {
+          "connector": "slack",
+          "weight": 2,
+          "max_age_days": 30
+        }
+      ]
+    },
+    "outcomes": [],
+    "decision_id": "a4ba7e0573fcac1eb2da93e1740d99ec7ee3b49d9962c8d21ae927c6ec5071a1",
     "synthetic": true,
     "lookup_ms": 0.1,
     "summary": {
@@ -1022,7 +1234,7 @@
     }
   },
   "engine_weekly_brief": {
-    "markdown": "# Security brief, week of 13 Oct\nDemo data built on a case a future customer raised.\n\n## Next moves, by risk removed\n1. **Stop the quarterly access screenshots; the auditor accepts the Okta export** (drop). Gives back 21 hours this horizon; adds at most $3k a year of risk, within tolerance. Decides: Dana. Delivers: Dana. Due end of the planning horizon (11 Jan). Sources: Controls register, Slack.\n2. **Move the 27 unused billing admins to the Billing Operator role** (fix). Removes $14k–$346k a year of expected loss for 6–10 hours: \"Billing data misused through admin access nobody needs\" (confidence 0.8). Decides: Priya. Delivers: Alex. Due before audit prep (24 Nov). Sources: Billing apps, Decision memory, Okta, Vendor docs, Linear.\n\n**Hours back this quarter:** 21 security, 0 engineering. **Risk removed if all moves land:** $14k–$346k a year.\n\n## Not now, and why\n- Nothing deferred.\n\n## Decided this week\n- Overridden: Move the 27 unused billing admins to the Billing Operator role. \"Alex: 4 of the 31 are break-glass accounts and must keep admin\"\n\n## Evidence we did not use\n- Risk register says 12 for billing-admins holders; last updated 4 Mar, 223 days old. Not used.\n- Risk register says high for billing-misuse rating; last updated 4 Mar, 223 days old. Not used.\n- Risk register says Priya for billing-misuse owner; last updated 4 Mar, 223 days old. Not used.\n\nRecommendations only; nothing executes.",
-    "decision_id": "64e080247653a2ca27fa6d02ae2253cd70236a37306995e46d6e7e9865a03c71"
+    "markdown": "# Security brief, week of 13 Oct\nDemo data built on a case a future customer raised.\n\n## Next moves, by risk removed\n1. **Stop the quarterly access screenshots; the auditor accepts the Okta export** (drop). Gives back 21 hours this horizon; adds at most $3k a year of risk, within tolerance. Decides: Dana. Delivers: Dana. Due end of the planning horizon (11 Jan). Sources: Controls register, Slack.\n2. **Move the 27 unused billing admins to the Billing Operator role** (fix). Removes $14k–$346k a year of expected loss for 6–10 hours: \"Billing data misused through admin access nobody needs\" (confidence 0.8). Decides: Priya. Delivers: Alex. Due before audit prep (24 Nov). Sources: Billing apps, Okta, Decision memory, Vendor docs, Linear.\n\n**Hours back this quarter:** 21 security, 0 engineering. **Risk removed if all moves land:** $14k–$346k a year.\n\n## Not now, and why\n- Nothing deferred.\n\n## Decided this week\n- Overridden: Move the 27 unused billing admins to the Billing Operator role. \"Alex: 4 of the 31 are break-glass accounts and must keep admin\"\n\n## Evidence we did not use\n- Risk register says 12 for billing-admins holders; last updated 4 Mar, 223 days old. Not used.\n- Risk register says high for billing-misuse rating; last updated 4 Mar, 223 days old. Not used.\n- Risk register says Priya for billing-misuse owner; last updated 4 Mar, 223 days old. Not used.\n\nRecommendations only; nothing executes.",
+    "decision_id": "a4ba7e0573fcac1eb2da93e1740d99ec7ee3b49d9962c8d21ae927c6ec5071a1"
   }
 }
