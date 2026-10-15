@@ -17,6 +17,7 @@ import { CONNECTORS } from "../../src/engine/connectors";
 import { demoOptions, startDemo } from "../../src/engine/demo";
 import { Engine } from "../../src/engine/engine";
 import { NORTHWIND } from "../../src/engine/fixture";
+import { runEngine } from "../../src/engine/port";
 import { registerEngineTools } from "../../src/engine/tools";
 
 const Q = "Who should still have billing admin?";
@@ -136,9 +137,9 @@ describe("regression: already true on fixtures", () => {
   });
 
   it("R7 harness-agnostic: the engine is served over MCP, so any MCP client lists and calls the same tools", async () => {
-    const { engine, options } = await startDemo();
+    const engine = await demo();
     const server = new McpServer({ name: "acceptance", version: "0" });
-    registerEngineTools(server, engine, options);
+    registerEngineTools(server, (op, args) => runEngine(engine, "tester", op, args));
     const [x, y] = InMemoryTransport.createLinkedPair();
     const client = new Client({ name: "any-harness", version: "0" });
     await Promise.all([server.connect(x), client.connect(y)]);
