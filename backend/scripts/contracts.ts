@@ -1,6 +1,6 @@
-import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { digest, type PinnedSource } from "./contract-hash";
 
 /**
  * Provider API specs, pinned by SHA-256 (backend/contracts/SOURCES.md). Specs that can be committed
@@ -16,12 +16,7 @@ import { dirname, join } from "node:path";
 
 const ROOT = join(import.meta.dirname, "../contracts");
 const CACHE = join(ROOT, ".cache");
-type Source = { label: string; url: string; sha256: string; hash?: "canonical-json"; file: string; format: string; committed: boolean };
-const sources = JSON.parse(readFileSync(join(ROOT, "sources.json"), "utf8")) as Record<string, Source>;
-const canonical = (v: unknown): unknown =>
-  Array.isArray(v) ? v.map(canonical) : v && typeof v === "object" ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, canonical((v as Record<string, unknown>)[k])])) : v;
-const digest = (s: Source, b: Uint8Array) =>
-  createHash("sha256").update(s.hash === "canonical-json" ? JSON.stringify(canonical(JSON.parse(new TextDecoder().decode(b)))) : b).digest("hex");
+const sources = JSON.parse(readFileSync(join(ROOT, "sources.json"), "utf8")) as Record<string, PinnedSource>;
 const check = process.argv.includes("--check");
 
 let failed = 0;

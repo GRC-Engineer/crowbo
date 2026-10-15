@@ -7,7 +7,7 @@ import { NORTHWIND_TICKETS } from "../../src/engine/fixture-tickets";
 import { googleWorkspace, identityConnector, okta } from "../../src/engine/identity";
 import type { CompanyFixture, Connector } from "../../src/engine/model";
 import { jira, JIRA_ISSUE_FIELDS, jiraIssueSearch, linear, ticketsConnector } from "../../src/engine/tickets";
-import { type Endpoint, graphqlArgs, graphqlTypes, loadSpec, missingSpecs, recordingApi, schemaCheck, specFile } from "./specs";
+import { type Endpoint, graphqlArgs, graphqlTypes, loadSpec, recordingApi, schemaCheck, specFile, unusableSpecs } from "./specs";
 
 /**
  * Each connector, replayed on its fixture, may only call endpoints and read fields its provider's
@@ -78,8 +78,8 @@ function problem(provider: string, path: string, endpoint: Endpoint, field: stri
 
 describe.skipIf(process.env.CROWBO_CONTRACTS === "skip")("provider contracts", () => {
   beforeAll(() => {
-    const missing = missingSpecs();
-    if (missing.length) throw new Error(`Provider specs not fetched: ${missing.join(", ")}. Run: bun scripts/contracts.ts`);
+    const unusable = unusableSpecs();
+    if (unusable.length) throw new Error(`Provider specs unusable: ${unusable.join("; ")}. Run: bun scripts/contracts.ts`);
   });
 
   for (const { provider, connector, fixture } of REPLAYS) {
@@ -131,11 +131,22 @@ describe.skipIf(process.env.CROWBO_CONTRACTS === "skip")("provider contracts", (
       expect([e.undeclared, e.check("nextPageToken").status, e.check(`${list}[]`).status]).toEqual([[], "defined", "defined"]);
     }
     const search = loadSpec("jira")(`${jiraIssueSearch("NW")}&nextPageToken=n`)!;
-    expect([search.undeclared, search.check("isLast").status, search.check("nextPageToken").status, search.check("total").status]).toEqual([[], "defined", "defined", "undefined"]);
+    expect([search.undeclared, search.check("isLast").status, search.check("nextPageToken").status, search.check("total").status]).toEqual([[], "defined", "defined", "not_in_spec"]);
     const sdl = readFileSync(specFile("linear"), "utf8");
     const types = graphqlTypes(sdl);
     expect([types.get("PageInfo")?.get("hasNextPage"), types.get("PageInfo")?.get("endCursor"), types.get("Project")?.get("issues")]).toEqual(["Boolean", "String", "IssueConnection"]);
     expect(graphqlArgs(sdl, "Project", "issues")).toEqual(expect.arrayContaining(["after", "first"]));
+  });
+
+  it("the endpoint a path resolves to does not depend on the order the spec lists its methods in", () => {
+    const doc = JSON.parse(readFileSync(specFile("google-workspace"), "utf8")) as { resources: Record<string, { methods?: Record<string, unknown> }> };
+    const reversed = structuredClone(doc);
+    reversed.resources = Object.fromEntries(Object.entries(doc.resources).reverse().map(([k, r]) => [k, { ...r, methods: Object.fromEntries(Object.entries(r.methods ?? {}).reverse()) }]));
+    for (const text of [JSON.stringify(doc), JSON.stringify(reversed)]) {
+      const google = loadSpec("google-workspace", text);
+      expect(["/admin/directory/v1/users?customer=c", "/admin/directory/v1/groups?customer=c", "/admin/directory/v1/groups/g/members"].map((p) => google(p)!.template))
+        .toEqual(["admin/directory/v1/users", "admin/directory/v1/groups", "admin/directory/v1/groups/{groupKey}/members"]);
+    }
   });
 
   it("Jira's search asks for every field the connector reads", () => {
