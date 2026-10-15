@@ -143,7 +143,7 @@ describe("scrubbing recordings: the schema decides, everything else is refused o
       const { api, reads } = recordingOf(recordedApi({ responses: Object.fromEntries(fixture.api.map((r) => [r.path, r.versions.at(-1)!.body])) }));
       await connectorFor(PROVIDER_CONNECTOR[provider], provider)!.read(api);
       const fields = [...new Set(Object.values(reads).flatMap((s) => [...s]))];
-      expect({ provider, unclassified: fields.filter((f) => !(f in SCHEMAS[provider].fields)) }).toEqual({ provider, unclassified: [] });
+      expect({ provider, unclassified: fields.filter((f) => !Object.hasOwn(SCHEMAS[provider].fields, f)) }).toEqual({ provider, unclassified: [] });
       expect(() => scrub(rec(provider, Object.fromEntries(Object.keys(reads).map((p) => [p, null]))), SALT)).not.toThrow();
     }
   });
@@ -156,5 +156,39 @@ describe("scrubbing recordings: the schema decides, everything else is refused o
       expect({ f, connector: r.connector }).toEqual({ f, connector: PROVIDER_CONNECTOR[r.provider] });
       expect((await connectorFor(r.connector, r.provider)!.read(recordedApi(r))).length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("schema lookups are own properties only", () => {
+  for (const key of ["constructor", "__proto__", "toString", "hasOwnProperty"]) {
+    it(`a field named ${key} is refused, and the message does not repeat it`, () => {
+      const r: Recording = { connector: "identity", provider: "okta", recorded_at: "x", responses: { "/api/v1/users": JSON.parse(`[{"${key}": "x"}]`) } };
+      expect(findLeaks(r).length).toBeGreaterThan(0);
+      let message = "";
+      try {
+        scrub(r, SALT);
+      } catch (error) {
+        message = (error as Error).message;
+      }
+      expect(message).toMatch(/is not in the okta schema/);
+      expect(message).not.toContain(key);
+    });
+  }
+
+  for (const key of ["constructor", "toString", "valueOf"]) {
+    it(`a top-level field named ${key} is refused where the schema is an object`, () => {
+      const r: Recording = { connector: "identity", provider: "google-workspace", recorded_at: "x", responses: { "/admin/directory/v1/users?customer=my_customer": JSON.parse(`{"${key}": "x"}`) } };
+      expect(findLeaks(r).length).toBeGreaterThan(0);
+      expect(() => scrub(r, SALT)).toThrow(ScrubRefused);
+    });
+  }
+
+  it("a refusal for an unlisted key names where it sits, never the key", () => {
+    expect(() => scrub(rec("okta", { "/api/v1/users": [{ profile: { "jdoe-secret-field": 1 } }] }), SALT)).toThrow(/^a field under \[\]\.profile is not in the okta schema$/);
+  });
+
+  it("a provider named like a built-in has no schema", () => {
+    expect(findLeaks({ connector: "x", provider: "constructor", recorded_at: "x", responses: {} })).toEqual(["no scrub schema for constructor"]);
+    expect(() => scrub({ connector: "x", provider: "toString", recorded_at: "x", responses: {} }, SALT)).toThrow(ScrubRefused);
   });
 });

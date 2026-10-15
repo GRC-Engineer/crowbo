@@ -55,11 +55,14 @@ export function targetFromEnv(provider: string, env: Record<string, string | und
 
 type Http = (url: string, init: RequestInit) => Promise<Response>;
 
+/** A request path for a message: the connector's fixed words only, ids and the query left out. */
+export const pathLabel = (path: string) => path.split("?")[0].split("/").map((s) => (/^([A-Za-z_.-]*|v\d{1,2}|\d)$/.test(s) ? s : "…")).join("/");
+
 /** The next page a Link header names, as a path on the target's host; a link to another host throws. */
 export function nextOnHost(provider: string, path: string, target: Target, res: Response): string | null {
   const link = linkNext(res.headers.get("link"));
   const next = link === null ? null : link.startsWith(target.origin) || link.startsWith("/") ? nextPath(link) : null;
-  if (link !== null && next === null) throw new Error(`${provider}: ${path} links to another host`);
+  if (link !== null && next === null) throw new Error(`${provider}: ${pathLabel(path)} links to another host`);
   return next;
 }
 
@@ -74,17 +77,17 @@ export function liveApi(provider: string, target: Target, http: Http = fetch): F
     let init: RequestInit = { headers: { ...target.headers, accept: "application/json" }, redirect: "error" };
     if (provider === "linear") {
       const op = linearOperation(path);
-      if (!op) throw new Error(`linear: ${path} is not one of the connector's named requests`);
+      if (!op) throw new Error(`linear: ${pathLabel(path)} is not one of the connector's named requests`);
       url = `${target.origin}/graphql`;
       init = { ...init, method: "POST", headers: { ...target.headers, accept: "application/json", "content-type": "application/json" }, body: JSON.stringify(op) };
     } else if (provider === "slack" && target.slackChannel) {
       url = url.replace(/([?&]channel=)C0GRC\b/, `$1${encodeURIComponent(target.slackChannel)}`);
     }
     const res = await http(url, init);
-    if (!res.ok) throw new Error(`${provider}: ${path} answered ${res.status}`);
+    if (!res.ok) throw new Error(`${provider}: ${pathLabel(path)} answered ${res.status}`);
     const body = (await res.json()) as { ok?: boolean; error?: string; errors?: unknown[] } | null;
-    if (provider === "slack" && body?.ok === false) throw new Error(`slack: ${path} answered ${body.error}`);
-    if (provider === "linear" && body?.errors?.length) throw new Error(`linear: ${path} returned GraphQL errors`);
+    if (provider === "slack" && body?.ok === false) throw new Error(`slack: ${pathLabel(path)} answered ${body.error}`);
+    if (provider === "linear" && body?.errors?.length) throw new Error(`linear: ${pathLabel(path)} returned GraphQL errors`);
     return { body, next: nextOnHost(provider, path, target, res) };
   }
   const api: FetchJson = async (path) => (await request(path)).body;
@@ -115,7 +118,7 @@ export async function assertSandboxAccount(provider: string, target: Target, env
   if (!named) throw new Error(`Name the ${provider} sandbox account in SANDBOX_ACCOUNTS (see docs/REHEARSAL.md); nothing read or written`);
   const call = async (path: string, init: RequestInit = {}) => {
     const res = await http(`${target.origin}${path}`, { ...init, redirect: "error", headers: { ...target.headers, accept: "application/json", ...(init.body ? { "content-type": "application/json" } : {}) } });
-    if (!res.ok) throw new Error(`${provider}: ${path} answered ${res.status}`);
+    if (!res.ok) throw new Error(`${provider}: ${pathLabel(path)} answered ${res.status}`);
     return (await res.json()) as Record<string, unknown>;
   };
   let actual: string | undefined;

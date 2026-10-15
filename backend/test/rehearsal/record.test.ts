@@ -91,3 +91,32 @@ describe("live adapters", () => {
     await expect(liveApi("okta", target, http(() => new Response("no", { status: 403 })))("/api/v1/users")).rejects.toThrow(/answered 403/);
   });
 });
+
+describe("the pseudonym salt", () => {
+  it("is refused inside the repository, including names that only begin with two dots, and through a symlink", async () => {
+    const { mkdtempSync, existsSync, symlinkSync, mkdirSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const { tmpdir } = await import("node:os");
+    const { loadSalt } = await import("../../scripts/rehearsal/record");
+    const repo = mkdtempSync(join(tmpdir(), "repo-"));
+    for (const inside of [join(repo, "..salt"), join(repo, "..cfg/salt"), join(repo, "a/salt")]) {
+      expect(() => loadSalt(inside, repo)).toThrow(/outside the repository/);
+      expect(existsSync(inside)).toBe(false);
+    }
+    const out = mkdtempSync(join(tmpdir(), "salt-"));
+    mkdirSync(join(repo, "inner"));
+    symlinkSync(join(repo, "inner"), join(out, "link"));
+    expect(() => loadSalt(join(out, "link/salt"), repo)).toThrow(/outside the repository/);
+    expect(loadSalt(join(out, "salt"), repo)).toMatch(/^[0-9a-f]{64}$/);
+    expect(loadSalt(join(out, "salt"), repo)).toBe(loadSalt(join(out, "salt"), repo));
+  });
+});
+
+describe("messages carry no response content", () => {
+  it("a failed request names the path's fixed words only, not its ids or query", async () => {
+    const { liveApi, pathLabel } = await import("../../scripts/rehearsal/live");
+    expect(pathLabel("/api/v1/groups/00gSECRET1/users?after=00uX&limit=200")).toBe("/api/v1/groups/…/users");
+    const api = liveApi("okta", { origin: "https://dev-1.okta.com", headers: {} }, async () => new Response("no", { status: 500 }));
+    await expect(api("/api/v1/groups/00gSECRET1/users?after=00uX")).rejects.toThrow(/^okta: \/api\/v1\/groups\/…\/users answered 500$/);
+  });
+});

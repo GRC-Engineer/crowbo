@@ -1,4 +1,4 @@
-import { assertSandboxAccount, nextOnHost, sandboxAccounts, type Target, targetFromEnv } from "./live";
+import { assertSandboxAccount, nextOnHost, pathLabel, sandboxAccounts, type Target, targetFromEnv } from "./live";
 import { ROSTER } from "./roster";
 import { OKTA_DEPROVISIONED } from "../../src/engine/identity";
 import { assertSandbox, dryRunPlan, jiraMarker, planGoogle, planJira, planLinear, planOkta, planSlack, seedRounds, type Step } from "./seed-plan";
@@ -27,7 +27,7 @@ export function client(provider: string, t: Target, http: typeof fetch = fetch) 
     });
     const text = await res.text();
     const json = text ? (JSON.parse(text) as Json) : null;
-    if (!res.ok || json?.ok === false || (Array.isArray(json?.errors) && json.errors.length)) throw new Error(`${method} ${path.split("?")[0]} answered ${res.status}${json?.error ? ` ${json.error}` : ""}`);
+    if (!res.ok || json?.ok === false || (Array.isArray(json?.errors) && json.errors.length)) throw new Error(`${method} ${pathLabel(path)} answered ${res.status}${json?.error ? ` ${json.error}` : ""}`);
     return { body: json, next: nextOnHost(provider, path, t, res) };
   };
   const all = async <T>(path: string): Promise<T[]> => {

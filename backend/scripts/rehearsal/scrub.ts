@@ -37,8 +37,11 @@ const ISO_TIME = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d{1,6})?)?(Z|[+-]\d{
 const SLACK_TS = /^\d{9,11}\.\d{6}$/;
 const EMAIL = /^([^@\s]+)@([A-Za-z0-9.-]+\.[A-Za-z]{2,})$/;
 
+/** An own property only: a key such as "constructor" or "__proto__" never matches through the prototype. */
+const own = <T>(o: Record<string, T>, key: string): T | undefined => (Object.hasOwn(o, key) ? o[key] : undefined);
+
 const schemaOf = (provider: string): ProviderSchema => {
-  const s = SCHEMAS[provider];
+  const s = own(SCHEMAS, provider);
   if (!s) throw new ScrubRefused(`No scrub schema for ${provider}`);
   return s;
 };
@@ -84,7 +87,7 @@ function matchRule(rules: PathRule[], path: string) {
     const pattern = rule.path.split("/");
     if (pattern.length !== segments.length) continue;
     if (!pattern.every((p, i) => p === segments[i] || (/^\{\w+\}$/.test(p) && segments[i] !== ""))) continue;
-    if (!pairs.every((q) => q.name in rule.query)) continue;
+    if (!pairs.every((q) => Object.hasOwn(rule.query, q.name))) continue;
     return { rule, pattern, segments, pairs, decode };
   }
   return null;
@@ -128,20 +131,20 @@ export function scrub(r: Recording, salt: string): Scrubbed {
     // A null carries nothing: kept wherever it appears.
     if (value === null) return null;
     if (typeof value !== "object") {
-      const cls = schema.fields[at];
+      const cls = own(schema.fields, at);
       if (!cls) throw new ScrubRefused(`${at || "the response"} is not in the ${r.provider} schema`);
       return leaf(cls, value, at);
     }
     if (Array.isArray(value)) {
-      const cls = at ? schema.fields[at] : "object";
+      const cls = at ? own(schema.fields, at) : "object";
       if (!cls) throw new ScrubRefused(`${at} is not in the ${r.provider} schema`);
       // A list of plain values (labels) takes the list's class; a list of objects is walked field by field.
       return value.map((v) => (v !== null && typeof v === "object" ? walk(v, `${at}[]`) : cls === "object" ? walk(v, `${at}[]`) : leaf(cls, v, `${at}[]`)));
     }
-    if (at && !at.endsWith("[]") && schema.fields[at] !== "object") throw new ScrubRefused(`${at} is not an object in the ${r.provider} schema`);
+    if (at && !at.endsWith("[]") && own(schema.fields, at) !== "object") throw new ScrubRefused(`${at} is not an object in the ${r.provider} schema`);
     return Object.fromEntries(Object.entries(value).map(([k, v]) => {
       const path = at ? `${at}.${k}` : k;
-      if (!(path in schema.fields)) throw new ScrubRefused(`${path} is not in the ${r.provider} schema`);
+      if (!Object.hasOwn(schema.fields, path)) throw new ScrubRefused(`a field under ${at || "the response"} is not in the ${r.provider} schema`);
       return [k, walk(v, path)];
     }));
   };
@@ -183,13 +186,13 @@ export function scrub(r: Recording, salt: string): Scrubbed {
  * scrubbed. A written recording has none. Each finding names where, never the value.
  */
 export function findLeaks(r: Recording): string[] {
-  const schema = SCHEMAS[r.provider];
+  const schema = own(SCHEMAS, r.provider);
   if (!schema) return [`no scrub schema for ${r.provider}`];
   const out = new Set<string>();
   const walk = (value: unknown, at: string) => {
     if (value === null) return;
     if (Array.isArray(value)) {
-      const cls = at ? schema.fields[at] : "object";
+      const cls = at ? own(schema.fields, at) : "object";
       if (!cls) return void out.add(`${at}: not in the schema`);
       for (const v of value) {
         if (v !== null && typeof v === "object") walk(v, `${at}[]`);
@@ -198,12 +201,12 @@ export function findLeaks(r: Recording): string[] {
       }
       return;
     }
-    const cls = schema.fields[at];
+    const cls = own(schema.fields, at);
     if (typeof value === "object") {
       if (at && !at.endsWith("[]") && cls !== "object") out.add(`${at}: not an object in the schema`);
       for (const [k, v] of Object.entries(value)) {
         const path = at ? `${at}.${k}` : k;
-        if (!(path in schema.fields)) out.add(`${at || "a response"}: a field not in the schema`);
+        if (!Object.hasOwn(schema.fields, path)) out.add(`${at || "a response"}: a field not in the schema`);
         else walk(v, path);
       }
       return;

@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, join, relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import "../../src/engine/connectors";
 import type { FetchJson, SourceRecord } from "../../src/engine/model";
 import { assertSandboxAccount, liveApi, sandboxAccounts, targetFromEnv } from "./live";
@@ -25,10 +25,27 @@ import { assertSandbox } from "./seed-plan";
 const ROOT = resolve(import.meta.dirname, "../../..");
 const OUT = join(import.meta.dirname, "../../test/fixtures/recorded");
 
+/** A path with symlinks resolved, as far as it exists; the parts not yet created are appended as given. */
+function realPath(p: string): string {
+  const tail: string[] = [];
+  let dir = resolve(p);
+  while (!existsSync(dir)) {
+    tail.unshift(basename(dir));
+    dir = dirname(dir);
+  }
+  return join(realpathSync(dir), ...tail);
+}
+
+/** Whether a path is outside a directory: ".." itself or a "../" start, never a name that only begins with "..". */
+export function outside(dir: string, path: string): boolean {
+  const rel = relative(realPath(dir), realPath(path));
+  return rel === ".." || rel.startsWith(`..${sep}`) || isAbsolute(rel);
+}
+
 /** The pseudonym salt: a local file outside the repository, created once, so pseudonyms are stable across recordings. */
-export function loadSalt(path = process.env.REHEARSAL_SALT_FILE ?? join(homedir(), ".config/crowbo/rehearsal.salt")): string {
-  const abs = resolve(path);
-  if (!relative(ROOT, abs).startsWith("..")) throw new Error("The pseudonym salt must live outside the repository");
+export function loadSalt(path = process.env.REHEARSAL_SALT_FILE ?? join(homedir(), ".config/crowbo/rehearsal.salt"), repo = ROOT): string {
+  const abs = realPath(path);
+  if (!outside(repo, abs)) throw new Error("The pseudonym salt must live outside the repository");
   if (!existsSync(abs)) {
     mkdirSync(dirname(abs), { recursive: true, mode: 0o700 });
     writeFileSync(abs, Buffer.from(randomBytes(32)).toString("hex"), { mode: 0o600 });
@@ -39,9 +56,9 @@ export function loadSalt(path = process.env.REHEARSAL_SALT_FILE ?? join(homedir(
 const comparable = (records: SourceRecord[]) => JSON.stringify(records.map((r) => ({ id: r.id, text: r.text, completeness: r.completeness })).sort((a, b) => a.id.localeCompare(b.id)));
 
 export async function recordProvider(provider: string, live: FetchJson, sandboxDomains: string[], now: Date, salt: string): Promise<{ recording: Recording; records: number }> {
-  const connector = PROVIDER_CONNECTOR[provider];
+  const connector = Object.hasOwn(PROVIDER_CONNECTOR, provider) ? PROVIDER_CONNECTOR[provider] : undefined;
   const c = connector ? connectorFor(connector, provider) : null;
-  if (!c) throw new Error(`No connector records ${provider}`);
+  if (!connector || !c) throw new Error(`No connector records ${provider}`);
   const { api, responses, links, reads } = recordingOf(live);
   const liveRecords = await c.read(api);
   if (!liveRecords.length) throw new Error(`${provider}: the connector read nothing; nothing written`);
