@@ -106,11 +106,15 @@ describe("pilot criteria for mid-December: what a first paid pilot buys", () => 
     const mac = Buffer.from(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`v0:${ts}:${body}`))).toString("hex");
     const request = new Request("https://crowbo.example/slack/events", { method: "POST", body, headers: { "x-slack-request-timestamp": ts, "x-slack-signature": `v0=${mac}` } });
     await handleSlackEvent(request, { signingSecret: secret, now: () => Number(ts) * 1000, workspace: () => ({ channel: "C0GRCTEAM1", synthetic: true, invoke: () => invoke }), post });
+    expect(posted).toHaveLength(2);
     const [weekly, reply] = posted;
     expect(weekly).toMatchObject({ channel: "C0GRCTEAM1", text: expect.stringMatching(/Sources: [^\n]*Okta/) });
+    expect(weekly.thread_ts).toBeUndefined();
     expect(weekly.text).toContain("Decides: Priya. Delivers: Alex. Due before audit prep");
     expect(reply).toMatchObject({ channel: "C0GRCTEAM1", thread_ts: "1791468000.000100" });
     expect(reply.text).toMatch(/\[1\]/);
+    expect(reply.text).toContain("Decides: Priya.");
+    expect(reply.text).toContain("Due before audit prep (2026-11-24)");
   });
 
   it.fails("P4.1 a call recorded from a Slack thread keeps the thread permalink as its provenance, and the next answer cites it", async () => {

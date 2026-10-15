@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { readCapped } from "../app/body";
 import { KB_LIMITS, type KbFile } from "../engine/kb";
 import type { EngineInvoke } from "../engine/tools";
 import { handleExport, handleMention, type SlackMessage, weeklyPost } from "./slack";
@@ -63,13 +64,6 @@ export async function verifySlack(secret: string, timestamp: string | null, sign
   return (await crypto.subtle.verify("HMAC", key, unhex(m[1]), base)) ? null : "bad signature";
 }
 
-async function boundedBody(request: Request): Promise<Uint8Array | null> {
-  const declared = Number(request.headers.get("content-length") ?? 0);
-  if (declared > MAX_BODY) return null;
-  const body = new Uint8Array(await request.arrayBuffer());
-  return body.byteLength > MAX_BODY ? null : body;
-}
-
 const event = z.object({
   type: z.string(),
   user: z.string().optional(),
@@ -104,7 +98,7 @@ async function exportFiles(files: z.infer<typeof event>["files"], deps: SlackDep
 
 export async function handleSlackEvent(request: Request, deps: SlackDeps): Promise<Response> {
   if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
-  const body = await boundedBody(request);
+  const body = await readCapped(request, MAX_BODY);
   if (!body) return new Response("Too large", { status: 413 });
   const problem = await verifySlack(deps.signingSecret, request.headers.get("x-slack-request-timestamp"), request.headers.get("x-slack-signature"), body, deps.now());
   if (problem) return new Response("Unauthorized", { status: 401 });
@@ -137,7 +131,11 @@ export async function handleSlackEvent(request: Request, deps: SlackDeps): Promi
   const run = work()
     .then(
       (m) => deps.post({ channel: e.channel!, thread_ts, text: m.text }),
-      () => deps.post({ channel: e.channel!, thread_ts, text: FAULT }),
+      (error: unknown) => {
+        // The class only: an engine fault's message may carry internal detail.
+        console.error(`Slack event failed in the engine: ${error instanceof Error ? error.name : typeof error}`);
+        return deps.post({ channel: e.channel!, thread_ts, text: FAULT });
+      },
     )
     // Slack refused the reply itself (a revoked token, a removed channel): logged, since there is no one to tell in Slack.
     .catch((error: unknown) => console.error(`Slack reply not delivered: ${error instanceof Error ? error.message : "unknown"}`));

@@ -3,6 +3,7 @@ import { authenticate, callerFor, type OperatorConfig, parseOperators } from "./
 import type { Env } from "./app/env";
 import { buildServer } from "./app/mcp";
 import { oauthProvider } from "./app/oauth";
+import { readCapped } from "./app/body";
 import { isOperation } from "./app/operations";
 import { slackConfig, slackDeps, slackPoster, weeklyTargets } from "./app/slack";
 import { handleSlackEvent, postWeekly, WEEKLY_CRON } from "./surfaces/slack-events";
@@ -18,32 +19,9 @@ const SECURITY_HEADERS = {
 
 const MAX_BODY = 1_000_000;
 
-/**
- * Read a request body with a hard cap, whether or not Content-Length is sent (HTTP/2 and
- * streaming clients may omit it). A declared oversize length is refused before reading.
- */
+/** The request body, or a 413 when it is over the cap (see readCapped). */
 export async function boundedBody(request: Request): Promise<Uint8Array | Response> {
-  const declared = Number(request.headers.get("content-length") ?? "0");
-  if (Number.isFinite(declared) && declared > MAX_BODY) return json({ error: "Request exceeds the size limit" }, 413);
-  const reader = request.body?.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  if (reader) {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      total += value.byteLength;
-      if (total > MAX_BODY) {
-        await reader.cancel();
-        return json({ error: "Request exceeds the size limit" }, 413);
-      }
-      chunks.push(value);
-    }
-  }
-  const body = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) (body.set(chunk, offset), (offset += chunk.byteLength));
-  return body;
+  return (await readCapped(request, MAX_BODY)) ?? json({ error: "Request exceeds the size limit" }, 413);
 }
 
 function withSecurityHeaders(response: Response): Response {
