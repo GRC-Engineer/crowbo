@@ -193,6 +193,7 @@ export class Engine {
     const after = await this.refresh(by);
     return {
       profile: kbProfile(this, results),
+      decision_id: after.id,
       decision_diff: after.id !== before?.id ? diff(before, after) : null,
       elapsed_ms: Math.round(performance.now() - started),
     };

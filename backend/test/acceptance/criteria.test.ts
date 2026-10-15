@@ -21,14 +21,14 @@ import { NORTHWIND } from "../../src/engine/fixture";
 import { NORTHWIND_KB_EXPORT } from "../../src/engine/kb-fixture";
 import { isEngineOp, runEngine } from "../../src/engine/port";
 import { registerEngineTools } from "../../src/engine/tools";
+import type { EngineInvoke } from "../../src/engine/tools";
 import { handleMention } from "../../src/surfaces/slack";
+import { handleSlackEvent, type Post, postWeekly } from "../../src/surfaces/slack-events";
 
 const Q = "Who should still have billing admin?";
 const demo = () => startDemo().then((d) => d.engine);
 const ROOT = join(import.meta.dirname, "../..");
 const built = (path: string) => existsSync(join(ROOT, path));
-/** A module the work will add, or null while it does not exist. The path is a variable so the bundler does not resolve it ahead of time. */
-const optional = async <T>(path: string): Promise<T | null> => import(/* @vite-ignore */ path).then((m) => m as T, () => null);
 /** Recorded responses from real APIs, one file per connector: { connector, responses: { path: body } }. */
 const RECORDED = join(ROOT, "test/fixtures/recorded");
 const twoDisputes = async () => {
@@ -86,26 +86,31 @@ describe("pilot criteria for mid-December: what a first paid pilot buys", () => 
   });
 
   it("P3 a mention in Slack answers with the card: numbered citations, a named decider and a date, with no assistant deployed (true on fixtures)", async () => {
-    const reply = await handleMention(await demo(), { text: `<@U0CROWBO> ${Q}`, thread: "C0GRC/1791468000.000100" });
+    const e = await demo();
+    const reply = await handleMention((op, args) => runEngine(e, "slack", op, args), { text: `<@U0CROWBO> ${Q}`, thread: "C0GRC/1791468000.000100" });
     expect(reply.text).toMatch(/\[1\]/);
     expect(reply.text).toContain("Decides: Priya");
     expect(reply.text).toMatch(/Due before audit prep \(2026-11-24\)/);
   });
 
-  it.fails("P3.1 the card and the weekly list are delivered to a workspace: a signed Slack event gets a threaded reply, and the weekly post goes out on schedule", async () => {
-    type Post = { channel: string; thread_ts: string; text: string };
-    type Deps = { signingSecret: string; now: () => number; engineFor(team: string): Promise<Engine>; post(m: Post): Promise<void> };
-    const events = await optional<{ handleSlackEvent(request: Request, deps: Deps): Promise<Response> }>("../../src/surfaces/slack-events");
+  it("P3.1 the list arrives in the customer's Slack with citations, a named decider and a date, with no assistant deployed: the weekly post on schedule, and a signed mention answered in its thread (true on fixtures)", async () => {
+    const e = await demo();
+    const invoke: EngineInvoke = (op, args) => runEngine(e, "slack", op, args);
     const posted: Post[] = [];
+    const post = async (m: Post) => void posted.push(m);
+    await postWeekly([{ channel: "C0GRCTEAM1", invoke }], post);
     const secret = "test-signing-secret";
     const ts = "1791468000";
-    const body = JSON.stringify({ type: "event_callback", team_id: "T0NORTHWND", event: { type: "app_mention", channel: "C0GRC", ts: "1791468000.000100", text: `<@U0CROWBO> ${Q}` } });
+    const body = JSON.stringify({ type: "event_callback", team_id: "T0NORTHWND", event: { type: "app_mention", user: "U0ALEX0001", channel: "C0GRCTEAM1", ts: "1791468000.000100", text: `<@U0CROWBO> ${Q}` } });
     const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
     const mac = Buffer.from(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`v0:${ts}:${body}`))).toString("hex");
     const request = new Request("https://crowbo.example/slack/events", { method: "POST", body, headers: { "x-slack-request-timestamp": ts, "x-slack-signature": `v0=${mac}` } });
-    await events?.handleSlackEvent(request, { signingSecret: secret, now: () => Number(ts) * 1000, engineFor: demo, post: async (m) => void posted.push(m) });
-    expect(posted.map((m) => [m.channel, m.thread_ts])).toEqual([["C0GRC", "1791468000.000100"]]);
-    expect(posted[0]?.text).toContain("Decides: Priya");
+    await handleSlackEvent(request, { signingSecret: secret, now: () => Number(ts) * 1000, workspace: () => ({ channel: "C0GRCTEAM1", synthetic: true, invoke: () => invoke }), post });
+    const [weekly, reply] = posted;
+    expect(weekly).toMatchObject({ channel: "C0GRCTEAM1", text: expect.stringMatching(/Sources: [^\n]*Okta/) });
+    expect(weekly.text).toContain("Decides: Priya. Delivers: Alex. Due before audit prep");
+    expect(reply).toMatchObject({ channel: "C0GRCTEAM1", thread_ts: "1791468000.000100" });
+    expect(reply.text).toMatch(/\[1\]/);
   });
 
   it.fails("P4.1 a call recorded from a Slack thread keeps the thread permalink as its provenance, and the next answer cites it", async () => {
