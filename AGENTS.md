@@ -13,7 +13,7 @@ Every Crowbo workstream (backend, frontend, design, deck and strategy) uses the 
 | Build | `pstack-tdd` for regressions and cheap test targets. `pstack-typescript-best-practices` on every `.ts` file. `pstack-principle-sequence-verifiable-units`, `-boundary-discipline`, `-type-system-discipline`, `-make-operations-idempotent`, `-fix-root-causes`. `pstack-swarm` only for independent parallel slices. |
 | Verify | `pstack-principle-prove-it-works` and `-test-behavior-not-implementation`. `pstack-blast-radius` before shipping. `pstack-thermo-nuclear-code-quality-review`, `pstack-deslop` and `pstack-no-comments` on the diff. `pstack-create-verification-skill` and `pstack-maintain-verification-skill` for driving the product as a user would. |
 | Record | `pstack-show-me-your-work`: a decision log with one row per decision and its evidence, committed with the change when reviewers need it. |
-| Ship | `pstack-make-pr-easy-to-review` with the repository's PR template. `pstack-babysit`, `pstack-fix-ci`, `pstack-get-pr-comments` and `pstack-fix-merge-conflicts` until the PR is mergeable. A merge still needs the founder's approval. |
+| Ship | `pstack-make-pr-easy-to-review` with the repository's PR template. `pstack-babysit`, `pstack-fix-ci`, `pstack-get-pr-comments` and `pstack-fix-merge-conflicts` until the PR is mergeable. `pstack-blast-radius` and `code-review` on the final diff, then merge under the merge rule in GitHub checkpoints. |
 | Write | `pstack-unslop` on all prose. `pstack-technical-writing` for docs. `pstack-teach` and `pstack-bro` to explain work plainly. |
 | Learn | `pstack-reflect` after a substantial session. `pstack-what-did-i-get-done` for updates. `pstack-principle-encode-lessons-in-structure`: turn a repeated correction into a check. |
 
@@ -30,7 +30,7 @@ Always write a plan before generating or modifying code. Note the security consi
 - Separate interpretation, deterministic policy and calculation, recommendation, authorised decision and execution. A recommendation cannot grant authority or change a system.
 - First-proof decisions are simulations. No live integrations, purchases, hiring, system changes or policy exceptions follow from them.
 - Keep the current task as the steering point. Use bounded work with clear ownership; create additional tasks or delegate only when authorised. Do not start recurring monitoring without a request.
-- Preserve a reviewable change. Do not infer permission to publish, merge, deploy, contact others or change repository visibility from permission to work locally.
+- Preserve a reviewable change. Do not infer permission to publish, deploy, contact others or change repository visibility from permission to work locally. Merging is governed by the merge rule in GitHub checkpoints.
 
 ## Data and evaluation
 
@@ -52,4 +52,4 @@ Verify the actual changed behaviour with appropriate checks. For documentation, 
 
 GitHub is the shared home for reviewable backend work. At the end of each bounded backend change, inspect the complete diff for scope and private material, run the relevant checks, commit on a named feature branch, push it and verify the remote commit. Open or update a pull request with the behaviour, validation and remaining limitations. Keep checkpoints small instead of accumulating unpublished code across sessions.
 
-Review the pull request before merging. A pushed branch is not a merge, deployment or production approval. Preserve unrelated frontend work and never publish source evidence, credentials or private runtime files. If a checkpoint cannot be pushed, report the exact local state and blocker rather than imply GitHub contains it. This is a per-change workflow, not a scheduled monitor.
+Merge rule, set by the founder on 15 October 2026 and revocable by him at any time: the agent may merge its own pull request into main without waiting for the founder, once the PR has passed the Ship-phase skills (`pstack-make-pr-easy-to-review`, `pstack-blast-radius`, `code-review` on the final diff), the local checks are green, the diff has been read in full for scope and private material, and stacked PRs are merged in dependency order. Record each merge in the steering thread's page of record. A merge is still not a deployment or production approval, and nothing in this rule permits publishing, deploying, changing repository visibility or contacting anyone. A pushed branch is not a merge, deployment or production approval. Preserve unrelated frontend work and never publish source evidence, credentials or private runtime files. If a checkpoint cannot be pushed, report the exact local state and blocker rather than imply GitHub contains it. This is a per-change workflow, not a scheduled monitor.
