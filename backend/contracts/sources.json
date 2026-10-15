@@ -1,0 +1,58 @@
+{
+  "okta": {
+    "label": "Okta Management API",
+    "url": "https://raw.githubusercontent.com/okta/okta-management-openapi-spec/2bc3a3631fef54cab7aaa97fbaf053f2069cb311/dist/current/management-minimal.yaml",
+    "version": "2026.41.0",
+    "fetched": "2026-10-15",
+    "licence": "none stated",
+    "sha256": "06eb4638aba4155b0369738294ac94c86b590c93f39b1acf613f9a2f36c1c555",
+    "file": "okta/management.yaml",
+    "format": "openapi",
+    "committed": false
+  },
+  "google-workspace": {
+    "label": "Google Admin SDK Directory API",
+    "url": "https://www.googleapis.com/discovery/v1/apis/admin/directory_v1/rest",
+    "version": "revision 20261012",
+    "fetched": "2026-10-15",
+    "licence": "none stated",
+    "sha256": "229f0402e01e9ad8bef71210c547568946d237c02e8c94a0d4e4fc0d9ed25af4",
+    "hash": "canonical-json",
+    "file": "google-workspace/directory_v1.json",
+    "format": "google-discovery",
+    "committed": false
+  },
+  "jira": {
+    "label": "Jira Cloud platform REST API v3",
+    "url": "https://developer.atlassian.com/cloud/jira/platform/swagger-v3.v3.json",
+    "version": "1001.0.0-SNAPSHOT-fe911bb6c9773b95ccc4938fe54b8b7edde34525",
+    "fetched": "2026-10-15",
+    "licence": "none stated",
+    "sha256": "6a48a8dfa425da1b3cc98ba56a8be96282a8ac259d3b8edcb5b1c15bbf5b9791",
+    "file": "jira/platform-v3.json",
+    "format": "openapi",
+    "committed": false
+  },
+  "linear": {
+    "label": "Linear GraphQL schema",
+    "url": "https://raw.githubusercontent.com/linear/linear/379cb14683fd17e580ac1cf7e39e61a245a21a1f/packages/sdk/src/schema.graphql",
+    "version": "linear/linear@379cb14683fd",
+    "fetched": "2026-10-15",
+    "licence": "MIT",
+    "sha256": "af517c1aedd710d53116b85e32e33b6f0f532fa3c44ac1b2888e094615584be6",
+    "file": "linear/schema.graphql",
+    "format": "graphql",
+    "committed": true
+  },
+  "slack": {
+    "label": "Slack Web API",
+    "url": "https://raw.githubusercontent.com/slackapi/slack-api-specs/bc08db49625630e3585bf2f1322128ea04f2a7f3/web-api/slack_web_openapi_v2.json",
+    "version": "1.7.0 (slackapi/slack-api-specs@bc08db496256, last updated 2021-09-07)",
+    "fetched": "2026-10-15",
+    "licence": "MIT",
+    "sha256": "742a5c977180a829df8767cf57bc417d99b3713583aee83741efb9c08ca731e7",
+    "file": "slack/web-api.json",
+    "format": "openapi",
+    "committed": false
+  }
+}

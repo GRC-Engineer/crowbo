@@ -11,8 +11,8 @@ import { collect } from "./paging";
  *                     feature handles that class of data.
  *  - security-review  the launch's security review; done when the issue is done.
  * A launch with no security-review issue is stated as such only when every issue of the launch was
- * read. Completeness must be stated by the provider (Linear's hasNextPage false, Jira's isLast or a
- * total): unknown completeness is incomplete. A partial read states nothing about the review, and the
+ * read. Completeness must be stated by the provider (Linear's hasNextPage false, Jira's isLast):
+ * unknown completeness is incomplete. A partial read states nothing about the review, and the
  * record says how much was read. A cancelled review counts as no review.
  */
 
@@ -76,6 +76,13 @@ export const linear: TicketsProvider = {
   },
 };
 
+/**
+ * Jira's issue search for one project. The enhanced search returns only issue ids unless fields are
+ * named, so the fields the connector reads are asked for explicitly.
+ */
+export const JIRA_ISSUE_FIELDS = ["labels", "status", "resolution", "assignee", "fixVersions"] as const;
+export const jiraIssueSearch = (projectKey: string) => `/rest/api/3/search/jql?jql=project%3D${encodeURIComponent(projectKey)}&fields=${JIRA_ISSUE_FIELDS.join(",")}`;
+
 /** Jira Cloud REST v3: each project's versions are launches (release date, project lead); issues name their fix version. */
 export const jira: TicketsProvider = {
   id: "jira", label: "Jira",
@@ -86,19 +93,13 @@ export const jira: TicketsProvider = {
     const out: Launch[] = [];
     for (const p of projects) {
       const versions = ((await api(`/rest/api/3/project/${p.key}/versions`)) ?? []) as { name: string; releaseDate?: string; released: boolean }[];
-      // Search pages by nextPageToken; complete only when a page says it is the last (isLast), or a stated
-      // total is no larger than what was read. A page that says neither leaves the list incomplete.
-      // The enhanced search endpoint pages by nextPageToken and marks the last page with isLast.
-      const base = `/rest/api/3/search/jql?jql=project%3D${p.key}`;
-      let total: number | null = null;
-      let read = 0;
+      // The enhanced search pages by nextPageToken and states no total: the list is complete only when a
+      // page says it is the last (isLast). A page that does not say leaves the list incomplete.
+      const base = jiraIssueSearch(p.key);
       const listing = await collect<Issue>(base, async (path) => {
-        const page = (await api(path)) as null | { issues: Issue[]; total?: number; isLast?: boolean; nextPageToken?: string };
+        const page = (await api(path)) as null | { issues: Issue[]; isLast?: boolean; nextPageToken?: string };
         if (!page) return null;
-        read += page.issues.length;
-        if (typeof page.total === "number") total = page.total;
-        const last = page.isLast === true || (total !== null && total <= read);
-        return { items: page.issues, next: last ? null : page.nextPageToken ? `${base}&nextPageToken=${encodeURIComponent(page.nextPageToken)}` : undefined };
+        return { items: page.issues, next: page.isLast === true ? null : page.nextPageToken ? `${base}&nextPageToken=${encodeURIComponent(page.nextPageToken)}` : undefined };
       }, (i) => i.key ?? JSON.stringify(i));
       const issues = listing.items;
       const complete = listing.complete;
@@ -111,7 +112,7 @@ export const jira: TicketsProvider = {
             return { labels: i.fields.labels, done: i.fields.status.statusCategory.key === "done" && !cancelled, cancelled, assignee: i.fields.assignee?.emailAddress ?? null };
           }),
           issues_total: complete ? mine.length : null,
-          listing: { read: issues.length, total: total ?? (complete ? issues.length : null) },
+          listing: { read: issues.length, total: complete ? issues.length : null },
         });
       }
     }

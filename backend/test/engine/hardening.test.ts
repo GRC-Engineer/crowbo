@@ -11,7 +11,7 @@ import { googleWorkspace, type IdentityProvider, identityConnector, okta, OKTA_D
 import type { CompanyFixture, FakeApiRoute } from "../../src/engine/model";
 import { MAX_PAGES } from "../../src/engine/paging";
 import { MemoryEngineStore } from "../../src/engine/store";
-import { jira, linear, type TicketsProvider, ticketsConnector } from "../../src/engine/tickets";
+import { jira, jiraIssueSearch, linear, type TicketsProvider, ticketsConnector } from "../../src/engine/tickets";
 
 const SINCE = "2025-01-01T00:00:00Z";
 const route = (path: string, body: unknown, next?: string): FakeApiRoute => ({ path, versions: [{ from: SINCE, body, ...(next ? { next } : {}) }] });
@@ -125,7 +125,7 @@ describe("tickets and GRC platform: paging", () => {
   });
 
   it("Jira: search pages by nextPageToken until isLast", async () => {
-    const path = "/rest/api/3/search/jql?jql=project%3DNW";
+    const path = jiraIssueSearch("NW");
     const issues = body<{ issues: unknown[] }>(NORTHWIND_TICKETS, path).issues;
     const paged = withRoutes(NORTHWIND_TICKETS, [route(path, { issues: issues.slice(0, 1), nextPageToken: "n2" }), route(`${path}&nextPageToken=n2`, { issues: issues.slice(1), isLast: true })]);
     const e = await engineWith(paged, { tickets: jira });
@@ -157,7 +157,7 @@ describe("tickets and GRC platform: a page two that fails, a loop, a cap", () =>
   });
 
   it("Jira: a nextPageToken page that cannot be read leaves S10 unresolved", async () => {
-    const path = "/rest/api/3/search/jql?jql=project%3DNW";
+    const path = jiraIssueSearch("NW");
     const issues = body<{ issues: unknown[] }>(NORTHWIND_TICKETS, path).issues;
     const f = withRoutes(NORTHWIND_TICKETS, [route(path, { issues: issues.slice(0, 1), nextPageToken: "n2" })]);
     expect(state(await engineWith(f, { tickets: jira }), "launch-without-review")).toBe("unresolved");
