@@ -4,8 +4,9 @@ import "../../src/engine/connectors";
 import type { FetchJson } from "../../src/engine/model";
 import { assertSandboxAccount, liveApi, targetFromEnv } from "./live";
 import { connectorFor, PROVIDER_CONNECTOR, type Recording, recordedApi, recordingOf } from "./recording";
-import { ROSTER } from "./roster";
-import { findLeaks, SCRUBBED_DOMAIN, scrub } from "./scrub";
+import { pruneToReads } from "./reads";
+import { findLeaks, scrub } from "./scrub";
+import { assertSandbox } from "./seed-plan";
 
 /**
  * Record what one connector reads from a Crowbo sandbox, scrub it, check it, and write it to
@@ -20,19 +21,17 @@ import { findLeaks, SCRUBBED_DOMAIN, scrub } from "./scrub";
  */
 
 const OUT = join(import.meta.dirname, "../../test/fixtures/recorded");
-const EMAIL = /[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
 
 export async function recordProvider(provider: string, live: FetchJson, sandboxDomains: string[], now: Date): Promise<{ recording: Recording; records: number }> {
   const connector = PROVIDER_CONNECTOR[provider];
   const c = connector ? connectorFor(connector, provider) : null;
   if (!c) throw new Error(`No connector records ${provider}`);
-  const { api, responses, links } = recordingOf(live);
-  const raw: Recording = { connector, provider, recorded_at: now.toISOString(), responses, links };
+  const { api, responses, links, reads } = recordingOf(live);
   const records = (await c.read(api)).length;
-  const allowed = new Set([...sandboxDomains.map((d) => d.toLowerCase()), SCRUBBED_DOMAIN]);
-  const foreign = new Set([...JSON.stringify(responses).matchAll(EMAIL)].map((m) => m[1].toLowerCase()).filter((d) => !allowed.has(d)));
-  if (foreign.size) throw new Error(`${foreign.size} email domain(s) outside SANDBOX_DOMAINS: this does not look like a Crowbo sandbox; nothing written`);
-  const recording = scrub(raw, ROSTER.people);
+  assertSandbox(responses, sandboxDomains, "nothing written");
+  // Keep only what the connector read: everything else in the provider's answer never reaches the repository.
+  const raw: Recording = { connector, provider, recorded_at: now.toISOString(), responses: Object.fromEntries(Object.entries(responses).map(([p, body]) => [p, pruneToReads(body, reads[p])])), links };
+  const recording = scrub(raw);
   const leaks = findLeaks(recording);
   if (leaks.length) throw new Error(`The scrubbed recording still leaks; nothing written:\n${leaks.join("\n")}`);
   const replayed = (await c.read(recordedApi(recording))).length;

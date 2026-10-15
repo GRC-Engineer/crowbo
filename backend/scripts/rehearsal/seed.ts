@@ -1,8 +1,7 @@
-import { linkNext } from "../../src/connections/transport";
-import { nextPath } from "../../src/engine/paging";
-import { assertSandboxAccount, type Target, targetFromEnv } from "./live";
+import { assertSandboxAccount, need, nextOnHost, type Target, targetFromEnv } from "./live";
 import { ROSTER } from "./roster";
-import { assertSandbox, jiraMarker, planGoogle, planJira, planLinear, planOkta, planSlack, type Step } from "./seed-plan";
+import { OKTA_DEPROVISIONED } from "../../src/engine/identity";
+import { assertSandbox, jiraMarker, planGoogle, planJira, planLinear, planOkta, planSlack, seedRounds, type Step } from "./seed-plan";
 
 /**
  * Seed one Crowbo sandbox with Northwind (roster.ts) through the provider's API.
@@ -19,7 +18,7 @@ import { assertSandbox, jiraMarker, planGoogle, planJira, planLinear, planOkta, 
 
 type Json = Record<string, unknown>;
 
-function client(t: Target, http: typeof fetch = fetch) {
+export function client(provider: string, t: Target, http: typeof fetch = fetch) {
   const call = async (method: string, path: string, body?: unknown): Promise<{ body: unknown; next: string | null }> => {
     const res = await http(`${t.origin}${path}`, {
       method, redirect: "error",
@@ -29,8 +28,7 @@ function client(t: Target, http: typeof fetch = fetch) {
     const text = await res.text();
     const json = text ? (JSON.parse(text) as Json) : null;
     if (!res.ok || json?.ok === false || (Array.isArray(json?.errors) && json.errors.length)) throw new Error(`${method} ${path.split("?")[0]} answered ${res.status}${json?.error ? ` ${json.error}` : ""}`);
-    const link = linkNext(res.headers.get("link"));
-    return { body: json, next: link ? nextPath(link) : null };
+    return { body: json, next: nextOnHost(provider, path, t, res) };
   };
   const all = async <T>(path: string): Promise<T[]> => {
     const out: T[] = [];
@@ -45,17 +43,14 @@ function client(t: Target, http: typeof fetch = fetch) {
 }
 
 const env = process.env;
-const need = (name: string) => {
-  const v = env[name];
-  if (!v) throw new Error(`Set ${name} (see docs/REHEARSAL.md)`);
-  return v;
-};
 
 /** Read the sandbox's current state and plan the missing writes. */
-async function plan(provider: string, c: ReturnType<typeof client>, t: Target, domains: string[]): Promise<Step[]> {
+export async function readAndPlan(provider: string, c: ReturnType<typeof client>, t: Target, domains: string[]): Promise<Step[]> {
   switch (provider) {
     case "okta": {
-      const users = await c.all<{ id: string; status: string; profile: { login: string } }>("/api/v1/users?limit=200");
+      // Okta lists deprovisioned users only through the status filter; without them a rerun would create u41 again.
+      type User = { id: string; status: string; profile: { login: string } };
+      const users = [...(await c.all<User>("/api/v1/users?limit=200")), ...(await c.all<User>(`${OKTA_DEPROVISIONED}&limit=200`))];
       const groups = await c.all<{ id: string; profile: { name: string } }>("/api/v1/groups?limit=200");
       const apps = await c.all<{ label: string }>("/api/v1/apps?limit=200");
       const schema = (await c.call("GET", "/api/v1/meta/schemas/group/default")).body as { definitions?: { custom?: { properties?: Json } } };
@@ -70,7 +65,7 @@ async function plan(provider: string, c: ReturnType<typeof client>, t: Target, d
       return planOkta(state);
     }
     case "google-workspace": {
-      const domain = need("GOOGLE_DOMAIN");
+      const [domain] = need(env, "GOOGLE_DOMAIN").map((d) => d.toLowerCase());
       if (!domains.includes(domain)) throw new Error("GOOGLE_DOMAIN must be one of SANDBOX_DOMAINS");
       const groups = ((await c.call("GET", `/admin/directory/v1/groups?domain=${encodeURIComponent(domain)}&maxResults=200`)).body as { groups?: { email: string }[] }).groups ?? [];
       const state = {
@@ -118,21 +113,16 @@ if (import.meta.main) {
     if (!domains.length) throw new Error("Set SANDBOX_DOMAINS to the sandbox's email domains, comma-separated");
     if (apply && env.CROWBO_SANDBOX !== "yes") throw new Error("Seeding writes to the sandbox: set CROWBO_SANDBOX=yes to confirm it is Crowbo's own");
     const t = targetFromEnv(provider, env);
-    const c = client(t);
+    const c = client(provider, t);
     await assertSandboxAccount(provider, t, env, domains);
-    for (let round = 1; round <= 3; round++) {
-      const steps = await plan(provider, c, t, domains);
-      if (!steps.length) {
-        console.log(`${provider}: nothing to seed`);
-        break;
-      }
-      console.log(`${provider}, round ${round}: ${steps.length} change(s)`);
-      for (const s of steps) console.log(`  ${s.what}`);
-      if (!apply) {
-        console.log("Dry run: nothing changed. Later rounds may add memberships and issues once their groups and projects exist.");
-        break;
-      }
-      for (const s of steps) await c.call(s.method, s.path, s.body);
+    const plan = () => readAndPlan(provider, c, t, domains);
+    if (!apply) {
+      const steps = await plan();
+      console.log(steps.length ? `${provider}: ${steps.length} change(s) planned\n${steps.map((s) => `  ${s.what}`).join("\n")}\nDry run: nothing changed. Later rounds may add memberships and issues once their groups and projects exist.` : `${provider}: nothing to seed`);
+    } else {
+      const { applied, complete } = await seedRounds(plan, async (s) => void (await c.call(s.method, s.path, s.body)), (line) => console.log(`${provider}, ${line}`));
+      console.log(complete ? `${provider}: seeded (${applied.length} change(s)); a rerun changes nothing` : `${provider}: still incomplete after three rounds; rerun to finish`);
+      if (!complete) process.exitCode = 1;
     }
   } catch (error) {
     console.error((error as Error).message);

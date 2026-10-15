@@ -53,7 +53,7 @@ read -s OKTA_TOKEN && export OKTA_TOKEN
 | Google | `GOOGLE_TOKEN`, `GOOGLE_DOMAIN` | An OAuth access token for your admin account, such as from the OAuth 2.0 Playground | `admin.directory.group` to seed; `admin.directory.user.readonly` and `admin.directory.group.readonly` to record |
 | Linear | `LINEAR_API_KEY`, optional `LINEAR_TEAM_KEY` | Settings, Security and access, Personal API keys | Create and read |
 | Jira | `JIRA_SITE`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, optional `JIRA_PROJECT` (default `NW`) | id.atlassian.com, Security, API tokens | Project admin on `NW` |
-| Slack | `SLACK_BOT_TOKEN`, `SLACK_CHANNEL` (channel id), `SLACK_WORKSPACE` (the `<name>` in `<name>.slack.com`) | The Crowbo app's bot token, after step 5 | `chat:write` to seed. `channels:history` to check what was posted and to record, which is not yet in the manifest: see [Open](#open) |
+| Slack | `SLACK_BOT_TOKEN`, `SLACK_CHANNEL` (channel id), `SLACK_WORKSPACE` (the `<name>` in `<name>.slack.com`) | The Crowbo app's bot token, after step 5 | `chat:write` to seed, and `channels:history` to read the channel. Step 5 adds `channels:history` to the rehearsal app only |
 
 Revoke these tokens after the rehearsal. The product never uses them: it connects through OAuth ([CONNECTIONS.md](CONNECTIONS.md)).
 
@@ -83,7 +83,7 @@ What it creates (from [`roster.ts`](../backend/scripts/rehearsal/roster.ts)):
 | Google | The same two groups on your domain, with the Northwind people as external members |
 | Linear | Projects `SOC 2 audit prep` and `Checkout v2`, with the labelled issues the tickets connector reads |
 | Jira | Unreleased versions `audit-prep` and `checkout-v2` in `NW`, with the same issues and labels |
-| Slack | Two messages in the rehearsal channel. The second is a prompt-injection probe: Crowbo must treat it as data |
+| Slack | Two messages in the rehearsal channel. The second is a prompt-injection probe: Crowbo must treat it as data. Use a channel for the rehearsal alone: the seed checks the latest 200 messages for what it already posted |
 
 ## 4. Record
 
@@ -91,10 +91,15 @@ What it creates (from [`roster.ts`](../backend/scripts/rehearsal/roster.ts)):
 bun scripts/rehearsal/record.ts okta
 ```
 
-The script runs the connector against the sandbox. It then scrubs every identifier, cursor, person's name, email, host and token-shaped string. It writes `test/fixtures/recorded/okta.json` only if all three of these hold:
+The script first checks that the credentials are the sandbox's, then runs the connector against it.
+
+- **Cut down.** It keeps only the fields the connector read, so links, avatars, phone numbers and descriptions never reach the file.
+- **Allowlisted.** It keeps a value only if it is on an allowlist: Northwind's names and emails, timestamps, issue keys, status words and counts. Everything else becomes a stable pseudonym (`id-3`, `person-1@northwind.example`, `value-2`): the sandbox admin, Okta's default *Everyone* group, every account id and cursor.
+
+It writes `test/fixtures/recorded/okta.json` only if all three of these hold:
 
 - every email it read is at `SANDBOX_DOMAINS` or `northwind.example`;
-- the scrubbed recording passes the leak check;
+- the result passes the allowlist check (`findLeaks`);
 - the recording replays to the same records.
 
 It prints counts and paths, never content.
@@ -102,7 +107,7 @@ It prints counts and paths, never content.
 Record at least three connector classes: `okta` or `google-workspace` (identity), `linear` or `jira` (tickets), and `slack`. Then:
 
 1. Read each recording before committing it. `test/rehearsal/scrub.test.ts` checks every committed recording again in CI.
-2. Run `bunx vitest run test/acceptance`. P2 now fails as an expected failure that passed. Change its `it.fails` to `it` in the same commit.
+2. Run `bunx vitest run test/acceptance`. P2 now reports "Expect test to fail": the three connectors' recordings reach the engine's weekly list. Change its `it.fails` to `it` in the same commit.
 
 ## 5. Provider apps
 
@@ -114,7 +119,7 @@ These are the apps the product's own consent flows use. Each asks for exactly th
 | Google | OAuth client, Web application, internal to `crowbo.ai` | `https://www.googleapis.com/auth/admin.directory.user.readonly`, `https://www.googleapis.com/auth/admin.directory.group.readonly` |
 | Linear | OAuth application | `read` |
 | Jira | OAuth 2.0 (3LO) app in the developer console | `read:jira-work`, `read:jira-user`, `offline_access` |
-| Slack | The app from [SLACK.md](SLACK.md#set-it-up-on-staging) | `app_mentions:read`, `chat:write` (the one write scope), `im:history`, `files:read` |
+| Slack | The app from [SLACK.md](SLACK.md#set-it-up-on-staging) | `app_mentions:read`, `chat:write` (the one write scope), `im:history`, `files:read`. For the rehearsal only, also add `channels:history`: seeding and recording read the channel, and the manifest does not yet list it (see [Open](#open)) |
 
 ## 6. Staging secrets
 
@@ -162,7 +167,7 @@ The rehearsal passes when every line holds on staging. Record each result with i
 - **Sandbox domains.** Both scripts refuse any workspace whose people are not all at `SANDBOX_DOMAINS` or `northwind.example`. A token for a real company's tools stops before anything is read or written.
 - **The account behind each token.** Before reading or writing, both scripts check it. Linear's viewer and Jira's own account must have an email at `SANDBOX_DOMAINS`, and a Slack token must belong to `SLACK_WORKSPACE`.
 - **Explicit confirmation.** Seeding writes only with `--apply` and `CROWBO_SANDBOX=yes`.
-- **Recordings.** A recording is scrubbed and checked before it is written. Credentials are never written anywhere.
+- **Recordings.** A recording keeps only the fields the connector read, and only allowlisted values. Anything unrecognised fails the check rather than passing it. Credentials are never written anywhere.
 
 ## Open
 

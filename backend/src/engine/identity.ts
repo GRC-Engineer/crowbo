@@ -35,7 +35,7 @@ export interface IdentityProvider {
 
 const person = (email: string) => `person:${email.split("@")[0].toLowerCase()}`;
 const day = (iso: string) => iso.slice(0, 10);
-const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9._-]+/g, "-");
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
 const GRC = ["grc-lead"];
 
 /**

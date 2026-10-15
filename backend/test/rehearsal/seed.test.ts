@@ -6,7 +6,7 @@ import { recordedApi } from "../../scripts/rehearsal/recording";
 import { email, ROSTER } from "../../scripts/rehearsal/roster";
 import {
   assertSandbox, type GoogleState, type JiraState, type LinearState, type OktaState,
-  planGoogle, planJira, planLinear, planOkta, planSlack, type SlackState, seedTitle, type Step,
+  planGoogle, planJira, planLinear, planOkta, planSlack, seedRounds, type SlackState, seedTitle, type Step,
 } from "../../scripts/rehearsal/seed-plan";
 
 /** Plan, apply to an in-memory sandbox, read again: the run must converge, and a rerun must plan nothing. */
@@ -106,5 +106,35 @@ describe("seeding the sandboxes", () => {
   it("a workspace with people outside the sandbox domains is refused", () => {
     expect(() => assertSandbox({ users: [{ login: "priya@northwind.example" }, { login: "admin@crowbo.ai" }] }, ["crowbo.ai"])).not.toThrow();
     expect(() => assertSandbox({ users: [{ login: "cfo@real-company.test" }] }, ["crowbo.ai"])).toThrow(/does not look like a Crowbo sandbox; nothing changed/);
+  });
+});
+
+describe("seeding runs", () => {
+  it("a rerun on a seeded Okta org plans nothing, though Okta lists deprovisioned users only through its filter", async () => {
+    const { client, readAndPlan } = await import("../../scripts/rehearsal/seed");
+    const users = ROSTER.people.map((p, i) => ({ id: `00u${i}x`, status: ROSTER.deprovisioned.includes(p as never) ? "DEPROVISIONED" : "STAGED", profile: { login: email(p) } }));
+    const groups = ROSTER.groups.map((g, i) => ({ id: `00g${i}x`, profile: { name: g.name } }));
+    const answer = (path: string): unknown => {
+      if (path.startsWith("/api/v1/users?filter=")) return users.filter((u) => u.status === "DEPROVISIONED");
+      if (path.startsWith("/api/v1/users")) return users.filter((u) => u.status !== "DEPROVISIONED");
+      if (path.startsWith("/api/v1/groups?")) return groups;
+      const members = /\/api\/v1\/groups\/00g(\d)x\/users/.exec(path);
+      if (members) return ROSTER.groups[Number(members[1])].members.map((m) => ({ profile: { login: email(m) } }));
+      if (path.startsWith("/api/v1/apps")) return ROSTER.apps.map((a) => ({ label: a.label }));
+      if (path.startsWith("/api/v1/meta/schemas")) return { definitions: { custom: { properties: { app: {} } } } };
+      throw new Error(`unexpected ${path}`);
+    };
+    const http = (async (url: string) => Response.json(answer(url.replace("https://dev-1.okta.com", "")))) as typeof fetch;
+    const target = { origin: "https://dev-1.okta.com", headers: {} };
+    expect(await readAndPlan("okta", client("okta", target, http), target, ["crowbo.ai"])).toEqual([]);
+  });
+
+  it("a write already made in the run is not made again while the provider's search lags behind it", async () => {
+    const made: string[] = [];
+    // The search never shows the new issue: a naive loop would create it every round.
+    const plan = async () => planJira({ projectId: "1", versions: ROSTER.launches.map((l) => l.key), markers: [] }, "NW");
+    const { complete } = await seedRounds(plan, async (s) => void made.push(s.what), () => {});
+    expect(complete).toBe(true);
+    expect(made).toEqual(["create issue SEC-41", "create issue ENG-7", "create issue ENG-8"]);
   });
 });

@@ -3,6 +3,7 @@ import { GRC_PROVIDERS, grcPlatformConnector } from "../../src/engine/grc-platfo
 import { IDENTITY_PROVIDERS, identityConnector } from "../../src/engine/identity";
 import type { Connector, FetchJson } from "../../src/engine/model";
 import { TICKETS_PROVIDERS, ticketsConnector } from "../../src/engine/tickets";
+import { trackReads } from "./reads";
 
 /**
  * A recording: what one connector read from one provider's real API, keyed by the path the connector
@@ -40,25 +41,31 @@ export function recordedApi(r: Pick<Recording, "responses" | "links">): FetchJso
   return api;
 }
 
-/** Wrap a live API so every response the connector reads is kept, keyed by the path it asked for. */
-export function recordingOf(live: FetchJson): { api: FetchJson; responses: Record<string, unknown>; links: Record<string, string | null> } {
+/**
+ * Wrap a live API so every response the connector reads is kept, keyed by the path it asked for,
+ * with the fields it read from each (reads.ts).
+ */
+export function recordingOf(live: FetchJson): { api: FetchJson; responses: Record<string, unknown>; links: Record<string, string | null>; reads: Record<string, Set<string>> } {
   const responses: Record<string, unknown> = {};
   const links: Record<string, string | null> = {};
+  const reads: Record<string, Set<string>> = {};
+  const keep = (path: string, body: unknown) => {
+    responses[path] = body;
+    reads[path] ??= new Set();
+    return trackReads(body, reads[path]);
+  };
   const api: FetchJson = async (path) => {
     const body = await live(path);
-    if (body !== null) responses[path] = body;
-    return body;
+    return body === null ? null : keep(path, body);
   };
   if (live.page) {
     const page = live.page;
     api.page = async (path) => {
       const r = await page(path);
-      if (r) {
-        responses[path] = r.body;
-        links[path] = r.next;
-      }
-      return r;
+      if (!r) return null;
+      links[path] = r.next;
+      return { body: keep(path, r.body), next: r.next };
     };
   }
-  return { api, responses, links };
+  return { api, responses, links, reads };
 }

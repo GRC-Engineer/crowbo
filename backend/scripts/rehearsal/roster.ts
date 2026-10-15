@@ -10,7 +10,7 @@ export interface Launch {
   key: string;
   name: string;
   date: string;
-  /** Lead of the launch; Linear and Jira assign only real members, so the seed leaves leads and assignees unset. */
+  /** No lead or assignees: Linear and Jira assign only real members, so the seed leaves them unset. */
   issues: { key: string; title: string; labels: string[] }[];
 }
 

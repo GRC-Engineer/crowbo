@@ -77,13 +77,23 @@ describe("pilot criteria for mid-December: what a first paid pilot buys", () => 
 
   it.fails("P2 three real connectors read recorded responses from the real APIs and feed the weekly list", async () => {
     const files = existsSync(RECORDED) ? readdirSync(RECORDED).filter((f) => f.endsWith(".json")) : [];
-    const read = await Promise.all(files.map(async (f) => {
+    // One recording per connector class (two providers of one class count once), read through the engine.
+    const byClass = new Map<string, Recording>();
+    for (const f of files) {
       const r = JSON.parse(readFileSync(join(RECORDED, f), "utf8")) as Recording;
-      const c = connectorFor(r.connector, r.provider);
-      return c ? { connector: r.connector, records: (await c.read(recordedApi(r))).length } : null;
-    }));
-    // Three connector classes, each read from a real API; two providers of one class count once.
-    expect(new Set(read.filter((x) => x && x.records > 0).map((x) => x!.connector)).size).toBeGreaterThanOrEqual(3);
+      if (connectorFor(r.connector, r.provider) && !byClass.has(r.connector)) byClass.set(r.connector, r);
+    }
+    const e = await Engine.start(structuredClone(NORTHWIND), {
+      ...demoOptions(),
+      connectors: [...byClass.values()].map((r) => connectorFor(r.connector, r.provider)!),
+      fetchFor: (id) => (byClass.has(id) ? recordedApi(byClass.get(id)!) : null),
+    });
+    const fed = new Set([...e.records.values()].map((r) => r.connector));
+    expect([...byClass.keys()].filter((c) => fed.has(c)).length).toBeGreaterThanOrEqual(3);
+    // The weekly list is built from them: every source it cites was read, none is reported unread.
+    const brief = weeklyBrief(e).markdown;
+    expect(brief).not.toContain("## Sources not read");
+    expect(answerTopic(e, Q).sources.some((x) => byClass.has(x.connector))).toBe(true);
   });
 
   it.fails("P2.1 prose from real sources is extracted live by Clef, with measured precision at 0.8 and recall on 50 labelled sentences", () => {

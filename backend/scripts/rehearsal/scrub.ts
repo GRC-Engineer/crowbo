@@ -1,132 +1,158 @@
 import type { Recording } from "./recording";
+import { ROSTER, SEED_MARK } from "./roster";
 
 /**
- * Scrubbing a recording before it is written to the public repository. Every account identifier,
- * paging cursor, person's name, email address, URL host and token-shaped string is replaced with a
- * stable pseudonym, applied the same way to the response bodies and to the paths they are keyed by,
- * so the joins a connector makes (a group's id in its members' path) still hold. findLeaks is the
- * check: a scrubbed recording must contain none of these. The synthetic Northwind people keep their
- * names at northwind.example; anyone else, such as the sandbox's admin, becomes person-<n>.
+ * Scrubbing a recording before it is written to the public repository. It fails closed: a value stays
+ * only if it is on the allowlist below (Northwind's synthetic names and emails, timestamps, issue keys,
+ * status words, counts, the connector's own path words); every other value becomes a stable
+ * pseudonym, the same in the response bodies and in the paths they are keyed by, so the joins a
+ * connector makes (a group's id in its members' path) still hold. findLeaks checks the same allowlist:
+ * a scrubbed recording passes; anything it does not recognise is a leak. The recorder first cuts each
+ * response down to the fields the connector read (reads.ts), so little is left to scrub.
  */
 
 export const SCRUBBED_DOMAIN = "northwind.example";
-const SCRUBBED_ORIGIN = "https://example.invalid";
 
-/** Keys whose values identify an account, a workspace or an object in the provider. */
-const ID_KEYS = new Set(["id", "accountId", "customerId", "teamId", "team", "team_id", "user", "user_id", "bot_id", "app_id", "channel", "orgId", "etag", "cloudId", "realmId", "externalId"]);
-/** Keys whose values are paging cursors, which can encode identifiers. */
-const CURSOR_KEYS = new Set(["nextPageToken", "endCursor", "startCursor", "cursor", "next_cursor", "nextPage", "after"]);
-/** Keys whose values are a person's name. */
-const NAME_KEYS = new Set(["displayName", "firstName", "lastName", "fullName", "givenName", "familyName", "real_name", "nickName", "middleName", "honorificPrefix"]);
+/** Keys whose values are a person's name, an account or object id, or a paging cursor: pseudonymised by kind. */
+const NAME_KEYS = new Set(["displayName", "firstName", "lastName", "fullName", "givenName", "familyName", "real_name", "name_full"]);
+const CURSOR_KEYS = new Set(["nextPageToken", "endCursor", "startCursor", "cursor", "next_cursor", "nextPage", "after", "pageToken"]);
+const ID_KEY = /^(id|slugId|user|team|channel|accountId|customerId)$|(Id|_id)$/;
+/** Keys whose values are a provider's status words. */
+const ENUM_KEYS = new Set(["status", "type", "key", "state", "role", "signOnMode"]);
+const RESOLUTIONS = new Set(["Done", "Won't Do", "Cancelled", "Canceled", "Declined", "Duplicate", "Fixed"]);
 
-const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
-const URL_ORIGIN = /https?:\/\/[A-Za-z0-9.-]+(?::\d+)?/g;
-/** Token and credential shapes of the providers in the kit, and generic bearer material. */
-const TOKEN_SHAPES: [string, RegExp][] = [
-  ["slack token", /xox[abposre]-[A-Za-z0-9-]{6,}/],
-  ["slack app token", /xapp-[A-Za-z0-9-]{6,}/],
-  ["jwt", /eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/],
-  ["google token", /ya29\.[A-Za-z0-9_-]{10,}/],
-  ["linear key", /lin_(?:api|oauth)_[A-Za-z0-9]{10,}/],
-  ["atlassian token", /ATATT[A-Za-z0-9_=-]{10,}/],
-  ["okta api token", /\b00[A-Za-z0-9_-]{40}\b/],
-  ["github token", /gh[pousr]_[A-Za-z0-9]{20,}/],
-  ["bearer", /\b(?:Bearer|SSWS|Basic)\s+[A-Za-z0-9._~+/=-]{12,}/],
-];
-/** Slack mentions carry user ids inside message text. */
-const MENTION = /<[@#!]([A-Z0-9]{6,})(?:\|[^>]*)?>/g;
+/** Strings Northwind's roster and the connectors' own requests use: safe anywhere. */
+const ROSTER_STRINGS = new Set<string>([
+  ...ROSTER.people, ...ROSTER.groups.flatMap((g) => [g.name, g.app]), ...ROSTER.apps.map((a) => a.label),
+  ...ROSTER.launches.flatMap((l) => [l.key, l.name, ...l.issues.flatMap((i) => [i.key, i.title, ...i.labels, `${SEED_MARK}-${i.key}`, `[${SEED_MARK}:${i.key}] ${i.title}`])]),
+  ...ROSTER.slack, SEED_MARK, "C0GRC", "NW", "my_customer",
+]);
 
-type Walk = (value: string, key: string | null) => void;
+const PSEUDONYM = /^(id|cursor|value)-\d+$|^Person \d+$|^person-\d+@northwind\.example$/;
+const ISO_TIME = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d{1,6})?)?(Z|[+-]\d{2}:?\d{2})?)?$/;
+const ISSUE_KEY = /^[A-Z][A-Z0-9]{1,9}-\d{1,6}$/;
+const SLACK_TS = /^\d{9,11}\.\d{6}$/;
+/** A path word: letters, dots and underscores, as in /api/v1/groups or conversations.history. */
+const PATH_WORD = /^([A-Za-z_.]+|v\d{1,2}|\d{1,4})$/;
+/** A query value the connectors build themselves: jql, fields lists, Okta's status filter. */
+const QUERY_TEXT = /^[A-Za-z_ =",.()-]+$/;
+const EMAIL = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+/** Token and credential shapes, redacted wherever they appear even inside an allowed value. */
+const TOKEN_SHAPES = [/xox[abposre]-[A-Za-z0-9-]{6,}/g, /xapp-[A-Za-z0-9-]{6,}/g, /eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g, /ya29\.[A-Za-z0-9_-]{10,}/g, /lin_(?:api|oauth)_[A-Za-z0-9]{10,}/g, /ATATT[A-Za-z0-9_=-]{10,}/g, /gh[pousr]_[A-Za-z0-9]{20,}/g];
 
-function walk(value: unknown, visit: Walk, key: string | null = null) {
-  if (typeof value === "string") visit(value, key);
-  else if (Array.isArray(value)) for (const v of value) walk(v, visit, key);
-  else if (value && typeof value === "object") for (const [k, v] of Object.entries(value)) walk(v, visit, k);
+/** Whether a leaf value may stay as it is, given the key it sits under. */
+function safe(value: string, key: string | null): boolean {
+  if (PSEUDONYM.test(value) || ROSTER_STRINGS.has(value) || ISO_TIME.test(value) || ISSUE_KEY.test(value)) return true;
+  if (EMAIL.test(value)) return value.toLowerCase().endsWith(`@${SCRUBBED_DOMAIN}`) && ROSTER_STRINGS.has(value.split("@")[0].toLowerCase());
+  if (key && ENUM_KEYS.has(key)) return /^[A-Za-z][A-Za-z_-]{1,31}$/.test(value);
+  if (key === "name" && RESOLUTIONS.has(value)) return true;
+  if (key === "ts") return SLACK_TS.test(value);
+  return false;
 }
 
-function mapStrings(value: unknown, f: (s: string) => string): unknown {
-  if (typeof value === "string") return f(value);
-  if (Array.isArray(value)) return value.map((v) => mapStrings(v, f));
-  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, mapStrings(v, f)]));
+/** Whether a path segment, query name or query value may stay as it is. */
+const safeInPath = (part: string) => PSEUDONYM.test(part) || ROSTER_STRINGS.has(part) || PATH_WORD.test(part) || QUERY_TEXT.test(part);
+
+function mapLeaves(value: unknown, f: (v: string | number, key: string | null) => unknown, key: string | null = null): unknown {
+  if (typeof value === "string" || typeof value === "number") return f(value, key);
+  if (Array.isArray(value)) return value.map((v) => mapLeaves(v, f, key));
+  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, mapLeaves(v, f, k)]));
   return value;
 }
 
-/** Scrub a recording; `people` are the synthetic local parts that may stay as they are. */
-export function scrub(r: Recording, people: readonly string[]): Recording {
-  const map = new Map<string, string>();
-  const counters = { id: 0, cursor: 0, person: 0, name: 0 };
-  const keep = new Set(people.map((p) => p.toLowerCase()));
-  const alias = (original: string, make: () => string) => {
-    if (original && !map.has(original)) map.set(original, make());
-  };
-  const email = (e: string) => {
-    const local = e.split("@")[0].toLowerCase();
-    alias(e, () => (keep.has(local) ? `${local}@${SCRUBBED_DOMAIN}` : `person-${++counters.person}@${SCRUBBED_DOMAIN}`));
-  };
-  const collect: Walk = (s, key) => {
-    if (key && ID_KEYS.has(key)) alias(s, () => `id-${++counters.id}`);
-    if (key && CURSOR_KEYS.has(key)) alias(s, () => `cursor-${++counters.cursor}`);
-    if (key && NAME_KEYS.has(key)) alias(s, () => `Person ${++counters.name}`);
-    for (const m of s.matchAll(EMAIL)) email(m[0]);
-    for (const m of s.matchAll(MENTION)) alias(m[1], () => `id-${++counters.id}`);
-  };
-  for (const [path, body] of Object.entries(r.responses)) {
-    walk(body, collect);
-    // Cursors and ids also reach paths through query parameters a connector built from them.
-    for (const [k, v] of new URL(path, SCRUBBED_ORIGIN).searchParams) if (CURSOR_KEYS.has(k) || k === "pageToken") alias(v, () => `cursor-${++counters.cursor}`);
+const decode = (raw: string) => {
+  try {
+    return decodeURIComponent(raw.replace(/\+/g, " "));
+  } catch {
+    return raw;
   }
-  for (const next of Object.values(r.links ?? {})) {
-    if (next) for (const [k, v] of new URL(next, SCRUBBED_ORIGIN).searchParams) if (CURSOR_KEYS.has(k)) alias(v, () => `cursor-${++counters.cursor}`);
-  }
-  // Identifiers are replaced only as a whole value, a whole path segment or a whole query value, never
-  // as a substring: a short numeric id must not rewrite a date or a count that happens to contain it.
-  const decode = (part: string) => {
-    try {
-      return decodeURIComponent(part);
-    } catch {
-      return part;
-    }
+};
+
+/**
+ * Rewrite a path part by part: each segment, query name and query value is decoded, passed to f, and
+ * re-encoded only if f changed it, so the untouched parts keep their exact bytes and the replay finds
+ * the path the connector will ask for. f also learns which query name a value belongs to.
+ */
+function eachPart(path: string, f: (part: string, name: string | null) => string): string {
+  const [pathname, query] = path.split(/\?(.*)/s, 2);
+  const keep = (raw: string, name: string | null) => {
+    const plain = decode(raw);
+    const next = f(plain, name);
+    return next === plain ? raw : encodeURIComponent(next);
   };
-  const inUrl = (s: string) => s.replace(/([/=?&])([^/=?&#]+)/g, (m, sep: string, part: string) => {
-    const to = map.get(decode(part));
-    return to ? sep + encodeURIComponent(to) : m;
+  const segs = pathname.split("/").map((seg) => (seg ? keep(seg, "") : seg)).join("/");
+  if (query === undefined) return segs;
+  const q = query.split("&").map((pair) => {
+    const [k, v] = pair.split(/=(.*)/s, 2);
+    const name = decode(k);
+    return v === undefined ? keep(k, null) : `${keep(k, null)}=${keep(v, name)}`;
   });
-  const replace = (s: string) => {
-    let out = map.get(s) ?? s;
-    if (out.startsWith("/") || /^https?:\/\//.test(out)) out = inUrl(out);
-    out = out.replace(EMAIL, (e) => map.get(e) ?? e).replace(MENTION, (m, id: string) => m.replace(id, map.get(id) ?? id));
-    out = out.replace(URL_ORIGIN, SCRUBBED_ORIGIN);
-    for (const [, shape] of TOKEN_SHAPES) out = out.replace(new RegExp(shape.source, "g"), "[redacted]");
-    return out;
+  return `${segs}?${q.join("&")}`;
+}
+
+export function scrub(r: Recording): Recording {
+  const map = new Map<string, string>();
+  const n = { id: 0, cursor: 0, value: 0, person: 0, name: 0 };
+  const alias = (original: string, key: string | null): string => {
+    const known = map.get(original);
+    if (known) return known;
+    // The recorder has already refused any email outside the sandbox's domains: a roster name there is Northwind's.
+    const local = original.split("@")[0].toLowerCase();
+    const made = EMAIL.test(original) ? (ROSTER_STRINGS.has(local) ? `${local}@${SCRUBBED_DOMAIN}` : `person-${++n.person}@${SCRUBBED_DOMAIN}`)
+      : key && NAME_KEYS.has(key) ? `Person ${++n.name}`
+      : key && CURSOR_KEYS.has(key) ? `cursor-${++n.cursor}`
+      : key && ID_KEY.test(key) ? `id-${++n.id}`
+      : `value-${++n.value}`;
+    map.set(original, made);
+    return made;
   };
+  const leaf = (v: string | number, key: string | null): unknown => {
+    if (typeof v === "number") return key && ID_KEY.test(key) ? alias(String(v), key) : v;
+    let s = v;
+    for (const shape of TOKEN_SHAPES) s = s.replace(shape, "[redacted]");
+    // An id key is always pseudonymised, even when its value happens to look like a roster word.
+    return key && (ID_KEY.test(key) || CURSOR_KEYS.has(key)) ? alias(s, key) : safe(s, key) ? s : alias(s, key);
+  };
+  // Bodies first, so an id met in a body keeps its id- pseudonym when it reappears in a path.
+  const bodies = Object.entries(r.responses).map(([path, body]) => [path, mapLeaves(body, leaf)] as const);
+  // In a path, a part met in a body keeps that pseudonym; an unknown segment is an id, an unknown query value a cursor or an id.
+  const path = (p: string) => eachPart(p, (part, name) => (map.has(part) ? map.get(part)! : safeInPath(part) ? part : alias(part, name && CURSOR_KEYS.has(name) ? name : "id")));
   return {
     connector: r.connector,
     provider: r.provider,
     recorded_at: r.recorded_at,
-    responses: Object.fromEntries(Object.entries(r.responses).map(([path, body]) => [replace(path), mapStrings(body, replace)])),
-    ...(r.links ? { links: Object.fromEntries(Object.entries(r.links).map(([path, next]) => [replace(path), next === null ? null : replace(next)])) } : {}),
+    responses: Object.fromEntries(bodies.map(([p, body]) => [path(p), body])),
+    ...(r.links ? { links: Object.fromEntries(Object.entries(r.links).map(([p, next]) => [path(p), next === null ? null : path(next)])) } : {}),
   };
 }
 
 /**
- * What in a recording could identify a real account or authenticate to one. A scrubbed recording has
- * none; each finding names its kind and where, never the value.
+ * What in a recording is not on the allowlist: anything that could identify a real account or
+ * authenticate to one. A scrubbed recording has none. Each finding names where, never the value.
  */
 export function findLeaks(r: Recording): string[] {
-  const out: string[] = [];
-  const check = (where: string) => (s: string, key: string | null) => {
-    for (const [kind, shape] of TOKEN_SHAPES) if (shape.test(s)) out.push(`${where}: ${kind}`);
-    for (const m of s.matchAll(EMAIL)) if (!m[0].toLowerCase().endsWith(`@${SCRUBBED_DOMAIN}`)) out.push(`${where}: email outside ${SCRUBBED_DOMAIN}`);
-    for (const m of s.matchAll(URL_ORIGIN)) if (m[0] !== SCRUBBED_ORIGIN) out.push(`${where}: URL host`);
-    for (const m of s.matchAll(MENTION)) if (!/^id-\d+$/.test(m[1])) out.push(`${where}: Slack mention id`);
-    if (key && ID_KEYS.has(key) && !/^id-\d+$/.test(s)) out.push(`${where}.${key}: account identifier`);
-    if (key && CURSOR_KEYS.has(key) && !/^cursor-\d+$/.test(s)) out.push(`${where}.${key}: paging cursor`);
-    if (key && NAME_KEYS.has(key) && !/^Person \d+$/.test(s)) out.push(`${where}.${key}: person's name`);
+  const out = new Set<string>();
+  const walk = (value: unknown, where: string, key: string | null) => {
+    if (typeof value === "string") {
+      if (!safe(value, key)) out.add(`${where}: unrecognised value`);
+    } else if (typeof value === "number") {
+      if (key && ID_KEY.test(key)) out.add(`${where}: numeric identifier`);
+    } else if (Array.isArray(value)) value.forEach((v) => walk(v, `${where}[]`, key));
+    else if (value && typeof value === "object") {
+      for (const [k, v] of Object.entries(value)) {
+        if (!/^[A-Za-z_]+$/.test(k)) out.add(`${where}: unrecognised key`);
+        walk(v, `${where}.${/^[A-Za-z_]+$/.test(k) ? k : "?"}`, k);
+      }
+    }
   };
-  for (const [path, body] of Object.entries(r.responses)) {
-    check("path")(path, null);
-    walk(body, check(path));
+  const checkPath = (p: string, where: string) => eachPart(p, (part) => {
+    if (!safeInPath(part)) out.add(`${where}: unrecognised path part`);
+    return part;
+  });
+  for (const [p, body] of Object.entries(r.responses)) {
+    checkPath(p, "a response path");
+    walk(body, "a response", null);
   }
-  for (const [path, next] of Object.entries(r.links ?? {})) if (next) check(`link of ${path}`)(next, null);
-  return [...new Set(out)];
+  for (const next of Object.values(r.links ?? {})) if (next) checkPath(next, "a next link");
+  return [...out];
 }

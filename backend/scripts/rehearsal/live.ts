@@ -18,7 +18,7 @@ export interface Target {
   slackChannel?: string;
 }
 
-const need = (env: Record<string, string | undefined>, ...names: string[]) => {
+export const need = (env: Record<string, string | undefined>, ...names: string[]) => {
   const missing = names.filter((n) => !env[n]);
   if (missing.length) throw new Error(`Set ${missing.join(", ")} (see docs/REHEARSAL.md)`);
   return names.map((n) => env[n]!);
@@ -55,6 +55,14 @@ export function targetFromEnv(provider: string, env: Record<string, string | und
 
 type Http = (url: string, init: RequestInit) => Promise<Response>;
 
+/** The next page a Link header names, as a path on the target's host; a link to another host throws. */
+export function nextOnHost(provider: string, path: string, target: Target, res: Response): string | null {
+  const link = linkNext(res.headers.get("link"));
+  const next = link === null ? null : link.startsWith(target.origin) || link.startsWith("/") ? nextPath(link) : null;
+  if (link !== null && next === null) throw new Error(`${provider}: ${path} links to another host`);
+  return next;
+}
+
 /**
  * A provider's API as the connector expects it. Linear's named requests become GraphQL documents;
  * Slack's demo channel becomes the rehearsal channel; Okta's Link header becomes the next page. Any
@@ -77,10 +85,7 @@ export function liveApi(provider: string, target: Target, http: Http = fetch): F
     const body = (await res.json()) as { ok?: boolean; error?: string; errors?: unknown[] } | null;
     if (provider === "slack" && body?.ok === false) throw new Error(`slack: ${path} answered ${body.error}`);
     if (provider === "linear" && body?.errors?.length) throw new Error(`linear: ${path} returned GraphQL errors`);
-    const link = linkNext(res.headers.get("link"));
-    const next = link === null ? null : link.startsWith(target.origin) || link.startsWith("/") ? nextPath(link) : null;
-    if (link !== null && next === null) throw new Error(`${provider}: ${path} links to another host`);
-    return { body, next };
+    return { body, next: nextOnHost(provider, path, target, res) };
   }
   const api: FetchJson = async (path) => (await request(path)).body;
   api.page = request;

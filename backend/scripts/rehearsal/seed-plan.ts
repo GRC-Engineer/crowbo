@@ -149,9 +149,31 @@ export function planSlack(s: SlackState, channel: string): Step[] {
 
 const EMAIL_DOMAIN = /[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
 
-/** Refuse to seed a workspace whose people are not all at the sandbox's own domains. */
-export function assertSandbox(state: unknown, domains: string[]): void {
+/** Refuse a workspace whose people are not all at the sandbox's own domains (or Northwind's). */
+export function assertSandbox(state: unknown, domains: string[], consequence = "nothing changed"): void {
   const allowed = new Set([...domains.map((d) => d.toLowerCase()), ROSTER.domain]);
   const foreign = new Set([...JSON.stringify(state).matchAll(EMAIL_DOMAIN)].map((m) => m[1].toLowerCase()).filter((d) => !allowed.has(d)));
-  if (foreign.size) throw new Error(`${foreign.size} email domain(s) outside SANDBOX_DOMAINS: this does not look like a Crowbo sandbox; nothing changed`);
+  if (foreign.size) throw new Error(`${foreign.size} email domain(s) outside SANDBOX_DOMAINS: this does not look like a Crowbo sandbox; ${consequence}`);
+}
+
+/**
+ * Apply plans round by round until nothing is missing. A write already made in this run is never made
+ * again, even when the provider's search has not caught up with it yet (Jira's index lags its writes).
+ */
+export async function seedRounds(plan: () => Promise<Step[]>, apply: (s: Step) => Promise<void>, log: (line: string) => void, rounds = 3): Promise<{ applied: Step[]; complete: boolean }> {
+  const applied: Step[] = [];
+  const done = new Set<string>();
+  const pending = async () => (await plan()).filter((s) => !done.has(s.what));
+  for (let round = 1; round <= rounds; round++) {
+    const steps = await pending();
+    if (!steps.length) return { applied, complete: true };
+    log(`round ${round}: ${steps.length} change(s)`);
+    for (const s of steps) {
+      log(`  ${s.what}`);
+      await apply(s);
+      done.add(s.what);
+      applied.push(s);
+    }
+  }
+  return { applied, complete: (await pending()).length === 0 };
 }

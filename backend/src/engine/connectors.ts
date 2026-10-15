@@ -3,8 +3,6 @@ import { linear, ticketsConnector } from "./tickets";
 import { line } from "./line";
 import type { AudienceGrant, Connector, FakeApiRoute, FetchJson, SourceRecord } from "./model";
 
-export { line };
-
 /**
  * Layer 01, ingest. Each connector reads one tool through the shape of that tool's API and turns
  * the response into source records: typed fields as "subject predicate value" lines, or the prose

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { digest, type PinnedSource } from "../../scripts/contract-hash";
+import { trackReads } from "../../scripts/rehearsal/reads";
 import type { FakeApiRoute, FetchJson } from "../../src/engine/model";
 
 /**
@@ -32,22 +33,6 @@ export function unusableSpecs(): string[] {
 
 // ---- Recording ----
 
-/** Fields that the runtime, not the connector, asks for: awaiting a value, JSON.stringify. */
-const RUNTIME = new Set(["then", "toJSON"]);
-
-function watch(value: unknown, at: string, seen: Set<string>): unknown {
-  if (value === null || typeof value !== "object") return value;
-  return new Proxy(value, {
-    get(target, key, receiver) {
-      const v = Reflect.get(target, key, receiver);
-      if (typeof key === "symbol" || RUNTIME.has(key)) return v;
-      if (Array.isArray(target)) return /^\d+$/.test(key) ? watch(v, `${at}[]`, seen) : v;
-      const path = at ? `${at}.${key}` : key;
-      seen.add(path);
-      return watch(v, path, seen);
-    },
-  });
-}
 
 /** An API over fixture routes that records, per request path, the response fields read. */
 export function recordingApi(routes: FakeApiRoute[]): { api: FetchJson; reads: Map<string, Set<string>> } {
@@ -56,7 +41,7 @@ export function recordingApi(routes: FakeApiRoute[]): { api: FetchJson; reads: M
     const seen = reads.get(path) ?? new Set<string>();
     reads.set(path, seen);
     const versions = routes.find((r) => r.path === path)?.versions;
-    return versions ? watch(structuredClone(versions[versions.length - 1].body), "", seen) : null;
+    return versions ? trackReads(structuredClone(versions[versions.length - 1].body), seen) : null;
   };
   const api: FetchJson = async (path) => respond(path);
   api.page = async (path) => {
