@@ -78,3 +78,8 @@ Setting up Slack changes two things outside this repository: a Slack app in your
 4. **Deploy staging.** This also adds the Monday cron trigger.
 
 Until all three secrets are set, `/slack/events` returns 404. On production it always does.
+
+## Known limits
+
+- **Imports in a shared workspace.** Any member of a workspace registered as synthetic can import an export by direct message into that workspace's one engine copy. That is fine for fixtures. Before any real workspace, imports need a per-tenant rule for who may import.
+- **"brief" goes through the reply path.** "brief" in a mention is answered in the thread like any question; only the scheduled post goes to the channel itself.

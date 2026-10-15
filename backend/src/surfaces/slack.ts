@@ -65,7 +65,7 @@ export function card(answer: Answer, summary: { text: string; generated_by: stri
   const a = answer.answer;
   const start = period.computed_at.slice(0, 10);
   const end = new Date(Date.parse(`${start}T00:00:00Z`) + period.horizon_days * DAY).toISOString().slice(0, 10);
-  const checked = answer.sources.map((x) => x.read_at).filter((x): x is string => !!x).sort().at(-1);
+  const checked = answer.sources.filter((x) => x.used).map((x) => x.read_at).filter((x): x is string => !!x).sort().at(-1);
   const lines: string[] = [
     `*${escape(answer.question)}*`,
     `_Case: ${escape(answer.topic)} · method ${METHOD_VERSION} · planning ${start} to ${end} · evidence checked ${checked ?? "never"}_`,
