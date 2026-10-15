@@ -99,6 +99,27 @@ describe("PDF text", () => {
   });
 });
 
+describe("PDF text: keys in any order", () => {
+  const page = (dict: string, stream: string, streamDict = "") => enc(
+    `%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<<${dict}>>endobj\n4 0 obj<<${streamDict}/Length ${stream.length}>>stream\n${stream}\nendstream endobj\n5 0 obj<</Type/Metadata/Length 30>>stream\nBT (secret metadata text) Tj ET\nendstream endobj\ntrailer<</Root 1 0 R>>\n%%EOF`);
+
+  it("reads /Contents before /Parent and /Resources (pdfTeX's order)", async () => {
+    expect(await pdfText(page("/Type/Page/Contents 4 0 R/Parent 2 0 R/Resources<<>>", "BT (Read me.) Tj ET"))).toEqual({ ok: true, pages: [{ n: 1, text: "Read me." }], unread: [] });
+  });
+
+  it("a stream's /Metadata reference after /Contents is never page text", async () => {
+    const r = await pdfText(page("/Type/Page/Contents 4 0 R/Metadata 5 0 R/Parent 2 0 R", "BT (Page text.) Tj ET"));
+    expect(r).toEqual({ ok: true, pages: [{ n: 1, text: "Page text." }], unread: [] });
+    expect(JSON.stringify(r)).not.toContain("secret metadata");
+  });
+
+  it("reads /Filter before /Length", async () => {
+    const flate = new Uint8Array(await new Response(new Blob([enc("BT (Deflated.) Tj ET")]).stream().pipeThrough(new CompressionStream("deflate"))).arrayBuffer());
+    const raw = concat([enc(`%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Contents 4 0 R/Parent 2 0 R>>endobj\n4 0 obj<</Filter/FlateDecode/Length ${flate.length}>>stream\n`), flate, enc("\nendstream endobj\ntrailer<</Root 1 0 R>>\n%%EOF")]);
+    expect(await pdfText(raw)).toEqual({ ok: true, pages: [{ n: 1, text: "Deflated." }], unread: [] });
+  });
+});
+
 describe("PDF text: fails closed on what it cannot anchor", () => {
   it("refuses object streams and cross-reference streams, rather than misnumber pages", async () => {
     const reason = { ok: false, reason: "object streams or cross-reference streams are not supported" };

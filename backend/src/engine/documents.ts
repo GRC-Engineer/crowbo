@@ -121,15 +121,21 @@ const refOf = (dict: string, key: string) => {
   const m = new RegExp(`/${key}\\s+(\\d{1,10})\\s+\\d{1,5}\\s+R`).exec(dict);
   return m ? Number(m[1]) : null;
 };
-/** The value of a key that is an array, or a single item; bounded to one array. */
+/**
+ * The value of a key: the inside of an array, or exactly one value (a name or an "N G R" reference),
+ * never what follows it. Keys come in any order, so "/Contents 4 0 R/Parent 2 0 R" is one reference.
+ */
 const arrayOf = (dict: string, key: string) => {
-  const i = dict.indexOf(`/${key}`);
-  if (i < 0) return null;
-  let j = i + key.length + 1;
+  const k = new RegExp(`/${key}(?![A-Za-z0-9])`).exec(dict);
+  if (!k) return null;
+  let j = k.index + k[0].length;
   while (j < dict.length && isSpace(dict[j])) j++;
-  if (dict[j] !== "[") return dict.slice(j, j + 40);
-  const close = dict.indexOf("]", j);
-  return close < 0 ? null : dict.slice(j + 1, close);
+  if (dict[j] === "[") {
+    const close = dict.indexOf("]", j);
+    return close < 0 ? null : dict.slice(j + 1, close);
+  }
+  const one = /^(?:\/[^\s/<>[\]()]+|\d{1,10}\s+\d{1,5}\s+R)/.exec(dict.slice(j, j + 40));
+  return one ? one[0] : null;
 };
 
 /** The page objects in reading order, walked without recursion; null when the tree is not whole. */
