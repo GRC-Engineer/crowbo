@@ -3,8 +3,9 @@ import { Mark } from "../terminal-parts";
 import { X } from "../pixel-icons";
 import {
   hhmm,
-  names,
+  nameOf,
   sourceForRow,
+  vendor,
   type Layout,
   type Node,
 } from "./data";
@@ -33,14 +34,8 @@ const box = (node: Node) => ({
   y: middle(node.row) - NODE_H / 2,
 });
 
-const logo: Record<string, "okta" | "linear" | "slack"> = {
-  okta: "okta",
-  linear: "linear",
-  slack: "slack",
-};
-
 function SourceMark({ connector }: { connector: string }) {
-  const provider = logo[connector];
+  const provider = vendor(connector);
   if (provider)
     return (
       <span className="e-mark e-mark-logo">
@@ -49,7 +44,7 @@ function SourceMark({ connector }: { connector: string }) {
     );
   return (
     <span className="e-mark" aria-hidden="true">
-      {(names[connector] ?? connector)[0]}
+      {nameOf(connector)[0]}
     </span>
   );
 }
@@ -160,7 +155,7 @@ export function EngineView({
                 <div className="e-read" style={{ width: TIME_W - 14 }}>
                   <span className="e-time">{hhmm(row.at)}</span>
                   <SourceMark connector={row.connector} />
-                  <span className="e-name">{names[row.connector]}</span>
+                  <span className="e-name">{nameOf(row.connector)}</span>
                   <span className="e-count">
                     {row.note ??
                       `${row.facts} facts${row.links ? ` · ${row.links} links` : ""}`}

@@ -44,7 +44,7 @@ test("the engine view's numbers come from the recording", () => {
   const text = (id) => view.nodes.find((node) => node.id === id).text;
   const claim = (connector) =>
     first.sources.find((source) => source.connector === connector).claim;
-  assert.match(text("group"), new RegExp(claim("okta").match(/\d+/)[0]));
+  assert.match(text("group"), new RegExp(claim("identity").match(/\d+/)[0]));
   const [unused, holders] = claim("billing").match(/\d+/g);
   assert.equal(text("unused"), `${unused} of ${holders} unused`);
   assert.equal(view.rows.length, reads.length);

@@ -13,7 +13,8 @@ import {
   layout,
   log,
   money,
-  names,
+  nameOf,
+  vendor,
   reads,
   totals,
   type Decide,
@@ -238,15 +239,16 @@ function ReadsStrip() {
 }
 
 function SmallMark({ connector }: { connector: string }) {
-  if (connector === "okta" || connector === "linear" || connector === "slack")
+  const provider = vendor(connector);
+  if (provider)
     return (
-      <span className="d-mark d-mark-logo" title={names[connector]}>
-        <Mark provider={connector} size={14} />
+      <span className="d-mark d-mark-logo" title={nameOf(connector)}>
+        <Mark provider={provider} size={14} />
       </span>
     );
   return (
-    <span className="d-mark" title={names[connector]}>
-      {names[connector][0]}
+    <span className="d-mark" title={nameOf(connector)}>
+      {nameOf(connector)[0]}
     </span>
   );
 }

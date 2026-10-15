@@ -102,16 +102,30 @@ export const totals = {
   links: log.reduce((sum, read) => sum + read.edges_added.length, 0),
 };
 
-export const names: Record<string, string> = {
-  okta: "Okta",
+// Connectors are named by role (identity, tickets); the source label and the
+// record id ("identity:okta/...") say which tool filled that role. Read rows
+// for connectors that are not a cited source fall back to these names.
+const fallbackNames: Record<string, string> = {
   billing: "Billing apps",
   sheets: "Risk register",
-  linear: "Linear",
   "vendor-docs": "Vendor docs",
   workday: "Workday",
   slack: "Slack",
   memory: "Memory",
 };
+const cited = (connector: string) =>
+  first.sources.find((source) => source.connector === connector);
+
+export const nameOf = (connector: string) =>
+  connector === "memory"
+    ? fallbackNames.memory
+    : (cited(connector)?.label ?? fallbackNames[connector] ?? connector);
+
+/** The tool behind a connector, when it has a licensed mark: okta, linear or slack. */
+export function vendor(connector: string): "okta" | "linear" | "slack" | undefined {
+  const tool = cited(connector)?.record.match(/^[^:]+:([a-z]+)\//)?.[1] ?? connector;
+  return tool === "okta" || tool === "linear" || tool === "slack" ? tool : undefined;
+}
 
 export const hhmm = (iso: string) => iso.slice(11, 16);
 export const day = (iso: string) =>
@@ -163,7 +177,7 @@ export function layout(decide: Decide): Layout {
     return found ? [found.n] : [];
   };
 
-  const okta = source("okta")!;
+  const identity = source("identity")!;
   const billing = source("billing")!;
   const register = source("sheets")!;
   const [unused, holders] = numbers(billing.claim);
@@ -178,12 +192,12 @@ export function layout(decide: Decide): Layout {
   };
 
   const nodes: Node[] = [
-    { id: "group", row: rowOf("okta"), col: 0, text: `${short("group:billing-admins")} · ${numbers(okta.claim)[0]}`, cites: cite("okta") },
-    { id: "app", row: rowOf("okta"), col: 1, text: `${short("app:billing")} app`, cites: [] },
+    { id: "group", row: rowOf("identity"), col: 0, text: `${short("group:billing-admins")} · ${numbers(identity.claim)[0]}`, cites: cite("identity") },
+    { id: "app", row: rowOf("identity"), col: 1, text: `${short("app:billing")} app`, cites: [] },
     { id: "unused", row: rowOf("billing"), col: 0, text: `${unused} of ${holders} unused`, cites: cite("billing") },
     { id: "register", row: rowOf("sheets"), col: 2, text: `${numbers(register.claim).at(-1)} holders`, cites: cite("sheets"), stale: register.freshness === "stale" },
-    { id: "launch", row: rowOf("linear"), col: 2, text: `${short("launch:audit-prep").replace("-", " ")} · ${day(decide.answer.due.date)}`, cites: cite("linear") },
-    { id: "control", row: rowOf("linear"), col: 3, text: short(control), cites: [] },
+    { id: "launch", row: rowOf("tickets"), col: 2, text: `${short("launch:audit-prep").replace("-", " ")} · ${day(decide.answer.due.date)}`, cites: cite("tickets") },
+    { id: "control", row: rowOf("tickets"), col: 3, text: short(control), cites: [] },
     { id: "role", row: rowOf("vendor-docs"), col: 0, text: "Billing Operator role", cites: cite("vendor-docs") },
     { id: "priya", row: rowOf("workday"), col: 1, text: name(owner), sub: ownerTeam ? short(ownerTeam.to) : undefined, cites: [] },
     { id: "alex", row: rowOf("workday"), col: 3, text: name(assignee), sub: assigneeTeam ? short(assigneeTeam.to) : undefined, cites: [] },
