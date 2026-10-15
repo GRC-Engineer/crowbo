@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { digest, type PinnedSource } from "../../scripts/contract-hash";
+import { trackReads } from "../../scripts/rehearsal/reads";
 import type { FakeApiRoute, FetchJson } from "../../src/engine/model";
 
 /**
@@ -32,22 +33,6 @@ export function unusableSpecs(): string[] {
 
 // ---- Recording ----
 
-/** Fields that the runtime, not the connector, asks for: awaiting a value, JSON.stringify. */
-const RUNTIME = new Set(["then", "toJSON"]);
-
-function watch(value: unknown, at: string, seen: Set<string>): unknown {
-  if (value === null || typeof value !== "object") return value;
-  return new Proxy(value, {
-    get(target, key, receiver) {
-      const v = Reflect.get(target, key, receiver);
-      if (typeof key === "symbol" || RUNTIME.has(key)) return v;
-      if (Array.isArray(target)) return /^\d+$/.test(key) ? watch(v, `${at}[]`, seen) : v;
-      const path = at ? `${at}.${key}` : key;
-      seen.add(path);
-      return watch(v, path, seen);
-    },
-  });
-}
 
 /** An API over fixture routes that records, per request path, the response fields read. */
 export function recordingApi(routes: FakeApiRoute[]): { api: FetchJson; reads: Map<string, Set<string>> } {
@@ -56,7 +41,7 @@ export function recordingApi(routes: FakeApiRoute[]): { api: FetchJson; reads: M
     const seen = reads.get(path) ?? new Set<string>();
     reads.set(path, seen);
     const versions = routes.find((r) => r.path === path)?.versions;
-    return versions ? watch(structuredClone(versions[versions.length - 1].body), "", seen) : null;
+    return versions ? trackReads(structuredClone(versions[versions.length - 1].body), seen) : null;
   };
   const api: FetchJson = async (path) => respond(path);
   api.page = async (path) => {
@@ -240,4 +225,24 @@ export function loadSpec(id: string, text = readFileSync(specFile(id), "utf8")):
   if (s.format === "graphql") return graphql(text);
   const doc = JSON.parse(text) as Json;
   return s.format === "google-discovery" ? discovery(doc) : openapi(doc);
+}
+
+/** The field paths a GraphQL document selects, from its first brace: "projects.nodes.slugId", and so on. */
+export function graphqlSelections(doc: string): string[] {
+  let body = doc.slice(doc.indexOf("{"));
+  for (let prev = ""; prev !== body; ) [prev, body] = [body, body.replace(/\([^()]*\)/g, "")];
+  const out: string[] = [];
+  const stack: string[] = [];
+  let last = "";
+  for (const t of body.match(/[A-Za-z_]\w*|[{}]/g) ?? []) {
+    if (t === "{") {
+      if (last) stack.push(last);
+      last = "";
+    } else if (t === "}") stack.pop();
+    else {
+      last = t;
+      out.push([...stack, t].join("."));
+    }
+  }
+  return out;
 }

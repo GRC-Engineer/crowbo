@@ -6,8 +6,8 @@ import { NORTHWIND_IDENTITY } from "../../src/engine/fixture-identity";
 import { NORTHWIND_TICKETS } from "../../src/engine/fixture-tickets";
 import { googleWorkspace, identityConnector, okta } from "../../src/engine/identity";
 import type { CompanyFixture, Connector } from "../../src/engine/model";
-import { jira, JIRA_ISSUE_FIELDS, jiraIssueSearch, linear, ticketsConnector } from "../../src/engine/tickets";
-import { type Endpoint, graphqlArgs, graphqlTypes, loadSpec, recordingApi, schemaCheck, specFile, unusableSpecs } from "./specs";
+import { jira, JIRA_ISSUE_FIELDS, jiraIssueSearch, linear, LINEAR_QUERIES, linearOperation, ticketsConnector } from "../../src/engine/tickets";
+import { type Endpoint, graphqlArgs, graphqlSelections, graphqlTypes, loadSpec, recordingApi, schemaCheck, specFile, unusableSpecs } from "./specs";
 
 /**
  * Each connector, replayed on its fixture, may only call endpoints and read fields its provider's
@@ -147,6 +147,31 @@ describe.skipIf(process.env.CROWBO_CONTRACTS === "skip")("provider contracts", (
       expect(["/admin/directory/v1/users?customer=c", "/admin/directory/v1/groups?customer=c", "/admin/directory/v1/groups/g/members"].map((p) => google(p)!.template))
         .toEqual(["admin/directory/v1/users", "admin/directory/v1/groups", "admin/directory/v1/groups/{groupKey}/members"]);
     }
+  });
+
+  it("Linear: the GraphQL documents select every field the connector reads, and every selection is in the schema", async () => {
+    // Page checkout-v2's issues so both documents are read, cursors included.
+    const paged = structuredClone(NORTHWIND_TICKETS);
+    const body = paged.api.find((r) => r.path === "/graphql?query=projects")!.versions[0].body as { data: { projects: { nodes: { slugId: string; issues: { nodes: unknown[]; pageInfo: unknown } }[] } } };
+    const checkout = body.data.projects.nodes.find((n) => n.slugId === "checkout-v2")!;
+    const [first, ...rest] = checkout.issues.nodes;
+    checkout.issues = { nodes: [first], pageInfo: { hasNextPage: true, endCursor: "c1" } };
+    paged.api.push({ path: "/graphql?query=project-issues&project=checkout-v2&after=c1", versions: [{ from: "2025-01-01T00:00:00Z", body: { data: { project: { issues: { nodes: rest, pageInfo: { hasNextPage: false, endCursor: null } } } } } }] });
+    const { reads } = await replay("linear", ticketsConnector(linear), paged);
+    const flat = (p: string) => p.replace(/\[\]/g, "");
+    const projects = new Set(["data", ...graphqlSelections(LINEAR_QUERIES.projects).map((p) => `data.${p}`)]);
+    const issues = new Set(["data", ...graphqlSelections(LINEAR_QUERIES["project-issues"]).map((p) => `data.${p}`)]);
+    const unselected = (path: string, selected: Set<string>) => [...reads.get(path)!].map(flat).filter((p) => !selected.has(p));
+    expect(reads.get("/graphql?query=projects")).toContain("data.projects.nodes[].issues.pageInfo.endCursor");
+    expect(unselected("/graphql?query=projects", projects)).toEqual([]);
+    expect(unselected("/graphql?query=project-issues&project=checkout-v2&after=c1", issues)).toEqual([]);
+    const sdl = readFileSync(specFile("linear"), "utf8");
+    const spec = loadSpec("linear");
+    for (const p of [...projects, ...issues]) expect([p, spec("/graphql")!.check(p).status]).toEqual([p, "defined"]);
+    expect(graphqlArgs(sdl, "Query", "project")).toContain("id");
+    expect(graphqlArgs(sdl, "Query", "projects")).toContain("first");
+    expect(linearOperation("/graphql?query=project-issues&project=checkout-v2&after=c1")).toEqual({ query: LINEAR_QUERIES["project-issues"], variables: { project: "checkout-v2", after: "c1" } });
+    expect(linearOperation("/graphql?query=viewer")).toBeNull();
   });
 
   it("Jira's search asks for every field the connector reads", () => {

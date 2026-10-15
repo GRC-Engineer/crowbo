@@ -107,7 +107,7 @@ export const NORTHWIND: CompanyFixture = {
         { from: LATER, body: [...ids.slice(0, 9), ...ids.slice(9, 13)].map((id) => ({ id: `00u-${id}`, status: "ACTIVE", profile: { login: email(id) } })) },
       ],
     },
-    { path: "/api/v1/apps", versions: [{ from: "2025-01-01T00:00:00Z", body: [{ id: "0oa-billing", name: "billing", lastUpdated: "2026-09-02T10:00:00Z", profile: { businessOwner: email("priya") } }] }] },
+    { path: "/api/v1/apps", versions: [{ from: "2025-01-01T00:00:00Z", body: [{ id: "0oa-billing", name: "bookmark", label: "billing", lastUpdated: "2026-09-02T10:00:00Z", profile: { businessOwner: email("priya") } }] }] },
     {
       path: "/v1/audit/summary?window=90d",
       versions: [{ from: LATER, body: { ...billingSummary(), generated_at: LATER } }, {

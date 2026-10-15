@@ -14,7 +14,6 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { describe, expect, it } from "vitest";
 import { answerTopic, weeklyBrief } from "../../src/engine/answer";
-import { CONNECTORS } from "../../src/engine/connectors";
 import { demoOptions, startDemo } from "../../src/engine/demo";
 import { Engine } from "../../src/engine/engine";
 import { scriptedExtractor } from "../../src/engine/extract";
@@ -25,12 +24,13 @@ import { registerEngineTools } from "../../src/engine/tools";
 import type { EngineInvoke } from "../../src/engine/tools";
 import { handleMention } from "../../src/surfaces/slack";
 import { handleSlackEvent, type Post, postWeekly } from "../../src/surfaces/slack-events";
+import { connectorFor, type Recording, recordedApi } from "../../scripts/rehearsal/recording";
 
 const Q = "Who should still have billing admin?";
 const demo = () => startDemo().then((d) => d.engine);
 const ROOT = join(import.meta.dirname, "../..");
 const built = (path: string) => existsSync(join(ROOT, path));
-/** Recorded responses from real APIs, one file per connector: { connector, responses: { path: body } }. */
+/** Scrubbed recordings from Crowbo's sandbox accounts, one file per provider (scripts/rehearsal/record.ts). */
 const RECORDED = join(ROOT, "test/fixtures/recorded");
 const twoDisputes = async () => {
   const e = await demo();
@@ -77,12 +77,23 @@ describe("pilot criteria for mid-December: what a first paid pilot buys", () => 
 
   it.fails("P2 three real connectors read recorded responses from the real APIs and feed the weekly list", async () => {
     const files = existsSync(RECORDED) ? readdirSync(RECORDED).filter((f) => f.endsWith(".json")) : [];
-    const read = await Promise.all(files.map(async (f) => {
-      const { connector, responses } = JSON.parse(readFileSync(join(RECORDED, f), "utf8")) as { connector: string; responses: Record<string, unknown> };
-      const c = CONNECTORS.find((x) => x.id === connector);
-      return c ? (await c.read(async (path) => responses[path] ?? null)).length : 0;
-    }));
-    expect(read.filter((n) => n > 0).length).toBeGreaterThanOrEqual(3);
+    // One recording per connector class (two providers of one class count once), read through the engine.
+    const byClass = new Map<string, Recording>();
+    for (const f of files) {
+      const r = JSON.parse(readFileSync(join(RECORDED, f), "utf8")) as Recording;
+      if (connectorFor(r.connector, r.provider) && !byClass.has(r.connector)) byClass.set(r.connector, r);
+    }
+    const e = await Engine.start(structuredClone(NORTHWIND), {
+      ...demoOptions(),
+      connectors: [...byClass.values()].map((r) => connectorFor(r.connector, r.provider)!),
+      fetchFor: (id) => (byClass.has(id) ? recordedApi(byClass.get(id)!) : null),
+    });
+    const fed = new Set([...e.records.values()].map((r) => r.connector));
+    expect([...byClass.keys()].filter((c) => fed.has(c)).length).toBeGreaterThanOrEqual(3);
+    // The weekly list is built from them: every source it cites was read, none is reported unread.
+    const brief = weeklyBrief(e).markdown;
+    expect(brief).not.toContain("## Sources not read");
+    expect(answerTopic(e, Q).sources.some((x) => byClass.has(x.connector))).toBe(true);
   });
 
   it.fails("P2.1 prose from real sources is extracted live by Clef, with measured precision at 0.8 and recall on 50 labelled sentences", () => {

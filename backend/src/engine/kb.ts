@@ -1,5 +1,5 @@
 import { EngineError } from "./errors";
-import { line } from "./connectors";
+import { line } from "./line";
 import { base64Bytes, type DocumentText, docxText, pdfText } from "./documents";
 import { isImportable, PREDICATES } from "./predicates";
 import type { Engine } from "./engine";
