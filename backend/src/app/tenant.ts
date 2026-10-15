@@ -7,7 +7,7 @@ import { type Context, run } from "./operations";
 import { demoOptions } from "../engine/demo";
 import { Engine } from "../engine/engine";
 import { NORTHWIND } from "../engine/fixture";
-import { isEngineOp, runEngine } from "../engine/port";
+import { isEngineOp, runEngine, type Surface } from "../engine/port";
 import { SqlEngineStore } from "../engine/store";
 
 /** Read a key that is either a plain secret or a Secrets Store binding. Missing means null. */
@@ -43,7 +43,7 @@ export class TenantStore extends DurableObject<Env> {
    * Staging only. Engine errors (validation, unknown topic) are returned as messages; anything else
    * is reported generically, like the operations boundary.
    */
-  async engineCall(actor: string, op: string, args: unknown): Promise<{ ok: true; result: unknown } | { ok: false; error: string }> {
+  async engineCall(actor: string, op: string, args: unknown, surface: Surface = "mcp"): Promise<{ ok: true; result: unknown } | { ok: false; error: string }> {
     if (this.env.ALLOW_SYNTHETIC_GATES !== "true") return { ok: false, error: "The demo engine runs only where synthetic data is allowed" };
     if (!isEngineOp(op)) return { ok: false, error: "Unknown engine operation" };
     try {
@@ -59,7 +59,7 @@ export class TenantStore extends DurableObject<Env> {
         throw error;
       });
       const engine = await this.engine;
-      return { ok: true, result: JSON.parse(JSON.stringify(await runEngine(engine, actor, op, args))) };
+      return { ok: true, result: JSON.parse(JSON.stringify(await runEngine(engine, actor, op, args, surface))) };
     } catch (error) {
       // Only the engine's own messages cross the boundary; storage or runtime errors are reported generically.
       if (error instanceof Error && error.name === "EngineError") return { ok: false, error: error.message.slice(0, 500) };

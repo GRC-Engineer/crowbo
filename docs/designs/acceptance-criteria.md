@@ -122,7 +122,7 @@ A security lead gets a weekly fix-or-drop list in their own Slack. It is built f
 **P4.1. Corrections from Slack.**
 - **Build:** "record this" in a thread writes the call. The thread's permalink becomes the call's provenance.
 - **Check:** a call recorded with a thread permalink keeps it as provenance, and the next answer cites it.
-- **Built:** "record" in a thread mention, in a fixed form with no model: `record <accept|override|defer|exception> <action> because <reason>`, then `assert <subject> <predicate> <value>` lines limited to the assertable predicates. The permalink comes from Slack's `chat.getPermalink` for the thread, through signed events only; without it nothing is recorded. The engine keeps only a Slack thread permalink as provenance, on the call and on the memory record its facts become, and the next card shows it beside the source.
+- **Built:** "record" in a thread mention, in a fixed form with no model: `record <accept|override|defer|exception> <action> because <reason>`, then `assert <subject> <predicate> <value>` lines limited to the assertable predicates. The permalink comes from Slack's `chat.getPermalink` for the thread, through signed events only, and reaches the engine only through an internal operation the Slack surface alone may run; the MCP tools have no provenance field. Without it nothing is recorded. Only the workspace's registered recorders can record, and users from another organisation are not answered. The engine keeps only a Slack thread permalink as provenance, on the call and on the memory record its facts become, and the next card shows it beside the source.
 - **Size:** about 1 day, on top of P3.
 
 **P4.2. From correction to weight.**

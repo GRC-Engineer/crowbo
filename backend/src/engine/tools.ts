@@ -50,7 +50,7 @@ export function registerEngineTools(server: McpServer, invoke: EngineInvoke): vo
   for (const t of TOOLS) {
     server.registerTool(
       t.name,
-      { description: t.description, inputSchema: ENGINE_INPUTS[t.op].shape, annotations: t.writes ? write : read },
+      { description: t.description, inputSchema: ENGINE_INPUTS[t.op], annotations: t.writes ? write : read },
       async (args: unknown) => {
         try {
           return ok(await invoke(t.op, args));

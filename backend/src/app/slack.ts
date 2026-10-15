@@ -64,7 +64,7 @@ export function slackDeps(config: SlackConfig, engineFor: (key: string) => Engin
       const ws = config.workspaces[team];
       if (!ws) return null;
       const call = engineFor(`${ws.tenant}::engine::${ws.reader}`);
-      return { channel: ws.channel, synthetic: ws.synthetic, invoke: (actor) => invoker(call, actor) };
+      return { channel: ws.channel, synthetic: ws.synthetic, recorders: ws.recorders, invoke: (actor) => invoker(call, actor) };
     },
     post: slackPoster(config.botToken),
     permalink: slackPermalink(config.botToken),

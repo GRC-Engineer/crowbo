@@ -30,6 +30,8 @@ export interface Mention {
   thread: string;
   /** The thread's permalink, from Slack's own API; required to record a call. */
   permalink?: string | null;
+  /** Whether this person is on the workspace's list of recorders. */
+  canRecord?: boolean;
 }
 
 /**
@@ -42,9 +44,12 @@ export interface Mention {
 export const RECORD = /^record\s+(accept|override|defer|exception)\s+([a-z0-9-]{1,100})\s+because\s+(.{1,500})$/i;
 const ASSERT = /^assert\s+([a-z]+:[A-Za-z0-9._-]+)\s+([a-z][a-z0-9_]*)\s+(\S{1,200})$/;
 
+/** A mention is a record command only when it starts with "record" and a call word; "record of last audit?" is a question. */
+export const isRecordCommand = (text: string) => /^\s*record\s+(accept|override|defer|exception)\b/i.test(text);
+
 export function parseRecord(text: string): null | { action: string; call: string; reason: string; assertions: { subject: string; predicate: string; value: string | number }[] } | { problem: string } {
   const [first, ...rest] = text.split("\n").map((l) => l.trim()).filter(Boolean);
-  if (!first || !/^record\b/i.test(first)) return null;
+  if (!first || !isRecordCommand(first)) return null;
   const m = RECORD.exec(first);
   if (!m) return { problem: "Write it as: record <accept|override|defer|exception> <action> because <reason>, then one line per fact: assert <subject> <predicate> <value>" };
   const assertions = [];
@@ -117,8 +122,8 @@ export function card(answer: Answer, summary: { text: string; generated_by: stri
     lines.push(`${kind}: ${escape(o.status)} (${escape(o.source)}, ${o.at.slice(0, 10)}).`);
   }
   if (a.conditions.length) lines.push(...a.conditions.map((c) => `• ${escape(c)}`));
-  // A source's link is a Slack permalink the engine checked; it is shown as a plain URL.
-  lines.push("", "*Sources*", ...answer.sources.map((x) => `[${x.n}] ${escape(x.label)}: ${escape(x.claim)} (weight ${x.weight}, ${x.freshness}${x.used ? "" : ", not used"}${x.read_at ? `, read ${x.read_at}` : ""})${x.link ? ` ${x.link}` : ""}`));
+  // A source's link is a Slack permalink the engine checked; escaped anyway, and shown as a plain URL.
+  lines.push("", "*Sources*", ...answer.sources.map((x) => `[${x.n}] ${escape(x.label)}: ${escape(x.claim)} (weight ${x.weight}, ${x.freshness}${x.used ? "" : ", not used"}${x.read_at ? `, read ${x.read_at}` : ""})${x.link ? ` ${escape(x.link)}` : ""}`));
   if (a.unresolved.length) lines.push("", "*Unresolved*", ...a.unresolved.map((u) => `• ${escape(u)}`));
   lines.push(
     "", `_Result ${answer.decision_id}. Recommendation only; nothing executes._`,
@@ -141,6 +146,7 @@ export async function handleMention(invoke: EngineInvoke, mention: Mention): Pro
   if (!question) return { text: "Ask me a security question, or say \"brief\" for this week's list." };
   if (BRIEF.test(question)) return weeklyPost(invoke);
   const record = parseRecord(question);
+  if (record && !mention.canRecord) return { text: "Nothing recorded: only the people this workspace registered as recorders can record calls." };
   if (record) return recordCall(invoke, record, mention.permalink ?? null);
   try {
     const r = (await invoke("decide", { question })) as Answer & { summary: { text: string; generated_by: string } };
@@ -158,7 +164,7 @@ async function recordCall(invoke: EngineInvoke, record: NonNullable<ReturnType<t
   if ("problem" in record) return { text: escape(record.problem) };
   if (!permalink) return { text: "Nothing recorded: Slack did not give this thread's link, and a call is kept only with where it was made." };
   try {
-    const r = (await invoke("record_call", { ...record, provenance: { permalink } })) as {
+    const r = (await invoke("slack_record_call", { ...record, provenance: { permalink } })) as {
       recorded: { seq: number }; proposals: unknown[]; decision_diff: null | { after: string; changed_reasons: string[]; added: string[]; removed: string[] };
     };
     const d = r.decision_diff;

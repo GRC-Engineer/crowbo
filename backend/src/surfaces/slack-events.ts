@@ -2,7 +2,7 @@ import { z } from "zod";
 import { readCapped } from "../app/body";
 import { KB_LIMITS, type KbFile } from "../engine/kb";
 import type { EngineInvoke } from "../engine/tools";
-import { handleExport, handleMention, type SlackMessage, weeklyPost } from "./slack";
+import { handleExport, handleMention, isRecordCommand, type SlackMessage, weeklyPost } from "./slack";
 
 /**
  * Delivers the Slack surface to a workspace. Slack's Events API posts here; every request is
@@ -26,6 +26,8 @@ export const slackWorkspace = z.strictObject({
   reader: z.string().min(1).max(100),
   channel: z.string().regex(/^[CG][A-Z0-9]{8,32}$/),
   synthetic: z.boolean(),
+  /** Slack user ids who may record calls here. Empty: nobody records. */
+  recorders: z.array(z.string().regex(/^[UW][A-Z0-9]{8,32}$/)).max(200).default([]),
 });
 export type SlackWorkspace = z.infer<typeof slackWorkspace>;
 export const slackWorkspaces = z.record(z.string().regex(/^T[A-Z0-9]{8,32}$/), slackWorkspace);
@@ -41,7 +43,7 @@ export interface SlackDeps {
   signingSecret: string;
   now: () => number;
   /** The registered workspace for a team, with an engine invoker acting as the Slack user; null when not registered. */
-  workspace(team: string): (Pick<SlackWorkspace, "channel" | "synthetic"> & { invoke(actor: string): EngineInvoke }) | null;
+  workspace(team: string): (Pick<SlackWorkspace, "channel" | "synthetic" | "recorders"> & { invoke(actor: string): EngineInvoke }) | null;
   post(message: Post): Promise<void>;
   /** The permalink of a message, from Slack's own API; null when Slack does not give one. */
   permalink?(channel: string, ts: string): Promise<string | null>;
@@ -69,6 +71,8 @@ export async function verifySlack(secret: string, timestamp: string | null, sign
 const event = z.object({
   type: z.string(),
   user: z.string().optional(),
+  /** Set by Slack for a user from another organisation (Slack Connect). */
+  user_team: z.string().optional(),
   bot_id: z.string().optional(),
   subtype: z.string().optional(),
   channel: z.string().optional(),
@@ -118,14 +122,17 @@ export async function handleSlackEvent(request: Request, deps: SlackDeps): Promi
   const e = parsed.event;
   const ws = deps.workspace(parsed.team_id);
   if (!ws || e.bot_id || !e.user || !e.channel || !e.ts) return new Response("OK", { status: 200 });
+  // A user from another organisation (a shared channel) is never answered and never records.
+  if (e.user_team && e.user_team !== parsed.team_id) return new Response("OK", { status: 200 });
   const invoke = ws.invoke(`slack:${e.user}`);
   const thread_ts = e.thread_ts ?? e.ts;
 
   let work: (() => Promise<SlackMessage>) | null = null;
   if (e.type === "app_mention") {
     // Only a record command needs the thread's link; it comes from Slack, never from the message text.
-    const wantsLink = /^\s*(<@[A-Z0-9]+>\s*)*record\b/i.test(e.text ?? "");
-    work = async () => handleMention(invoke, { text: e.text ?? "", thread: thread_ts, permalink: wantsLink && deps.permalink ? await deps.permalink(e.channel!, thread_ts) : null });
+    const command = isRecordCommand((e.text ?? "").replace(/<@[A-Z0-9]+>/g, ""));
+    const canRecord = ws.recorders.includes(e.user);
+    work = async () => handleMention(invoke, { text: e.text ?? "", thread: thread_ts, canRecord, permalink: command && canRecord && deps.permalink ? await deps.permalink(e.channel!, thread_ts) : null });
   }
   else if (e.type === "message" && e.channel_type === "im" && e.files?.length && (!e.subtype || e.subtype === "file_share")) {
     work = ws.synthetic
