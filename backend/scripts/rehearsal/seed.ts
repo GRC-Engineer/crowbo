@@ -1,7 +1,7 @@
-import { assertSandboxAccount, need, nextOnHost, type Target, targetFromEnv } from "./live";
+import { assertSandboxAccount, nextOnHost, sandboxAccounts, type Target, targetFromEnv } from "./live";
 import { ROSTER } from "./roster";
 import { OKTA_DEPROVISIONED } from "../../src/engine/identity";
-import { assertSandbox, jiraMarker, planGoogle, planJira, planLinear, planOkta, planSlack, seedRounds, type Step } from "./seed-plan";
+import { assertSandbox, dryRunPlan, jiraMarker, planGoogle, planJira, planLinear, planOkta, planSlack, seedRounds, type Step } from "./seed-plan";
 
 /**
  * Seed one Crowbo sandbox with Northwind (roster.ts) through the provider's API.
@@ -45,7 +45,7 @@ export function client(provider: string, t: Target, http: typeof fetch = fetch) 
 const env = process.env;
 
 /** Read the sandbox's current state and plan the missing writes. */
-export async function readAndPlan(provider: string, c: ReturnType<typeof client>, t: Target, domains: string[]): Promise<Step[]> {
+export async function readAndPlan(provider: string, c: ReturnType<typeof client>, t: Target, domains: string[], accounts: Record<string, string>): Promise<Step[]> {
   switch (provider) {
     case "okta": {
       // Okta lists deprovisioned users only through the status filter; without them a rerun would create u41 again.
@@ -65,8 +65,8 @@ export async function readAndPlan(provider: string, c: ReturnType<typeof client>
       return planOkta(state);
     }
     case "google-workspace": {
-      const [domain] = need(env, "GOOGLE_DOMAIN").map((d) => d.toLowerCase());
-      if (!domains.includes(domain)) throw new Error("GOOGLE_DOMAIN must be one of SANDBOX_DOMAINS");
+      const domain = accounts["google-workspace"];
+      if (!domain || !domains.includes(domain)) throw new Error("The google-workspace entry of SANDBOX_ACCOUNTS must be one of SANDBOX_DOMAINS");
       const groups = ((await c.call("GET", `/admin/directory/v1/groups?domain=${encodeURIComponent(domain)}&maxResults=200`)).body as { groups?: { email: string }[] }).groups ?? [];
       const state = {
         groups: await Promise.all(groups.map(async (g) => ({
@@ -111,15 +111,17 @@ if (import.meta.main) {
   try {
     const domains = (env.SANDBOX_DOMAINS ?? "").split(",").map((d) => d.trim().toLowerCase()).filter(Boolean);
     if (!domains.length) throw new Error("Set SANDBOX_DOMAINS to the sandbox's email domains, comma-separated");
-    if (apply && env.CROWBO_SANDBOX !== "yes") throw new Error("Seeding writes to the sandbox: set CROWBO_SANDBOX=yes to confirm it is Crowbo's own");
-    const t = targetFromEnv(provider, env);
-    const c = client(provider, t);
-    await assertSandboxAccount(provider, t, env, domains);
-    const plan = () => readAndPlan(provider, c, t, domains);
+    const accounts = sandboxAccounts(env);
     if (!apply) {
-      const steps = await plan();
-      console.log(steps.length ? `${provider}: ${steps.length} change(s) planned\n${steps.map((s) => `  ${s.what}`).join("\n")}\nDry run: nothing changed. Later rounds may add memberships and issues once their groups and projects exist.` : `${provider}: nothing to seed`);
+      // The dry run sends nothing: it shows what seeding an empty sandbox would create.
+      const steps = dryRunPlan(provider, accounts);
+      console.log(`${provider}: seeding an empty sandbox makes ${steps.length} change(s) in its first round\n${steps.map((s) => `  ${s.what}`).join("\n")}\nDry run: nothing was sent. Later rounds add memberships and issues once their groups and projects exist; --apply reads the sandbox and makes only what is missing.`);
     } else {
+      if (env.CROWBO_SANDBOX !== "yes") throw new Error("Seeding writes to the sandbox: set CROWBO_SANDBOX=yes to confirm it is Crowbo's own");
+      const t = targetFromEnv(provider, env);
+      const c = client(provider, t);
+      await assertSandboxAccount(provider, t, env, accounts);
+      const plan = () => readAndPlan(provider, c, t, domains, accounts);
       const { applied, complete } = await seedRounds(plan, async (s) => void (await c.call(s.method, s.path, s.body)), (line) => console.log(`${provider}, ${line}`));
       console.log(complete ? `${provider}: seeded (${applied.length} change(s)); a rerun changes nothing` : `${provider}: still incomplete after three rounds; rerun to finish`);
       if (!complete) process.exitCode = 1;

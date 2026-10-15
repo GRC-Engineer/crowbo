@@ -93,25 +93,39 @@ export function liveApi(provider: string, target: Target, http: Http = fetch): F
 }
 
 /**
- * Before anything is read or written: the credentials must belong to Crowbo's sandbox. Linear and Jira
- * name the token's own account, whose email must be at a sandbox domain; a Slack token must belong to
- * SLACK_WORKSPACE. Okta (a dev org) and Google (its users' domains) are checked on the data itself.
+ * The sandbox account each provider's credentials must belong to, named in SANDBOX_ACCOUNTS:
+ * "okta=dev-123.okta.com,google-workspace=crowbo.ai,linear=<workspace url key>,jira=<site>.atlassian.net,slack=<workspace>".
  */
-export async function assertSandboxAccount(provider: string, target: Target, env: Record<string, string | undefined>, domains: string[], http: Http = fetch): Promise<void> {
+export function sandboxAccounts(env: Record<string, string | undefined>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const entry of (env.SANDBOX_ACCOUNTS ?? "").split(",")) {
+    const [provider, account] = entry.split("=").map((x) => x?.trim().toLowerCase());
+    if (provider && account) out[provider] = account;
+  }
+  return out;
+}
+
+/**
+ * Before anything is read or written: the credentials must belong to the sandbox account named for
+ * this provider in SANDBOX_ACCOUNTS. Okta and Jira by their host; Google by the domain of its own
+ * users; Linear by the workspace's url key; Slack by its workspace. No entry, or a mismatch, refuses.
+ */
+export async function assertSandboxAccount(provider: string, target: Target, env: Record<string, string | undefined>, accounts: Record<string, string>, http: Http = fetch): Promise<void> {
+  const named = accounts[provider];
+  if (!named) throw new Error(`Name the ${provider} sandbox account in SANDBOX_ACCOUNTS (see docs/REHEARSAL.md); nothing read or written`);
   const call = async (path: string, init: RequestInit = {}) => {
     const res = await http(`${target.origin}${path}`, { ...init, redirect: "error", headers: { ...target.headers, accept: "application/json", ...(init.body ? { "content-type": "application/json" } : {}) } });
     if (!res.ok) throw new Error(`${provider}: ${path} answered ${res.status}`);
     return (await res.json()) as Record<string, unknown>;
   };
-  const atSandbox = (email: unknown) => typeof email === "string" && domains.map((d) => d.toLowerCase()).includes(email.split("@")[1]?.toLowerCase() ?? "");
-  let ok = true;
-  if (provider === "linear") ok = atSandbox(((await call("/graphql", { method: "POST", body: JSON.stringify({ query: "{ viewer { email } }" }) })).data as { viewer?: { email?: string } } | undefined)?.viewer?.email);
-  else if (provider === "jira") ok = atSandbox((await call("/rest/api/3/myself")).emailAddress);
+  let actual: string | undefined;
+  if (provider === "okta") actual = new URL(target.origin).host;
+  else if (provider === "jira") actual = new URL(target.origin).host;
+  else if (provider === "google-workspace") actual = ((await call("/admin/directory/v1/users?customer=my_customer&maxResults=1")).users as { primaryEmail?: string }[] | undefined)?.[0]?.primaryEmail?.split("@")[1];
+  else if (provider === "linear") actual = ((await call("/graphql", { method: "POST", body: JSON.stringify({ query: "{ organization { urlKey } }" }) })).data as { organization?: { urlKey?: string } } | undefined)?.organization?.urlKey;
   else if (provider === "slack") {
-    const workspace = env.SLACK_WORKSPACE;
-    if (!workspace) throw new Error("Set SLACK_WORKSPACE (see docs/REHEARSAL.md)");
     const url = (await call("/api/auth.test")).url;
-    ok = typeof url === "string" && new URL(url).host === `${workspace}.slack.com`;
+    actual = typeof url === "string" ? new URL(url).host.replace(/\.slack\.com$/, "") : undefined;
   }
-  if (!ok) throw new Error(`${provider}: these credentials are not for a Crowbo sandbox (SANDBOX_DOMAINS, SLACK_WORKSPACE); nothing read or written`);
+  if (actual?.toLowerCase() !== named) throw new Error(`${provider}: these credentials are not for the sandbox account named in SANDBOX_ACCOUNTS; nothing read or written`);
 }

@@ -6,7 +6,7 @@ import { recordedApi } from "../../scripts/rehearsal/recording";
 import { email, ROSTER } from "../../scripts/rehearsal/roster";
 import {
   assertSandbox, type GoogleState, type JiraState, type LinearState, type OktaState,
-  planGoogle, planJira, planLinear, planOkta, planSlack, seedRounds, type SlackState, seedTitle, type Step,
+  dryRunPlan, planGoogle, planJira, planLinear, planOkta, planSlack, seedRounds, type SlackState, seedTitle, type Step,
 } from "../../scripts/rehearsal/seed-plan";
 
 /** Plan, apply to an in-memory sandbox, read again: the run must converge, and a rerun must plan nothing. */
@@ -126,7 +126,7 @@ describe("seeding runs", () => {
     };
     const http = (async (url: string) => Response.json(answer(url.replace("https://dev-1.okta.com", "")))) as typeof fetch;
     const target = { origin: "https://dev-1.okta.com", headers: {} };
-    expect(await readAndPlan("okta", client("okta", target, http), target, ["crowbo.ai"])).toEqual([]);
+    expect(await readAndPlan("okta", client("okta", target, http), target, ["crowbo.ai"], {})).toEqual([]);
   });
 
   it("a write already made in the run is not made again while the provider's search lags behind it", async () => {
@@ -136,5 +136,18 @@ describe("seeding runs", () => {
     const { complete } = await seedRounds(plan, async (s) => void made.push(s.what), () => {});
     expect(complete).toBe(true);
     expect(made).toEqual(["create issue SEC-41", "create issue ENG-7", "create issue ENG-8"]);
+  });
+});
+
+describe("the dry run", () => {
+  it("plans an empty sandbox's first round without contacting anyone: it runs with no credentials and sends nothing", async () => {
+    const { execFileSync } = await import("node:child_process");
+    const root = (await import("node:path")).join(import.meta.dirname, "../..");
+    const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/TOKEN|API_KEY|_ORG|JIRA_|SLACK_|SANDBOX_ACCOUNTS/.test(k)));
+    // No proxy can be reached: any request the dry run made would fail it.
+    const out = execFileSync("bun", ["scripts/rehearsal/seed.ts", "okta"], { cwd: root, encoding: "utf8", env: { ...env, SANDBOX_DOMAINS: "crowbo.ai", HTTPS_PROXY: "http://127.0.0.1:9", HTTP_PROXY: "http://127.0.0.1:9" } });
+    expect(out).toContain("okta: seeding an empty sandbox makes 15 change(s) in its first round");
+    expect(out).toContain("Dry run: nothing was sent.");
+    expect(dryRunPlan("jira", {}).map((s) => s.what)).toEqual(["create version audit-prep", "create version checkout-v2"]);
   });
 });

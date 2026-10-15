@@ -5,7 +5,7 @@ import { NORTHWIND_IDENTITY } from "../../src/engine/fixture-identity";
 import { NORTHWIND_TICKETS } from "../../src/engine/fixture-tickets";
 import type { CompanyFixture } from "../../src/engine/model";
 import { LINEAR_QUERIES } from "../../src/engine/tickets";
-import { assertSandboxAccount, liveApi, targetFromEnv } from "../../scripts/rehearsal/live";
+import { assertSandboxAccount, liveApi, sandboxAccounts, targetFromEnv } from "../../scripts/rehearsal/live";
 import { recordProvider } from "../../scripts/rehearsal/record";
 import { recordedApi } from "../../scripts/rehearsal/recording";
 import { findLeaks } from "../../scripts/rehearsal/scrub";
@@ -13,11 +13,12 @@ import { findLeaks } from "../../scripts/rehearsal/scrub";
 /** A fixture standing in for a provider's live API: its latest response per path. */
 const asLive = (f: CompanyFixture) => recordedApi({ responses: Object.fromEntries(f.api.map((r) => [r.path, r.versions.at(-1)!.body])) });
 const NOW = new Date("2026-10-20T09:00:00Z");
+const SALT = "a".repeat(64);
 
 describe("recording from a sandbox", () => {
   it("each provider's read is recorded, scrubbed, leak-free and replays to the same records", async () => {
     for (const [provider, fixture] of [["okta", NORTHWIND_IDENTITY], ["google-workspace", NORTHWIND_IDENTITY], ["linear", NORTHWIND_TICKETS], ["jira", NORTHWIND_TICKETS], ["slack", NORTHWIND]] as const) {
-      const { recording, records } = await recordProvider(provider, asLive(fixture), ["crowbo.ai"], NOW);
+      const { recording, records } = await recordProvider(provider, asLive(fixture), ["crowbo.ai"], NOW, SALT);
       expect({ provider, leaks: findLeaks(recording), some: records > 0 }).toEqual({ provider, leaks: [], some: true });
     }
   });
@@ -26,7 +27,7 @@ describe("recording from a sandbox", () => {
     const real = structuredClone(NORTHWIND_IDENTITY);
     const users = real.api.find((r) => r.path === "/api/v1/users")!.versions.at(-1)!.body as { profile: { login: string } }[];
     users[0].profile.login = "someone@real-company.test";
-    await expect(recordProvider("okta", asLive(real), ["crowbo.ai"], NOW)).rejects.toThrow(/outside SANDBOX_DOMAINS: this does not look like a Crowbo sandbox; nothing written/);
+    await expect(recordProvider("okta", asLive(real), ["crowbo.ai"], NOW, SALT)).rejects.toThrow(/outside SANDBOX_DOMAINS: this does not look like a Crowbo sandbox; nothing written/);
   });
 
   it("only a developer or trial Okta org is accepted, and missing credentials are named", () => {
@@ -38,13 +39,26 @@ describe("recording from a sandbox", () => {
 
 describe("the sandbox account check", () => {
   const answer = (body: unknown) => async () => Response.json(body);
-  it("Linear and Jira tokens must belong to an account at a sandbox domain; a Slack token to SLACK_WORKSPACE", async () => {
-    const t = { origin: "https://x.test", headers: {} };
-    await expect(assertSandboxAccount("linear", t, {}, ["crowbo.ai"], answer({ data: { viewer: { email: "admin@crowbo.ai" } } }))).resolves.toBeUndefined();
-    await expect(assertSandboxAccount("linear", t, {}, ["crowbo.ai"], answer({ data: { viewer: { email: "cto@real-company.test" } } }))).rejects.toThrow(/not for a Crowbo sandbox/);
-    await expect(assertSandboxAccount("jira", t, {}, ["crowbo.ai"], answer({ accountId: "x" }))).rejects.toThrow(/not for a Crowbo sandbox/);
-    await expect(assertSandboxAccount("slack", t, { SLACK_WORKSPACE: "crowbo-sandbox" }, [], answer({ ok: true, url: "https://crowbo-sandbox.slack.com/" }))).resolves.toBeUndefined();
-    await expect(assertSandboxAccount("slack", t, { SLACK_WORKSPACE: "crowbo-sandbox" }, [], answer({ ok: true, url: "https://acme.slack.com/" }))).rejects.toThrow(/not for a Crowbo sandbox/);
+  const accounts = sandboxAccounts({ SANDBOX_ACCOUNTS: "okta=dev-31337.okta.com, google-workspace=crowbo.ai, linear=crowbo-sandbox, jira=crowbo-sandbox.atlassian.net, slack=crowbo-sandbox" });
+  const NO = /not for the sandbox account named in SANDBOX_ACCOUNTS; nothing read or written/;
+  it("each provider's credentials must belong to the account SANDBOX_ACCOUNTS names for it", async () => {
+    const at = (origin: string) => ({ origin, headers: {} });
+    await expect(assertSandboxAccount("okta", at("https://dev-31337.okta.com"), {}, accounts)).resolves.toBeUndefined();
+    await expect(assertSandboxAccount("okta", at("https://dev-99999.okta.com"), {}, accounts)).rejects.toThrow(NO);
+    await expect(assertSandboxAccount("jira", at("https://acme.atlassian.net"), {}, accounts)).rejects.toThrow(NO);
+    await expect(assertSandboxAccount("google-workspace", at("https://admin.googleapis.com"), {}, accounts, answer({ users: [{ primaryEmail: "admin@crowbo.ai" }] }))).resolves.toBeUndefined();
+    await expect(assertSandboxAccount("google-workspace", at("https://admin.googleapis.com"), {}, accounts, answer({ users: [{ primaryEmail: "it@real-company.test" }] }))).rejects.toThrow(NO);
+    await expect(assertSandboxAccount("linear", at("https://api.linear.app"), {}, accounts, answer({ data: { organization: { urlKey: "crowbo-sandbox" } } }))).resolves.toBeUndefined();
+    await expect(assertSandboxAccount("linear", at("https://api.linear.app"), {}, accounts, answer({ data: { organization: { urlKey: "acme" } } }))).rejects.toThrow(NO);
+    await expect(assertSandboxAccount("slack", at("https://slack.com"), {}, accounts, answer({ ok: true, url: "https://crowbo-sandbox.slack.com/" }))).resolves.toBeUndefined();
+    await expect(assertSandboxAccount("slack", at("https://slack.com"), {}, accounts, answer({ ok: true, url: "https://acme.slack.com/" }))).rejects.toThrow(NO);
+  });
+
+  it("a provider with no named account is refused before any request", async () => {
+    let called = false;
+    const http = async () => ((called = true), Response.json({}));
+    await expect(assertSandboxAccount("google-workspace", { origin: "https://admin.googleapis.com", headers: {} }, {}, {}, http)).rejects.toThrow(/Name the google-workspace sandbox account in SANDBOX_ACCOUNTS/);
+    expect(called).toBe(false);
   });
 });
 

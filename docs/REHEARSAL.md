@@ -36,7 +36,7 @@ The decision latency measurement waits for your go-ahead to deploy staging.
 | Google Workspace | Nothing new: use `crowbo.ai`, signed in as a super admin | Users are paid seats, so the seed adds only groups, with Northwind as external members. Allow external members on new groups in the Admin console (Groups for Business, sharing settings) |
 | Linear | A free workspace with one team | Leads and assignees must be real members, so the seed leaves them unset |
 | Jira | A free Jira Cloud site `<site>.atlassian.net`, with a company-managed project, key `NW` | The seed creates versions and issues, not the project |
-| Slack | A free workspace for Crowbo, with a channel such as `#grc-rehearsal` | Invite the Crowbo app to it after step 5 |
+| Slack | A free workspace for Crowbo, with a channel such as `#grc-rehearsal` | Create the Crowbo rehearsal app (step 2) and invite it to the channel; invite the staging Crowbo app after step 5 |
 
 ## 2. Seeding credentials
 
@@ -49,17 +49,19 @@ read -s OKTA_TOKEN && export OKTA_TOKEN
 | Provider | Variables | Where it comes from | Access it needs |
 | --- | --- | --- | --- |
 | All | `SANDBOX_DOMAINS` | Your sandbox email domains, comma-separated, such as `crowbo.ai` | |
+| All | `SANDBOX_ACCOUNTS` | Each provider's sandbox account by name: `okta=dev-<n>.okta.com,google-workspace=crowbo.ai,linear=<workspace url key>,jira=<site>.atlassian.net,slack=<workspace>` | A provider with no entry is refused |
+| All | `REHEARSAL_SALT_FILE`, optional | Where the pseudonym salt lives. Default `~/.config/crowbo/rehearsal.salt`, created on the first recording; it must be outside the repository | Keep it: a new salt gives every account a new pseudonym |
 | Okta | `OKTA_ORG`, `OKTA_TOKEN` | Admin Console, Security, API, Tokens | A super admin's token: seeding creates users, groups, apps and a group profile property |
-| Google | `GOOGLE_TOKEN`, `GOOGLE_DOMAIN` | An OAuth access token for your admin account, such as from the OAuth 2.0 Playground | `admin.directory.group` to seed; `admin.directory.user.readonly` and `admin.directory.group.readonly` to record |
+| Google | `GOOGLE_TOKEN` | An OAuth access token for your admin account, such as from the OAuth 2.0 Playground | `admin.directory.group` to seed; `admin.directory.user.readonly` and `admin.directory.group.readonly` to record |
 | Linear | `LINEAR_API_KEY`, optional `LINEAR_TEAM_KEY` | Settings, Security and access, Personal API keys | Create and read |
 | Jira | `JIRA_SITE`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, optional `JIRA_PROJECT` (default `NW`) | id.atlassian.com, Security, API tokens | Project admin on `NW` |
-| Slack | `SLACK_BOT_TOKEN`, `SLACK_CHANNEL` (channel id), `SLACK_WORKSPACE` (the `<name>` in `<name>.slack.com`) | The Crowbo app's bot token, after step 5 | `chat:write` to seed, and `channels:history` to read the channel. Step 5 adds `channels:history` to the rehearsal app only |
+| Slack | `SLACK_BOT_TOKEN`, `SLACK_CHANNEL` (channel id) | The bot token of a separate **Crowbo rehearsal** app in the sandbox workspace, with `chat:write` and `channels:history` only | Seeds and records the channel. The staging Crowbo app keeps exactly the manifest's scopes (step 5) |
 
 Revoke these tokens after the rehearsal. The product never uses them: it connects through OAuth ([CONNECTIONS.md](CONNECTIONS.md)).
 
 ## 3. Seed
 
-Run from `backend/`. Without `--apply`, nothing changes and the script prints the plan:
+Run from `backend/`. Without `--apply` the script sends nothing and needs no credentials: it prints what seeding an empty sandbox would create in its first round.
 
 ```bash
 bun scripts/rehearsal/seed.ts okta
@@ -71,7 +73,7 @@ CROWBO_SANDBOX=yes bun scripts/rehearsal/seed.ts okta --apply
 
 Repeat for `google-workspace`, `linear`, `jira` and `slack`.
 
-- **Round by round.** Each run reads the sandbox, applies what is missing, and reads it again, up to three rounds. Memberships and issues follow once their groups and projects exist.
+- **Round by round.** With `--apply`, it checks the account against `SANDBOX_ACCOUNTS`, reads the sandbox, applies what is missing, and reads it again, up to three rounds. A write made once in a run is never repeated in that run, even if the provider's search has not caught up. Memberships and issues follow once their groups and projects exist.
 - **Reruns.** A rerun reports `nothing to seed`.
 - **Markers.** Seeded objects carry `crowbo-seed` (a description, a title prefix or a label), so you can find them to remove them later.
 
@@ -91,16 +93,17 @@ What it creates (from [`roster.ts`](../backend/scripts/rehearsal/roster.ts)):
 bun scripts/rehearsal/record.ts okta
 ```
 
-The script first checks that the credentials are the sandbox's, then runs the connector against it.
+The script first checks that the credentials are the account `SANDBOX_ACCOUNTS` names, then runs the connector against it.
 
 - **Cut down.** It keeps only the fields the connector read, so links, avatars, phone numbers and descriptions never reach the file.
-- **Allowlisted.** It keeps a value only if it is on an allowlist: Northwind's names and emails, timestamps, issue keys, status words and counts. Everything else becomes a stable pseudonym (`id-3`, `person-1@northwind.example`, `value-2`): the sandbox admin, Okta's default *Everyone* group, every account id and cursor.
+- **By schema.** [`schema.ts`](../backend/scripts/rehearsal/schema.ts) lists every field each connector reads and every path it requests, with the class of each value. Ids and cursors are always replaced. A name stays only if it is in Northwind's roster, and a status only if it is on the provider's word list. A field, key, path or query parameter not in the schema is refused, not kept.
+- **Stable pseudonyms.** Replaced values become `id-<hash>`, `cursor-<hash>`, `person-<hash>@northwind.example` or `value-<hash>`. The hash is a keyed HMAC under your salt file, so an account has the same pseudonym in every recording.
 
 It writes `test/fixtures/recorded/okta.json` only if all three of these hold:
 
 - every email it read is at `SANDBOX_DOMAINS` or `northwind.example`;
-- the result passes the allowlist check (`findLeaks`);
-- the recording replays to the same records.
+- the result passes the schema check (`findLeaks`);
+- the replay gives exactly the live records, renamed as scrubbed.
 
 It prints counts and paths, never content.
 
@@ -119,7 +122,7 @@ These are the apps the product's own consent flows use. Each asks for exactly th
 | Google | OAuth client, Web application, internal to `crowbo.ai` | `https://www.googleapis.com/auth/admin.directory.user.readonly`, `https://www.googleapis.com/auth/admin.directory.group.readonly` |
 | Linear | OAuth application | `read` |
 | Jira | OAuth 2.0 (3LO) app in the developer console | `read:jira-work`, `read:jira-user`, `offline_access` |
-| Slack | The app from [SLACK.md](SLACK.md#set-it-up-on-staging) | `app_mentions:read`, `chat:write` (the one write scope), `im:history`, `files:read`. For the rehearsal only, also add `channels:history`: seeding and recording read the channel, and the manifest does not yet list it (see [Open](#open)) |
+| Slack | The app from [SLACK.md](SLACK.md#set-it-up-on-staging) | `app_mentions:read`, `chat:write` (the one write scope), `im:history`, `files:read`. Nothing more: seeding and recording use the separate rehearsal app from step 2 |
 
 ## 6. Staging secrets
 
@@ -163,14 +166,14 @@ The rehearsal passes when every line holds on staging. Record each result with i
 
 ## Safety
 
-- **Okta and Jira hosts.** The scripts accept only Okta developer or trial orgs and Jira `atlassian.net` sites.
-- **Sandbox domains.** Both scripts refuse any workspace whose people are not all at `SANDBOX_DOMAINS` or `northwind.example`. A token for a real company's tools stops before anything is read or written.
-- **The account behind each token.** Before reading or writing, both scripts check it. Linear's viewer and Jira's own account must have an email at `SANDBOX_DOMAINS`, and a Slack token must belong to `SLACK_WORKSPACE`.
+- **Named accounts.** Before anything is read or written, each token must belong to the account `SANDBOX_ACCOUNTS` names for its provider. That means the Okta org and the Jira site by host, Google by the domain of its own users, Linear by the workspace's key, and Slack by its workspace. A provider with no entry is refused.
+- **Sandbox domains.** Both scripts refuse any workspace whose people are not all at `SANDBOX_DOMAINS` or `northwind.example`.
+- **Dry run.** Without `--apply`, seeding sends nothing and needs no credentials.
 - **Explicit confirmation.** Seeding writes only with `--apply` and `CROWBO_SANDBOX=yes`.
-- **Recordings.** A recording keeps only the fields the connector read, and only allowlisted values. Anything unrecognised fails the check rather than passing it. Credentials are never written anywhere.
+- **Recordings.** A recording keeps only the fields the connector read, each value only as the schema allows. Anything outside the schema is refused, not kept. Credentials and the salt are never written to the repository.
 
 ## Open
 
-- **Slack scopes.** The demo Slack connector reads channel history, which needs `channels:history`. The Slack manifest asks for `im:history` and not `channels:history`. Decide whether the product reads a channel; the rehearsal app needs it either way to record the channel.
+- **Slack scopes.** The demo Slack connector reads channel history, which needs `channels:history`. The Slack manifest asks for `im:history` and not `channels:history`. Decide whether the product reads a channel. Until then, only the separate rehearsal app carries `channels:history`.
 - **Okta profile properties.** Okta's `profile.app` on groups and `businessOwner` on apps are custom properties ([SOURCES.md](../backend/contracts/SOURCES.md)). A customer org must add them, or those facts stay missing.
 - **First page only.** Jira project search and Linear's project list read only their first page.

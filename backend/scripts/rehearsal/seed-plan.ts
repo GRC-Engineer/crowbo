@@ -177,3 +177,24 @@ export async function seedRounds(plan: () => Promise<Step[]>, apply: (s: Step) =
   }
   return { applied, complete: (await pending()).length === 0 };
 }
+
+/**
+ * The dry run: what seeding an empty sandbox would create, planned without contacting the provider.
+ * Memberships and issues need ids the provider issues on creation, so they are planned in later rounds.
+ */
+export function dryRunPlan(provider: string, accounts: Record<string, string>): Step[] {
+  switch (provider) {
+    case "okta":
+      return planOkta({ users: [], groups: [], apps: [], groupSchemaHasApp: false });
+    case "google-workspace":
+      return planGoogle({ groups: [] }, accounts["google-workspace"] ?? "<your domain>");
+    case "linear":
+      return planLinear({ teamId: "<team>", projects: [], labels: [], issueTitles: [] });
+    case "jira":
+      return planJira({ projectId: "<NW>", versions: [], markers: [] }, "NW");
+    case "slack":
+      return planSlack({ texts: [] }, "<channel>");
+    default:
+      throw new Error(`No seed for ${provider}`);
+  }
+}
