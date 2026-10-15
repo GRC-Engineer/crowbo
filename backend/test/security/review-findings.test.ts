@@ -1,6 +1,8 @@
 // Regression tests for the independent security review of the TypeScript backend (30 Sep 2026).
 // Each test reproduces one finding's failure scenario and asserts the fixed behaviour.
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { byChain } from "../../src/standing/service";
+import type { Instant } from "../../src/domain/time";
 
 vi.mock("cloudflare:workers", () => ({ DurableObject: class {} }));
 
@@ -80,23 +82,16 @@ describe("security review findings", () => {
     expect(JSON.stringify(history.versions)).not.toContain("2031-04-01");
   });
 
-  it("2 (high), regression: history keeps oldest first when two versions share a millisecond", async () => {
-    vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(new Date("2026-10-15T12:00:00Z"));
-    const { engine, standing, lead } = await setup();
-    await standing.registerSubject(lead, EXCEPTION, "grc");
-    await activate(standing, lead, "exception_valid");
-    const item = withSource(makeItem(), { native_id: "exc-9", text: "EXC-9 approved by the CISO; the exception expires on 2031-04-01 per the register." });
-    await engine.ingest(batch(item));
-    const cite = (quote: string) => [{ source_id: logicalId(item.source), revision_id: revisionId(item.source), quote }];
-    await standing.assertFact(lead, { subject_key: "exception:EXC-9", workflow: "exceptions", predicate: "expires_on", state: "stated", value: "2031-04-01", citations: cite("the exception expires on 2031-04-01"), provenance: "source_extraction", extractor: "manual@1", attributed_to: "operator" } as any);
-    await standing.ask(lead, EXCEPTION);
-    await engine.withdraw(logicalId(item.source), now());
-    const history = await standing.history(lead, EXCEPTION);
-    if (history.status !== "ok") throw new Error("expected history");
-    expect(history.versions[0]).toEqual({ id: expect.any(String), computed_at: expect.any(String), withheld: "contributing source withdrawn or not readable" });
-    expect(JSON.stringify(history.versions)).not.toContain("2031-04-01");
-    vi.useRealTimers();
+  it("2 (high), regression: versions in the same millisecond keep predecessor order, whatever order the store returns them in", () => {
+    // The store scans by id (a hash), so a tie used to come back in hash order. Here the newer
+    // version has the smaller id, the case that put it first.
+    const at = "2026-10-15T12:00:00.000000Z" as Instant;
+    const older = { id: "f0", computed_at: at, predecessor: null };
+    const newer = { id: "0a", computed_at: at, predecessor: "f0" };
+    expect([newer, older].sort(byChain).map((v) => v.id)).toEqual(["f0", "0a"]);
+    expect([older, newer].sort(byChain).map((v) => v.id)).toEqual(["f0", "0a"]);
+    const later = { id: "00", computed_at: "2026-10-15T12:00:00.001000Z" as Instant, predecessor: "0a" };
+    expect([later, newer, older].sort(byChain).map((v) => v.id)).toEqual(["f0", "0a", "00"]);
   });
 
   it("3 (high): nobody can supersede another reader's fact; extractions cannot assert unknown", async () => {

@@ -37,7 +37,7 @@ const CONTENT_FRESHNESS = DAY;
  * Oldest first. Two versions can share a millisecond (an ask and the next one after a withdrawal),
  * so a tie is broken by the predecessor chain, then by id, never left to the sort's whim.
  */
-function byChain(a: Record<string, any>, b: Record<string, any>): number {
+export function byChain(a: Record<string, any>, b: Record<string, any>): number {
   const d = micros(a.computed_at) - micros(b.computed_at);
   if (d !== 0n) return d < 0n ? -1 : 1;
   if (b.predecessor === a.id) return -1;
