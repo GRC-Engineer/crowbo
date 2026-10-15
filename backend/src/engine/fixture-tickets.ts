@@ -1,5 +1,6 @@
 import { NORTHWIND } from "./fixture";
 import type { CompanyFixture, FakeApiRoute } from "./model";
+import { jiraIssueSearch } from "./tickets";
 
 /**
  * Northwind with an upcoming launch that handles customer data and has no security review, for the
@@ -45,8 +46,8 @@ set("/rest/api/3/project/NW/versions", [
 const issue = (labels: string[], assignee: string, version: string, done = false) => ({
   fields: { labels, status: { statusCategory: { key: done ? "done" : "indeterminate" } }, assignee: { emailAddress: email(assignee) }, fixVersions: [{ name: version }] },
 });
-set("/rest/api/3/search/jql?jql=project%3DNW", {
-  total: 3,
+set(jiraIssueSearch("NW"), {
+  isLast: true,
   issues: [issue(["control:billing-admin-access"], "alex", "audit-prep"), ...checkout.map((i) => issue(i.labels, i.assignee, "checkout-v2"))],
 });
 

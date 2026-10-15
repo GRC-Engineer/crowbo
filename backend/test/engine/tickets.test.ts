@@ -7,7 +7,7 @@ import { NORTHWIND } from "../../src/engine/fixture";
 import { NORTHWIND_TICKETS } from "../../src/engine/fixture-tickets";
 import type { CompanyFixture } from "../../src/engine/model";
 import { MemoryEngineStore } from "../../src/engine/store";
-import { jira, launchLines, linear, type TicketsProvider, ticketsConnector } from "../../src/engine/tickets";
+import { jira, jiraIssueSearch, launchLines, linear, type TicketsProvider, ticketsConnector } from "../../src/engine/tickets";
 
 const S10 = "launch-without-review";
 const withProvider = (p: TicketsProvider) => ({ ...demoOptions(), connectors: CONNECTORS.map((c) => (c.id === "tickets" ? ticketsConnector(p) : c)) });
@@ -50,24 +50,23 @@ describe("tickets: one connector class, two providers", () => {
 describe("tickets: S10 holds only on evidence", () => {
   it("a finished security review is no gap", async () => {
     const done = structuredClone(NORTHWIND_TICKETS);
-    const search = done.api.find((r) => r.path === "/rest/api/3/search/jql?jql=project%3DNW")!.versions[0].body as { issues: unknown[]; total: number };
+    const search = done.api.find((r) => r.path === jiraIssueSearch("NW"))!.versions[0].body as { issues: unknown[] };
     search.issues.push({ fields: { labels: ["security-review"], status: { statusCategory: { key: "done" } }, assignee: { emailAddress: "dana@northwind.example" }, fixVersions: [{ name: "checkout-v2" }] } });
-    search.total = 4;
     const e = await start(jira, done);
     expect(fact(e, "launch:checkout-v2", "security_review")!.value).toBe("done");
     expect(scenario(e, S10)).toBe("no_gap_observed");
   });
 
   const linearProjects = (f: CompanyFixture) => (f.api.find((r) => r.path === "/graphql?query=projects")!.versions[0].body as { data: { projects: { nodes: { slugId: string; issues: { pageInfo?: { hasNextPage: boolean } } }[] } } }).data.projects.nodes;
-  const jiraSearch = (f: CompanyFixture) => f.api.find((r) => r.path === "/rest/api/3/search/jql?jql=project%3DNW")!.versions[0].body as { issues: unknown[]; total?: number; isLast?: boolean };
+  const jiraSearch = (f: CompanyFixture) => f.api.find((r) => r.path === jiraIssueSearch("NW"))!.versions[0].body as { issues: unknown[]; isLast?: boolean; nextPageToken?: string };
 
-  it("a partial read states nothing about the review: S10 stays unresolved and says how much was read (Jira total)", async () => {
+  it("a partial read states nothing about the review: S10 stays unresolved and says how much was read (Jira, a next page not read)", async () => {
     const partial = structuredClone(NORTHWIND_TICKETS);
-    jiraSearch(partial).total = 120;
+    Object.assign(jiraSearch(partial), { isLast: false, nextPageToken: "n2" });
     const e = await start(jira, partial);
     expect(fact(e, "launch:checkout-v2", "security_review")).toBeUndefined();
     expect(scenario(e, S10)).toBe("unresolved");
-    expect(e.nextMoves().unresolved.find((u) => u.subject === "launch:checkout-v2")!.detail).toMatch(/read in part \(3 of 120 issues\)$/);
+    expect(e.nextMoves().unresolved.find((u) => u.subject === "launch:checkout-v2")!.detail).toMatch(/read in part \(3 of an unknown number of issues\)$/);
     const a = answerTopic(e, "Which launches handle customer data without a security review?");
     expect(a.sources.find((x) => x.connector === "tickets")!.coverage).toBe("partial");
   });
@@ -80,17 +79,14 @@ describe("tickets: S10 holds only on evidence", () => {
     expect(scenario(e, S10)).toBe("unresolved");
   });
 
-  it("unknown completeness is incomplete: no Linear pageInfo, or a Jira page with neither isLast nor total", async () => {
+  it("unknown completeness is incomplete: no Linear pageInfo, or a Jira page that does not say it is the last", async () => {
     const noPageInfo = structuredClone(NORTHWIND_TICKETS);
     delete linearProjects(noPageInfo).find((x) => x.slugId === "checkout-v2")!.issues.pageInfo;
     expect(scenario(await start(linear, noPageInfo), S10)).toBe("unresolved");
-    const noTotal = structuredClone(NORTHWIND_TICKETS);
-    delete jiraSearch(noTotal).total;
-    expect(scenario(await start(jira, noTotal), S10)).toBe("unresolved");
-    const isLast = structuredClone(NORTHWIND_TICKETS);
-    delete jiraSearch(isLast).total;
-    jiraSearch(isLast).isLast = true;
-    expect(scenario(await start(jira, isLast), S10)).toBe("gap_supported");
+    const unsaid = structuredClone(NORTHWIND_TICKETS);
+    delete jiraSearch(unsaid).isLast;
+    expect(scenario(await start(jira, unsaid), S10)).toBe("unresolved");
+    expect(scenario(await start(jira), S10)).toBe("gap_supported");
   });
 
   it("an open review is stated however much was read; a cancelled review counts as no review", () => {
