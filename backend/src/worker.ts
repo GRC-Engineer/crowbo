@@ -43,6 +43,13 @@ function tenant(env: Env, name: string) {
   return namespace.get(namespace.idFromName(name));
 }
 
+/** A plain secret or a Secrets Store binding, read in the Worker; null when unset. */
+async function secretValue(v: string | SecretsStoreSecret | undefined): Promise<string | null> {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  return v.get().catch(() => null);
+}
+
 /** A tenant's connections live in the tenant's own object. */
 const connectCaller = (env: Env): ConnectCall => (tenantName, op) => tenant(env, tenantName).connections(tenantName, op);
 
@@ -61,7 +68,7 @@ function invoker(env: Env, config: OperatorConfig) {
 async function serve(request: Request, env: Env, config: OperatorConfig): Promise<Response> {
   const url = new URL(request.url);
   // Connecting a source: handled first, it reads its own small JSON body.
-  const connected = await connectAuthed(request, env, config.tenant, config.roles, connectCaller(env));
+  const connected = await connectAuthed(request, env, config, () => secretValue(env.CONNECTIONS_KEK), connectCaller(env));
   if (connected) return withSecurityHeaders(connected);
   const invoke = invoker(env, config);
   const body = request.method === "GET" || request.method === "HEAD" ? new Uint8Array() : await boundedBody(request);
@@ -123,7 +130,7 @@ export default {
     // Claude shows a connector's favicon: point it at the crow on the public site.
     if (url.pathname === "/favicon.ico") return Response.redirect("https://crowbo.ai/assets/favicon-32.png", 301);
     // A provider's consent callback: public, its state names the tenant and a one-time nonce.
-    const callback = await connectCallback(request, env, connectCaller(env));
+    const callback = await connectCallback(request, env, () => secretValue(env.CONNECTIONS_KEK), connectCaller(env));
     if (callback) return withSecurityHeaders(callback);
     // Slack's Events API: signed by Slack, not by an operator token, so it is checked before auth.
     if (url.pathname === "/slack/events") {

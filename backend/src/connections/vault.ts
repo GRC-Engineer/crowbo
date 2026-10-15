@@ -1,13 +1,17 @@
 import type { FetchLike } from "../providers/http";
-import { type Envelope, type Keyring, open, reencrypt, seal } from "./crypto";
+import { type Envelope, type Keyring, open, reencrypt, type SecretKind, seal } from "./crypto";
 import { authorizeUrl, manifest } from "./manifests";
-import type { Connection, ConnectionStore } from "./store";
+import { type Connection, type ConnectionStore, RevokedError } from "./store";
 
 /**
  * One tenant's connections (ADR 0003): consent and code exchange, refresh with rotating tokens
  * persisted before use, Okta's private-key JWT, pasted secrets with a rotation date, revocation and
  * the report of what was not read. Secrets are sealed with the tenant's derived key before they
  * touch storage, and opened only to make a request.
+ *
+ * Concurrency: the Durable Object interleaves at every await. Only one token request per provider is
+ * in flight (single-flight), and every write after an await re-reads the record inside its
+ * transaction, so a stale snapshot can never overwrite a revocation.
  */
 
 const DAY = 86_400_000;
@@ -22,42 +26,78 @@ export class ConnectionError extends Error {
   override name = "ConnectionError";
 }
 
-type TokenResponse = { access_token?: string; refresh_token?: string; expires_in?: number; scope?: string; error?: string };
+type TokenResponse = { access_token?: string; refresh_token?: string; expires_in?: number; scope?: string; error?: string; team?: { id?: string } };
+
+/** Who consented, asked of the provider with the new token; null when the provider does not say. */
+export type IdentityProbe = (provider: string, token: TokenResponse, http: FetchLike) => Promise<string | null>;
 
 export class ConnectionVault {
-  constructor(private tenant: string, private store: ConnectionStore, private ring: Keyring, private now: () => number = Date.now) {}
+  constructor(
+    private tenant: string,
+    private store: ConnectionStore,
+    private ring: Keyring,
+    private now: () => number = Date.now,
+    /** Token requests in flight, by provider: shared by every vault on the same object. */
+    private inflight: Map<string, Promise<string | null>> = new Map(),
+  ) {}
 
   // ---- Consent (authorization code, PKCE where the provider supports it) ----
 
-  async startConsent(provider: string, clientId: string, redirectUri: string): Promise<{ url: string; state: string }> {
+  async startConsent(provider: string, clientId: string, redirectUri: string, initiator: string): Promise<{ url: string; state: string }> {
     const m = manifest(provider);
     if (m.flow.kind !== "authorization_code") throw new ConnectionError(`${m.label} has no consent redirect`);
     const nonce = randomToken();
     const verifier = m.flow.pkce ? randomToken(48) : null;
     const challenge = verifier ? b64url(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)))) : undefined;
-    this.store.putState({ nonce, provider, verifier, expires_at: iso(this.now() + STATE_TTL_MS) });
+    this.store.putState({
+      nonce, provider, initiator, expires_at: iso(this.now() + STATE_TTL_MS),
+      verifier: verifier ? await seal(this.ring, this.tenant, provider, "pkce_verifier", verifier) : null,
+    }, this.now());
     return { url: authorizeUrl(provider, { clientId, redirectUri, state: nonce, codeChallenge: challenge }), state: nonce };
   }
 
-  /** The callback: the state must be this tenant's, unused, unexpired and for this provider. */
-  async completeConsent(provider: string, nonce: string, code: string, client: { id: string; secret: string; redirectUri: string }, http: FetchLike): Promise<Connection> {
+  /**
+   * The callback: the state must be this tenant's, unused, unexpired and for this provider. The
+   * consenting identity is asked of the provider and checked against the tenant's registered
+   * identities: a mismatch is refused and nothing is kept. With none registered, the connection is
+   * kept pending until the operator who started it confirms the identity shown.
+   */
+  async completeConsent(
+    provider: string, nonce: string, code: string,
+    client: { id: string; secret: string; redirectUri: string }, http: FetchLike,
+    registered: string[], probe: IdentityProbe,
+  ): Promise<Connection> {
     const m = manifest(provider);
     if (m.flow.kind !== "authorization_code") throw new ConnectionError(`${m.label} has no consent redirect`);
     const state = this.store.takeState(nonce);
     if (!state || state.provider !== provider || Date.parse(state.expires_at) < this.now()) throw new ConnectionError("The consent request is unknown, used or expired; start again");
-    const body = new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: client.redirectUri, client_id: client.id, client_secret: client.secret, ...(state.verifier ? { code_verifier: state.verifier } : {}) });
+    const verifier = state.verifier ? await open(this.ring, this.tenant, provider, "pkce_verifier", state.verifier) : null;
+    const body = new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: client.redirectUri, client_id: client.id, client_secret: client.secret, ...(verifier ? { code_verifier: verifier } : {}) });
     const t = await this.tokenCall(m.flow.token, body, http);
     if (!t.access_token) throw new ConnectionError(`${m.label} did not return an access token`);
+    const identity = await probe(provider, t, http).catch(() => null);
+    if (registered.length && (!identity || !registered.includes(identity))) {
+      throw new ConnectionError(`${m.label} was consented by ${identity ?? "an identity the provider did not state"}, which is not registered for this company; nothing was kept`);
+    }
     const granted = t.scope ? t.scope.split(/[ ,]+/).filter(Boolean) : m.scopes.map((s) => s.scope);
     const connection: Connection = {
-      provider, status: "active", scopes: granted, created_at: iso(this.now()), last_used_at: null, revoked_at: null, revoked_reason: null,
+      provider, status: registered.length ? "active" : "pending", scopes: granted, created_at: iso(this.now()), last_used_at: null, revoked_at: null, revoked_reason: null,
       access_expires_at: t.expires_in ? iso(this.now() + t.expires_in * 1000) : null, rotation_due: null, client_id: client.id, host: null,
+      identity, initiator: state.initiator,
     };
     this.store.commit(connection, {
       access_token: await seal(this.ring, this.tenant, provider, "access_token", t.access_token),
       ...(t.refresh_token ? { refresh_token: await seal(this.ring, this.tenant, provider, "refresh_token", t.refresh_token) } : {}),
     });
     return connection;
+  }
+
+  /** The operator who started a consent confirms the identity it landed on; nobody else can. */
+  confirm(provider: string, operator: string): Connection {
+    const c = this.store.get(provider);
+    if (!c || c.status !== "pending") throw new ConnectionError(`No ${manifest(provider).label} connection is waiting for confirmation`);
+    if (c.initiator !== operator) throw new ConnectionError("Only the operator who started this connection can confirm it");
+    return this.store.update(provider, (cur) => (cur.status === "pending" ? { ...cur, status: "active" } : cur));
   }
 
   /** Scopes the manifest needs that the provider did not grant: reads that need them will not be complete. */
@@ -69,11 +109,20 @@ export class ConnectionVault {
   // ---- Access tokens ----
 
   /**
-   * A usable access token. When it has expired, refresh: the rotated refresh token and the new access
-   * token are committed together before the access token is returned. If that write fails, the error
-   * is raised: the old refresh token is never retried (Atlassian's are single-use).
+   * A usable access token, one request per provider at a time. When it has expired, refresh: the
+   * rotated refresh token and the new access token are committed together before the access token
+   * is returned. If that write fails, the error is raised: the old refresh token is never retried
+   * (Atlassian's are single-use). A connection revoked meanwhile stays revoked.
    */
-  async accessToken(provider: string, client: { id: string; secret: string }, http: FetchLike): Promise<string | null> {
+  accessToken(provider: string, client: { id: string; secret: string }, http: FetchLike): Promise<string | null> {
+    const running = this.inflight.get(provider);
+    if (running) return running;
+    const job = this.token(provider, client, http).finally(() => this.inflight.delete(provider));
+    this.inflight.set(provider, job);
+    return job;
+  }
+
+  private async token(provider: string, client: { id: string; secret: string }, http: FetchLike): Promise<string | null> {
     const c = this.store.get(provider);
     if (!c || c.status !== "active") return null;
     const m = manifest(provider);
@@ -92,16 +141,26 @@ export class ConnectionVault {
       throw error;
     }
     if (!t.access_token) return this.revoke(provider, "the provider returned no access token on refresh");
-    const next: Connection = { ...c, access_expires_at: t.expires_in ? iso(this.now() + t.expires_in * 1000) : null };
-    // Persist before use; a failure here propagates and nothing else proceeds with this refresh.
-    this.store.commit(next, {
-      access_token: await seal(this.ring, this.tenant, provider, "access_token", t.access_token),
-      ...(t.refresh_token ? { refresh_token: await seal(this.ring, this.tenant, provider, "refresh_token", t.refresh_token) } : {}),
-    });
-    return t.access_token;
+    return this.storeToken(provider, t);
   }
 
-  private async openSecret(provider: string, kind: "access_token" | "refresh_token" | "api_key" | "client_secret" | "private_jwk") {
+  /** Persist a new access token (and a rotated refresh token) before returning it; never onto a revoked connection. */
+  private async storeToken(provider: string, t: TokenResponse): Promise<string | null> {
+    const secrets: Partial<Record<SecretKind, Envelope>> = {
+      access_token: await seal(this.ring, this.tenant, provider, "access_token", t.access_token!),
+      ...(t.refresh_token ? { refresh_token: await seal(this.ring, this.tenant, provider, "refresh_token", t.refresh_token) } : {}),
+    };
+    try {
+      // Re-reads the record inside the write: a revocation that landed meanwhile is kept, and this token is not used.
+      this.store.update(provider, (cur) => (cur.status === "active" ? { ...cur, access_expires_at: iso(this.now() + (t.expires_in ?? 3600) * 1000) } : cur), secrets);
+    } catch (error) {
+      if (error instanceof RevokedError) return null;
+      throw error;
+    }
+    return this.store.get(provider)?.status === "active" ? t.access_token! : null;
+  }
+
+  private async openSecret(provider: string, kind: SecretKind) {
     const env = this.store.secret(provider, kind);
     return env ? open(this.ring, this.tenant, provider, kind, env) : null;
   }
@@ -124,7 +183,7 @@ export class ConnectionVault {
     const pub: JsonWebKey & { kid: string; use: string } = { ...((await crypto.subtle.exportKey("jwk", pair.publicKey)) as JsonWebKey), kid, use: "sig", alg: "RS256" };
     const connection: Connection = {
       provider: "okta", status: "active", scopes: manifest("okta").scopes.map((s) => s.scope), created_at: iso(this.now()), last_used_at: null,
-      revoked_at: null, revoked_reason: null, access_expires_at: iso(0), rotation_due: null, client_id: clientId, host: orgHost,
+      revoked_at: null, revoked_reason: null, access_expires_at: iso(0), rotation_due: null, client_id: clientId, host: orgHost, identity: orgHost, initiator: null,
     };
     this.store.commit(connection, { private_jwk: await seal(this.ring, this.tenant, "okta", "private_jwk", JSON.stringify(priv)) });
     return { public_jwk: pub };
@@ -151,8 +210,7 @@ export class ConnectionVault {
       throw error;
     }
     if (!t.access_token) return this.revoke("okta", "Okta returned no access token");
-    this.store.commit({ ...c, access_expires_at: iso(this.now() + (t.expires_in ?? 3600) * 1000) }, { access_token: await seal(this.ring, this.tenant, "okta", "access_token", t.access_token) });
-    return t.access_token;
+    return this.storeToken("okta", t);
   }
 
   // ---- Pasted secrets: the exceptions (Vanta client credentials, Drata API key) ----
@@ -165,6 +223,7 @@ export class ConnectionVault {
     const connection: Connection = {
       provider, status: "active", scopes: m.scopes.map((s) => s.scope), created_at: iso(this.now()), last_used_at: null, revoked_at: null, revoked_reason: null,
       access_expires_at: kind === "api_key" ? null : iso(0), rotation_due: iso(this.now() + m.rotate_within_days * DAY), client_id: values.client_id ?? null, host: null,
+      identity: null, initiator: null,
     };
     this.store.commit(connection, { [kind]: await seal(this.ring, this.tenant, provider, kind, values.secret) });
     return connection;
@@ -182,8 +241,7 @@ export class ConnectionVault {
       throw error;
     }
     if (!t.access_token) return this.revoke(c.provider, `${m.label} returned no access token`);
-    this.store.commit({ ...c, access_expires_at: iso(this.now() + (t.expires_in ?? 3600) * 1000) }, { access_token: await seal(this.ring, this.tenant, c.provider, "access_token", t.access_token) });
-    return t.access_token;
+    return this.storeToken(c.provider, t);
   }
 
   // ---- Key rotation ----
@@ -194,17 +252,14 @@ export class ConnectionVault {
    */
   async rekey(): Promise<{ moved: number; current: string }> {
     let moved = 0;
-    const byProvider = new Map<string, Partial<Record<string, Envelope>>>();
+    const byProvider = new Map<string, Partial<Record<SecretKind, Envelope>>>();
     for (const { provider, kind, envelope } of this.store.allSecrets()) {
       if (envelope.kid === this.ring.current) continue;
       const next = await reencrypt(this.ring, this.tenant, provider, kind, envelope);
       byProvider.set(provider, { ...(byProvider.get(provider) ?? {}), [kind]: next });
       moved++;
     }
-    for (const [provider, secrets] of byProvider) {
-      const c = this.store.get(provider);
-      if (c) this.store.commit(c, secrets);
-    }
+    for (const [provider, secrets] of byProvider) if (this.store.get(provider)) this.store.update(provider, (cur) => cur, secrets);
     return { moved, current: this.ring.current };
   }
 
@@ -212,14 +267,14 @@ export class ConnectionVault {
 
   /** Fail closed: the connection is revoked and no read uses it; returns null for the caller to stop. */
   revoke(provider: string, reason: string): null {
-    const c = this.store.get(provider);
-    if (c && c.status !== "revoked") this.store.commit({ ...c, status: "revoked", revoked_at: iso(this.now()), revoked_reason: reason }, {});
+    if (this.store.get(provider)) {
+      this.store.update(provider, (cur) => (cur.status === "revoked" ? cur : { ...cur, status: "revoked", revoked_at: iso(this.now()), revoked_reason: reason }));
+    }
     return null;
   }
 
   markUsed(provider: string) {
-    const c = this.store.get(provider);
-    if (c && c.status === "active") this.store.commit({ ...c, last_used_at: iso(this.now()) }, {});
+    if (this.store.get(provider)) this.store.update(provider, (cur) => (cur.status === "active" ? { ...cur, last_used_at: iso(this.now()) } : cur));
   }
 
   /** What the brief says about sources: revoked since when, unused for 14 days, secrets due for rotation. */
@@ -231,6 +286,7 @@ export class ConnectionVault {
         out.push({ provider: c.provider, label, problem: "revoked", since: c.revoked_at!, detail: c.revoked_reason ?? "revoked" });
         continue;
       }
+      if (c.status === "pending") continue;
       const used = Date.parse(c.last_used_at ?? c.created_at);
       if (this.now() - used > UNUSED_DAYS * DAY) out.push({ provider: c.provider, label, problem: "unused", since: c.last_used_at ?? c.created_at, detail: `no scheduled read in ${UNUSED_DAYS} days` });
       if (c.rotation_due && Date.parse(c.rotation_due) <= this.now()) out.push({ provider: c.provider, label, problem: "rotation_due", since: c.rotation_due, detail: "the pasted secret is past its rotation date" });
@@ -238,3 +294,29 @@ export class ConnectionVault {
     return out;
   }
 }
+
+/**
+ * Who consented, as each provider states it: the Google Workspace primary domain, the Linear
+ * workspace, the Jira site, the Slack team. A tenant registers these to accept a consent without the
+ * confirm step. Endpoint shapes are verified: false until the dress rehearsal.
+ */
+export const identityProbe: IdentityProbe = async (provider, token, http) => {
+  const bearer = { authorization: `Bearer ${token.access_token}`, accept: "application/json" };
+  if (provider === "slack") return token.team?.id ? `slack:${token.team.id}` : null;
+  if (provider === "linear") {
+    const r = await http("https://api.linear.app/graphql", { method: "POST", headers: { ...bearer, "content-type": "application/json" }, body: JSON.stringify({ query: "{ organization { urlKey } }" }) });
+    const key = ((await r.json()) as { data?: { organization?: { urlKey?: string } } }).data?.organization?.urlKey;
+    return key ? `linear:${key}` : null;
+  }
+  if (provider === "jira") {
+    const r = await http("https://api.atlassian.com/oauth/token/accessible-resources", { headers: bearer });
+    const sites = (await r.json()) as { url?: string }[];
+    return sites.length === 1 && sites[0].url ? `jira:${new URL(sites[0].url).host}` : null;
+  }
+  if (provider === "google-workspace") {
+    const r = await http("https://admin.googleapis.com/admin/directory/v1/users?customer=my_customer&maxResults=1", { headers: bearer });
+    const email = ((await r.json()) as { users?: { primaryEmail?: string }[] }).users?.[0]?.primaryEmail;
+    return email?.includes("@") ? `google:${email.split("@")[1].toLowerCase()}` : null;
+  }
+  return null;
+};

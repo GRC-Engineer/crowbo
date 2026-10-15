@@ -17,6 +17,8 @@ export interface Env {
   CONNECTIONS_KEK?: string | SecretsStoreSecret;
   CONNECT_CLIENTS?: string | SecretsStoreSecret;
   CONNECT_REDIRECT_BASE?: string;
+  /** Per tenant, the identities a consent may come from: "google:<domain>", "linear:<workspace>", "jira:<site host>", "slack:<team id>". */
+  CONNECT_TENANT_IDENTITIES?: string | SecretsStoreSecret;
   SLACK_SIGNING_SECRET?: string;
   SLACK_BOT_TOKEN?: string;
   SLACK_WORKSPACES?: string;

@@ -4,6 +4,8 @@ import { authorizeUrl, MANIFESTS } from "../../src/connections/manifests";
 import { MemoryConnectionStore } from "../../src/connections/store";
 import { connectionFetch, linkNext } from "../../src/connections/transport";
 import { ConnectionVault } from "../../src/connections/vault";
+import { connectAuthed, signState, stateKey, verifyState } from "../../src/app/connect";
+import type { Env } from "../../src/app/env";
 import { weeklyBrief } from "../../src/engine/answer";
 import { CONNECTORS } from "../../src/engine/connectors";
 import { demoOptions } from "../../src/engine/demo";
@@ -27,6 +29,9 @@ function fakeHttp(handler: (url: string, init: RequestInit) => Response | Promis
   return { http, calls };
 }
 const form = (init: RequestInit) => Object.fromEntries(new URLSearchParams(String(init.body)));
+/** The consenting identity a test provider states, and the tenant's registered list that accepts it. */
+const probe = async () => "linear:northwind";
+const REGISTERED = ["linear:northwind"];
 
 describe("connection secrets: sealed per tenant, provider and kind", () => {
   it("round-trips, and nothing opens under another tenant, provider or kind", async () => {
@@ -96,27 +101,27 @@ describe("consent and tokens", () => {
   it("the consent state is one-time, unexpired and for the provider; the code exchange stores only sealed tokens", async () => {
     const store = new MemoryConnectionStore();
     const vault = new ConnectionVault("tenant-a", store, ring(), () => NOW);
-    const { url, state } = await vault.startConsent("linear", client.id, client.redirectUri);
+    const { url, state } = await vault.startConsent("linear", client.id, client.redirectUri, "alice");
     expect(new URL(url).searchParams.get("code_challenge")).toBeTruthy();
     const { http, calls } = fakeHttp(() => Response.json({ access_token: "at-1", refresh_token: "rt-1", expires_in: 3600, scope: "read" }));
-    await expect(vault.completeConsent("jira", state, "code", client, http)).rejects.toThrow(/unknown, used or expired/);
-    const again = await vault.startConsent("linear", client.id, client.redirectUri);
-    const c = await vault.completeConsent("linear", again.state, "code-1", client, http);
+    await expect(vault.completeConsent("jira", state, "code", client, http, REGISTERED, probe)).rejects.toThrow(/unknown, used or expired/);
+    const again = await vault.startConsent("linear", client.id, client.redirectUri, "alice");
+    const c = await vault.completeConsent("linear", again.state, "code-1", client, http, REGISTERED, probe);
     expect(c).toMatchObject({ provider: "linear", status: "active", scopes: ["read"] });
     expect(form(calls[0].init).code_verifier).toBeTruthy();
-    await expect(vault.completeConsent("linear", again.state, "code-1", client, http)).rejects.toThrow(/unknown, used or expired/);
+    await expect(vault.completeConsent("linear", again.state, "code-1", client, http, REGISTERED, probe)).rejects.toThrow(/unknown, used or expired/);
     expect(JSON.stringify([...store.secrets.values()])).not.toMatch(/at-1|rt-1/);
     const late = new ConnectionVault("tenant-a", store, ring(), () => NOW + 11 * 60_000);
-    const old = await vault.startConsent("linear", client.id, client.redirectUri);
-    await expect(late.completeConsent("linear", old.state, "c", client, http)).rejects.toThrow(/expired/);
+    const old = await vault.startConsent("linear", client.id, client.redirectUri, "alice");
+    await expect(late.completeConsent("linear", old.state, "c", client, http, REGISTERED, probe)).rejects.toThrow(/expired/);
   });
 
   it("refresh commits the rotated refresh token before the access token is used; a failed write is a hard error, never a retry", async () => {
     const store = new MemoryConnectionStore();
     let now = NOW;
     const vault = new ConnectionVault("tenant-a", store, ring(), () => now);
-    const { state } = await vault.startConsent("jira", client.id, client.redirectUri);
-    await vault.completeConsent("jira", state, "code", client, fakeHttp(() => Response.json({ access_token: "at-1", refresh_token: "rt-1", expires_in: 3600 })).http);
+    const { state } = await vault.startConsent("jira", client.id, client.redirectUri, "alice");
+    await vault.completeConsent("jira", state, "code", client, fakeHttp(() => Response.json({ access_token: "at-1", refresh_token: "rt-1", expires_in: 3600 })).http, REGISTERED, probe);
     now += 2 * 3600_000;
     const { http, calls } = fakeHttp(() => Response.json({ access_token: "at-2", refresh_token: "rt-2", expires_in: 3600 }));
     store.failNextCommit = true;
@@ -133,8 +138,8 @@ describe("consent and tokens", () => {
     const store = new MemoryConnectionStore();
     let now = NOW;
     const vault = new ConnectionVault("tenant-a", store, ring(), () => now);
-    const { state } = await vault.startConsent("jira", client.id, client.redirectUri);
-    await vault.completeConsent("jira", state, "code", client, fakeHttp(() => Response.json({ access_token: "at-1", refresh_token: "rt-1", expires_in: 3600 })).http);
+    const { state } = await vault.startConsent("jira", client.id, client.redirectUri, "alice");
+    await vault.completeConsent("jira", state, "code", client, fakeHttp(() => Response.json({ access_token: "at-1", refresh_token: "rt-1", expires_in: 3600 })).http, REGISTERED, probe);
     now += 2 * 3600_000;
     expect(await vault.accessToken("jira", client, fakeHttp(() => Response.json({ access_token: "at-2", refresh_token: "rt-2", expires_in: 3600 })).http)).toBe("at-2");
     expect(await open(ring(), "tenant-a", "jira", "refresh_token", store.secret("jira", "refresh_token")!)).toBe("rt-2");
@@ -207,5 +212,95 @@ describe("transport: Link-header paging, and revocation fails closed", () => {
     expect(e.nextMoves().scenarios.find((s) => s.scenario === "billing-exposure")!.state).toBe("unresolved");
     expect(weeklyBrief(e).markdown).toContain("## Sources not read\n- Okta: not read since 2026-10-16 (the provider answered 401). Answers that depend on it stay unresolved.");
     expect(okta.label).toBe("Okta");
+  });
+});
+
+describe("PR 51 review: concurrency, revocation and who consented", () => {
+  const client = { id: "client-1", secret: "client-secret-1", redirectUri: "https://crowbo.example/cb" };
+  async function connected(provider: "jira" | "linear", now: () => number, inflight = new Map<string, Promise<string | null>>()) {
+    const store = new MemoryConnectionStore();
+    const vault = new ConnectionVault("tenant-a", store, ring(), now, inflight);
+    const { state } = await vault.startConsent(provider, client.id, client.redirectUri, "alice");
+    await vault.completeConsent(provider, state, "code", client, fakeHttp(() => Response.json({ access_token: "at-1", refresh_token: "rt-1", expires_in: 3600 })).http, REGISTERED, probe);
+    return { store, vault };
+  }
+
+  it("two concurrent refreshes send the single-use refresh token once and share the result", async () => {
+    let now = NOW;
+    const { store, vault } = await connected("jira", () => now);
+    now += 2 * 3600_000;
+    const { http, calls } = fakeHttp(async () => (await new Promise((r) => setTimeout(r, 5)), Response.json({ access_token: "at-2", refresh_token: "rt-2", expires_in: 3600 })));
+    const results = await Promise.all([vault.accessToken("jira", client, http), vault.accessToken("jira", client, http)]);
+    expect(results).toEqual(["at-2", "at-2"]);
+    expect(calls).toHaveLength(1);
+    expect(store.get("jira")!.status).toBe("active");
+  });
+
+  it("a revocation that lands during a refresh is kept, and the new token is not used", async () => {
+    let now = NOW;
+    const { store, vault } = await connected("jira", () => now);
+    now += 2 * 3600_000;
+    const http: FetchLike = async () => {
+      vault.revoke("jira", "the provider answered 401");
+      return Response.json({ access_token: "at-2", refresh_token: "rt-2", expires_in: 3600 });
+    };
+    expect(await vault.accessToken("jira", client, http)).toBeNull();
+    expect(store.get("jira")).toMatchObject({ status: "revoked", revoked_reason: "the provider answered 401" });
+    vault.markUsed("jira");
+    expect(store.get("jira")!.status).toBe("revoked");
+    expect(() => store.update("jira", (c) => ({ ...c, status: "active" }))).toThrow(/only a fresh consent reconnects it/);
+  });
+
+  it("with no registered identity, a consent waits for its initiator: not used until then, and nobody else can confirm", async () => {
+    const store = new MemoryConnectionStore();
+    const vault = new ConnectionVault("tenant-a", store, ring(), () => NOW);
+    const { state } = await vault.startConsent("linear", client.id, client.redirectUri, "alice");
+    const c = await vault.completeConsent("linear", state, "code", client, fakeHttp(() => Response.json({ access_token: "at-1", expires_in: 3600 })).http, [], probe);
+    expect([c.status, c.identity, c.initiator]).toEqual(["pending", "linear:northwind", "alice"]);
+    expect(await vault.accessToken("linear", client, fakeHttp(() => Response.json({})).http)).toBeNull();
+    expect(() => vault.confirm("linear", "mallory")).toThrow(/Only the operator who started this connection/);
+    expect(vault.confirm("linear", "alice").status).toBe("active");
+    expect(await vault.accessToken("linear", client, fakeHttp(() => Response.json({})).http)).toBe("at-1");
+  });
+
+  it("a consent from an identity the tenant has not registered is refused, and nothing is kept", async () => {
+    const store = new MemoryConnectionStore();
+    const vault = new ConnectionVault("tenant-a", store, ring(), () => NOW);
+    const { state } = await vault.startConsent("linear", client.id, client.redirectUri, "alice");
+    await expect(vault.completeConsent("linear", state, "code", client, fakeHttp(() => Response.json({ access_token: "at-1" })).http, ["linear:northwind"], async () => "linear:othercorp"))
+      .rejects.toThrow(/consented by linear:othercorp, which is not registered for this company; nothing was kept/);
+    expect(store.get("linear")).toBeNull();
+    expect(store.secrets.size).toBe(0);
+  });
+
+  it("the PKCE verifier is sealed, and expired consent states are purged", async () => {
+    const store = new MemoryConnectionStore();
+    let now = NOW;
+    const vault = new ConnectionVault("tenant-a", store, ring(), () => now);
+    const { state } = await vault.startConsent("linear", client.id, client.redirectUri, "alice");
+    const kept = store.states.get(state)!;
+    expect(kept.verifier).toMatchObject({ kid: "k1" });
+    now += 11 * 60_000;
+    await vault.startConsent("linear", client.id, client.redirectUri, "alice");
+    expect(store.states.has(state)).toBe(false);
+  });
+
+  it("a signed consent state is refused when its tenant, provider or nonce is altered", async () => {
+    const key = await stateKey("kek-material");
+    const state = await signState(key, "tenant-a", "linear", "nonce-1");
+    expect(await verifyState(key, "linear", state)).toEqual({ tenant: "tenant-a", nonce: "nonce-1" });
+    expect(await verifyState(key, "jira", state)).toBeNull();
+    const [, nonce, mac] = state.split(".");
+    expect(await verifyState(key, "linear", `${btoa("tenant-b").replace(/=+$/, "")}.${nonce}.${mac}`)).toBeNull();
+    expect(await verifyState(await stateKey("other-kek"), "linear", state)).toBeNull();
+  });
+
+  it("rekey needs the key_admin role; connecting needs ingestor", async () => {
+    const env = { CONNECTIONS_KEK: "x", CONNECT_REDIRECT_BASE: "https://crowbo.example" } as unknown as Env;
+    const call = async () => ({ ok: true as const, result: { moved: 0 } });
+    const req = (path: string, method = "POST") => new Request(`https://crowbo.example${path}`, { method });
+    expect((await connectAuthed(req("/connect/rekey"), env, { tenant: "t", reader: "a", roles: ["operator", "ingestor"] }, async () => "x", call))!.status).toBe(403);
+    expect((await connectAuthed(req("/connect/rekey"), env, { tenant: "t", reader: "a", roles: ["key_admin"] }, async () => "x", call))!.status).toBe(200);
+    expect((await connectAuthed(req("/connect/status", "GET"), env, { tenant: "t", reader: "a", roles: ["operator"] }, async () => "x", call))!.status).toBe(403);
   });
 });

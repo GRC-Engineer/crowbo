@@ -6,7 +6,8 @@ import type { Envelope, SecretKind } from "./crypto";
  * transaction, so a rotated refresh token is either stored with its access token or not at all.
  */
 
-export type ConnectionStatus = "active" | "revoked";
+/** pending: consented, waiting for the initiating operator to confirm the consenting identity; not used. */
+export type ConnectionStatus = "pending" | "active" | "revoked";
 
 export interface Connection {
   provider: string;
@@ -24,12 +25,31 @@ export interface Connection {
   /** Non-secret identifiers: the client id an admin pasted, the Okta org host. */
   client_id: string | null;
   host: string | null;
+  /** Who consented, as the provider states it (a domain, a workspace, a site, a team); null when unknown. */
+  identity?: string | null;
+  /** The operator who started a consent; only they may confirm a pending connection. */
+  initiator?: string | null;
+}
+
+/** Raised when a write would bring a revoked connection back without a fresh consent. */
+export class RevokedError extends Error {
+  override name = "RevokedError";
+}
+
+/** A change to a connection, applied to the record as it is now, inside the write. */
+export type Change = (current: Connection) => Connection;
+
+function guard(current: Connection | null, next: Connection) {
+  if (current?.status === "revoked" && next.status !== "revoked") throw new RevokedError(`${current.provider} was revoked; only a fresh consent reconnects it`);
 }
 
 export interface ConsentState {
   nonce: string;
   provider: string;
-  verifier: string | null;
+  /** The PKCE verifier, sealed like any secret. */
+  verifier: Envelope | null;
+  /** The operator who started it. */
+  initiator: string;
   expires_at: string;
 }
 
@@ -39,9 +59,15 @@ export interface ConnectionStore {
   secret(provider: string, kind: SecretKind): Envelope | null;
   /** Every stored secret, for re-encryption under a new key id. */
   allSecrets(): { provider: string; kind: SecretKind; envelope: Envelope }[];
-  /** The record and its secrets together, or neither. Throws if the write fails. */
+  /** A whole record from a fresh consent or setup, with its secrets, or neither. Throws if the write fails. */
   commit(connection: Connection, secrets: Partial<Record<SecretKind, Envelope>>): void;
-  putState(state: ConsentState): void;
+  /**
+   * A change applied to the record as it is at the moment of the write, with any secrets, in one
+   * transaction. Refuses (RevokedError) to move a revoked connection to any other status.
+   */
+  update(provider: string, change: Change, secrets?: Partial<Record<SecretKind, Envelope>>): Connection;
+  /** Also purges states that have expired by `now`. */
+  putState(state: ConsentState, now: number): void;
   /** The state for a nonce, once: it is deleted as it is read. */
   takeState(nonce: string): ConsentState | null;
 }
@@ -76,7 +102,16 @@ export class MemoryConnectionStore implements ConnectionStore {
     this.connections.set(connection.provider, structuredClone(connection));
     for (const [kind, env] of Object.entries(secrets)) this.secrets.set(`${connection.provider}|${kind}`, env!);
   }
-  putState(state: ConsentState) {
+  update(provider: string, change: Change, secrets: Partial<Record<SecretKind, Envelope>> = {}) {
+    const current = this.get(provider);
+    if (!current) throw new Error(`No connection for ${provider}`);
+    const next = change(current);
+    guard(current, next);
+    this.commit(next, secrets);
+    return next;
+  }
+  putState(state: ConsentState, now: number) {
+    for (const [k, v] of this.states) if (Date.parse(v.expires_at) < now) this.states.delete(k);
     this.states.set(state.nonce, state);
   }
   takeState(nonce: string) {
@@ -120,8 +155,26 @@ export class SqlConnectionStore implements ConnectionStore {
       }
     });
   }
-  putState(state: ConsentState) {
-    this.storage.sql.exec("INSERT INTO consent_states (nonce, body) VALUES (?, ?)", state.nonce, JSON.stringify(state));
+  update(provider: string, change: Change, secrets: Partial<Record<SecretKind, Envelope>> = {}) {
+    return this.storage.transactionSync(() => {
+      const current = this.get(provider);
+      if (!current) throw new Error(`No connection for ${provider}`);
+      const next = change(current);
+      guard(current, next);
+      this.storage.sql.exec("UPDATE connections SET body = ? WHERE provider = ?", JSON.stringify(next), provider);
+      for (const [kind, env] of Object.entries(secrets)) {
+        this.storage.sql.exec("INSERT INTO connection_secrets (provider, kind, body) VALUES (?, ?, ?) ON CONFLICT (provider, kind) DO UPDATE SET body = excluded.body", provider, kind, JSON.stringify(env));
+      }
+      return next;
+    });
+  }
+  putState(state: ConsentState, now: number) {
+    this.storage.transactionSync(() => {
+      for (const r of this.storage.sql.exec<{ nonce: string; body: string }>("SELECT nonce, body FROM consent_states").toArray()) {
+        if (Date.parse((JSON.parse(r.body) as ConsentState).expires_at) < now) this.storage.sql.exec("DELETE FROM consent_states WHERE nonce = ?", r.nonce);
+      }
+      this.storage.sql.exec("INSERT INTO consent_states (nonce, body) VALUES (?, ?)", state.nonce, JSON.stringify(state));
+    });
   }
   takeState(nonce: string) {
     return this.storage.transactionSync(() => {

@@ -22,7 +22,7 @@ export interface Envelope {
   ct: string;
 }
 
-export type SecretKind = "access_token" | "refresh_token" | "private_jwk" | "client_secret" | "api_key";
+export type SecretKind = "access_token" | "refresh_token" | "private_jwk" | "client_secret" | "api_key" | "pkce_verifier";
 
 const b64 = (b: Uint8Array) => btoa(String.fromCharCode(...b));
 const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));

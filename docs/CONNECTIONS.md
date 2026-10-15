@@ -18,12 +18,30 @@ Each provider's scopes, and the scenarios that read them, are in [`manifests.ts`
 
 The routes, for an operator with the `ingestor` role:
 
-- `POST /connect/<provider>/start` returns the provider's authorize URL. The admin opens it, approves, and the provider redirects to `/connect/<provider>/callback`.
+- `POST /connect/<provider>/start` returns the provider's authorize URL. The admin opens it, approves, and the provider redirects to `/connect/<provider>/callback`. The state in that URL is signed by Crowbo, so an altered or forged one is refused before any tenant is reached.
+- `POST /connect/<provider>/confirm`: see "Who consented" below.
 - `POST /connect/okta/setup` with `{host, client_id}` returns the public key to register on the Okta service app.
 - `POST /connect/vanta/secret` or `/connect/drata/secret` with `{client_id?, secret}` stores a pasted secret.
 - `GET /connect/status` lists connections and what the brief will report: revoked, unused for 14 days, or a pasted secret past its rotation date.
+- `POST /connect/rekey`, for the `key_admin` role only, moves this tenant's secrets to the current key.
 
 They are off (404) until `CONNECTIONS_KEK` and `CONNECT_REDIRECT_BASE` are set.
+
+## Who consented
+
+A link to a consent screen can be sent to anyone, so Crowbo checks which company actually consented. After the code exchange it asks the provider:
+
+| Provider | Identity |
+| --- | --- |
+| Google Workspace | `google:<primary domain>` |
+| Linear | `linear:<workspace>` |
+| Jira | `jira:<site host>` |
+| Slack | `slack:<team id>` |
+
+- **Registered identities.** `CONNECT_TENANT_IDENTITIES` lists each tenant's identities. A consent from any other identity is refused, and nothing is kept.
+- **No identities registered.** The connection is kept pending and is not used. The operator who started the flow, and only they, confirms it after seeing which identity it landed on.
+
+Slack's `chat:write` is the one deliberate write scope: it posts Crowbo's own replies and the weekly list, and nothing else.
 
 ## Where the secrets are
 
@@ -33,7 +51,7 @@ They are off (404) until `CONNECTIONS_KEK` and `CONNECT_REDIRECT_BASE` are set.
 
 ## When a connection stops working
 
-A 401 or 403, or a refused refresh, marks the connection revoked. The read that hit it is partial, every scenario that depends on it is unresolved, and the weekly brief names the source and the date it was last read. Reconnecting is the same flow as connecting.
+Only one token request per provider runs at a time, and every update re-reads the connection inside its write, so a revocation is never undone by a request that started before it. A 401 or 403, or a refused refresh, marks the connection revoked. The read that hit it is partial, every scenario that depends on it is unresolved, and the weekly brief names the source and the date it was last read. Reconnecting is the same flow as connecting.
 
 ## Rotating the key-encryption key
 

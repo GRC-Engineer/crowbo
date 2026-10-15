@@ -12,8 +12,19 @@ import { SqlEngineStore } from "../engine/store";
 import { parseKeyring } from "../connections/crypto";
 import { MANIFESTS } from "../connections/manifests";
 import { SqlConnectionStore } from "../connections/store";
-import { ConnectionError, ConnectionVault } from "../connections/vault";
-import { fixedHostFetch } from "../providers/http";
+import { ConnectionError, ConnectionVault, identityProbe } from "../connections/vault";
+import { type FetchLike, fixedHostFetch } from "../providers/http";
+
+/** A fetch that reaches only a provider's token host and the hosts its manifest and identity probe use. */
+function providerFetch(provider: string): FetchLike {
+  const m = MANIFESTS[provider];
+  const hosts = new Set([...m.hosts, ...(m.flow.kind === "authorization_code" || m.flow.kind === "client_credentials" ? [new URL(m.flow.token).host] : []), "api.linear.app", "api.atlassian.com"]);
+  return (url, init) => {
+    const host = new URL(url).host;
+    if (!hosts.has(host)) return Promise.reject(new Error("Provider request destination is not permitted"));
+    return fixedHostFetch(host, 1_000_000)(url, init);
+  };
+}
 import type { ConnectOp } from "./connect";
 
 /** Read a key that is either a plain secret or a Secrets Store binding. Missing means null. */
@@ -43,6 +54,8 @@ export class TenantStore extends DurableObject<Env> {
   }
 
   private engine: Promise<Engine> | null = null;
+  /** Token requests in flight, by provider: one per provider at a time in this object. */
+  private tokensInFlight = new Map<string, Promise<string | null>>();
 
   /**
    * This tenant's connections. The tenant name is fixed on first use, so a call naming another tenant
@@ -54,10 +67,13 @@ export class TenantStore extends DurableObject<Env> {
       sql.exec("CREATE TABLE IF NOT EXISTS connection_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
       const bound = sql.exec<{ value: string }>("SELECT value FROM connection_meta WHERE key = 'tenant'").toArray()[0]?.value;
       if (bound && bound !== tenant) return { ok: false, error: "This object belongs to another tenant" };
-      if (!bound) sql.exec("INSERT INTO connection_meta (key, value) VALUES ('tenant', ?)", tenant);
+      // A callback reaches an object only after its signed state checks; it never binds a new tenant.
+      if (!bound && op.op === "callback") return { ok: false, error: "The consent request is unknown, used or expired; start again" };
       const kek = await secret(this.env.CONNECTIONS_KEK);
       if (!kek) return { ok: false, error: "Connections are not configured" };
-      const vault = new ConnectionVault(tenant, new SqlConnectionStore(this.ctx.storage), parseKeyring(kek));
+      if (!bound) sql.exec("INSERT INTO connection_meta (key, value) VALUES ('tenant', ?)", tenant);
+      const vault = new ConnectionVault(tenant, new SqlConnectionStore(this.ctx.storage), parseKeyring(kek), Date.now, this.tokensInFlight);
+      const identities = (JSON.parse((await secret(this.env.CONNECT_TENANT_IDENTITIES)) ?? "{}") as Record<string, string[]>)[tenant] ?? [];
       const clients = JSON.parse((await secret(this.env.CONNECT_CLIENTS)) ?? "{}") as Record<string, { id: string; secret: string }>;
       const client = (p: string) => {
         const c = clients[p];
@@ -66,12 +82,16 @@ export class TenantStore extends DurableObject<Env> {
       };
       switch (op.op) {
         case "start":
-          return { ok: true, result: await vault.startConsent(op.provider, client(op.provider).id, op.redirectUri) };
+          return { ok: true, result: await vault.startConsent(op.provider, client(op.provider).id, op.redirectUri, op.initiator) };
         case "callback": {
           const m = MANIFESTS[op.provider];
           if (m.flow.kind !== "authorization_code") return { ok: false, error: `${m.label} has no consent redirect` };
-          const c = await vault.completeConsent(op.provider, op.nonce, op.code, { ...client(op.provider), redirectUri: op.redirectUri }, fixedHostFetch(new URL(m.flow.token).host, 100_000));
-          return { ok: true, result: { provider: c.provider, scopes: c.scopes, missing_scopes: vault.missingScopes(op.provider) } };
+          const c = await vault.completeConsent(op.provider, op.nonce, op.code, { ...client(op.provider), redirectUri: op.redirectUri }, providerFetch(op.provider), identities, identityProbe);
+          return { ok: true, result: { provider: c.provider, status: c.status, identity: c.identity ?? null, scopes: c.scopes, missing_scopes: vault.missingScopes(op.provider) } };
+        }
+        case "confirm": {
+          const c = vault.confirm(op.provider, op.operator);
+          return { ok: true, result: { provider: c.provider, status: c.status, identity: c.identity ?? null } };
         }
         case "okta_setup":
           return { ok: true, result: await vault.setupOkta(op.host, op.clientId) };

@@ -20,6 +20,8 @@ export type Flow =
 export interface ScopeLine {
   scope: string;
   why: string;
+  /** A scope that lets Crowbo write; every other scope is read-only. */
+  write?: true;
   /** Scenario ids from the fixtures and profile that read through this scope. */
   scenarios: string[];
 }
@@ -88,7 +90,8 @@ export const MANIFESTS: Record<string, Manifest> = {
     flow: { kind: "authorization_code", authorize: "https://slack.com/oauth/v2/authorize", token: "https://slack.com/api/oauth.v2.access", pkce: false, scopeSeparator: "," },
     scopes: [
       { scope: "app_mentions:read", why: "A question asked by mentioning Crowbo", scenarios: ["*"] },
-      { scope: "chat:write", why: "The reply in the thread and the weekly post", scenarios: ["*"] },
+      // The one deliberate write scope: Crowbo posts its own replies and the weekly list, and nothing else.
+      { scope: "chat:write", why: "Write, deliberately: the reply in the thread and the weekly post; Crowbo never writes anywhere else", scenarios: ["*"], write: true },
       { scope: "im:history", why: "An export sent by direct message", scenarios: ["*"] },
       { scope: "files:read", why: "The text files of that export", scenarios: ["*"] },
     ],
