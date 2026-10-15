@@ -71,7 +71,8 @@ export const ENGINE_INPUTS = {
 
 /** Where an operation may come from. Most come from any surface; some only from one. */
 export type Surface = "mcp" | "slack";
-const SURFACE_OPS: Partial<Record<EngineOp, Surface>> = { slack_record_call: "slack" };
+/** accept_proposal is pinned to MCP: accepting from Slack would go behind the recorders gate first. */
+const SURFACE_OPS: Partial<Record<EngineOp, Surface>> = { slack_record_call: "slack", accept_proposal: "mcp" };
 
 const WRITES = new Set<EngineOp>(["slack_record_call", "record_call", "record_outcome", "advance_time", "set_weight", "import_knowledge_base", "accept_proposal"]);
 

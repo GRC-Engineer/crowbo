@@ -372,7 +372,9 @@ export class Engine {
     const { connector, from, to, disputes } = proposal.body as { connector: string; from: number; to: number; disputes: number };
     const current = this.weights.get(connector);
     if (!current) throw new EngineError(`Unknown source ${connector}`);
-    if (current.weight !== from) throw new EngineError(`Proposal ${seq} was for ${connector} at ${from}; it is now ${current.weight}, so the proposal no longer applies`);
+    // Stale once the weight has changed after the proposal, even if it has since come back to the same value.
+    const since = this.memory.list("weight_change").find((e) => e.body.connector === connector && e.seq > seq);
+    if (since || current.weight !== from) throw new EngineError(`Proposal ${seq} was for ${connector} at ${from}; the weight has changed since (now ${current.weight}), so the proposal no longer applies`);
     const before = this.latest!;
     const reason = `Accepted proposal ${seq}: ${disputes} recorded calls disputed ${connector}`;
     this.memory.append("weight_change", by, { connector, from, to, reason, proposal: seq });
