@@ -34,7 +34,7 @@ if (process.argv.includes("--reset")) {
   client = await connect();
 }
 const tools = (await client.listTools()).tools.map((t) => t.name);
-check("fifteen engine tools offered", tools.filter((t) => t.startsWith("engine_")).length === 15, tools.filter((t) => t.startsWith("engine_")));
+check("sixteen engine tools offered", tools.filter((t) => t.startsWith("engine_")).length === 16, tools.filter((t) => t.startsWith("engine_")));
 
 const status = await call("engine_status");
 const fresh = status.layers["04_decision_memory"].entries <= 10 && status.now.startsWith("2026-10-13");

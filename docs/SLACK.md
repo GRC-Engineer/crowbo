@@ -15,7 +15,7 @@ A person records a call in the thread, in a fixed form that no model reads:
 assert group:billing-admins break_glass_exempt 4
 ```
 
-The call is kept in decision memory with the thread's permalink, which Crowbo asks Slack for. The next answer cites it with the link. Only the predicates the engine lets a person assert are accepted; anything else is refused and nothing is kept.
+The call is kept in decision memory with the thread's permalink, which Crowbo asks Slack for. (Unverified: whether `chat.getPermalink` needs a scope beyond those in the manifest below. Check it against a live app before the surface goes live.) The next answer cites it with the link. Only the predicates the engine lets a person assert are accepted; anything else is refused and nothing is kept.
 
 Only the people the workspace registers as recorders can record. Users from another organisation in a shared channel are not answered at all. A permalink is accepted only in the form `https://<workspace>.slack.com/archives/<channel>/p<16 digits>`, so Enterprise Grid links (`*.enterprise.slack.com`) are refused for now. Provenance comes only through this surface: the MCP tools have no field for it.
 

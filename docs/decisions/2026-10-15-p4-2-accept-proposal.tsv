@@ -1,0 +1,6 @@
+ts	phase	decision	why	evidence	result
+2026-10-15T21:00:00Z	design	accept_proposal is a separate operation: a person accepts a stored proposal; the weight change is kept against it with actor and reason, and the decision is recomputed	tuning is never applied without a person accepting it	proposals.test.ts: ignoring changes nothing; accepting is a logged weight change	VERIFIED
+2026-10-15T21:00:00Z	design	refuse a proposal already accepted or overtaken by another weight change (current weight differs from the proposal's from)	a proposal applies only to the state it was made against	proposals.test.ts: refusals	VERIFIED
+2026-10-15T21:00:00Z	fix	disputes are counted since the source's last weight change	otherwise an accepted 5→4 would be followed at once by 4→3 from the same disputes	proposals.test.ts: no immediate re-proposal	VERIFIED
+2026-10-15T21:00:00Z	design	the accept result's decision diff carries "because": which source moved, from and to, and the proposal	the next answer must show the ranking moved for the right reason	criteria P4.2; proposals.test.ts	VERIFIED
+2026-10-15T21:00:00Z	verify	P4.2 flipped; P4 now true on fixtures (P4.1 and P4.2); full suite, demo-check, parity	criterion labels follow the tests	vitest; demo-check; parity	VERIFIED: 425 passed, 7 expected fail; 14/14; 221/3/0

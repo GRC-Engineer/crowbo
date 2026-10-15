@@ -63,6 +63,7 @@ export const ENGINE_INPUTS = {
       ]).optional(),
     })).min(1).max(KB_LIMITS.files),
   }),
+  accept_proposal: z.strictObject({ proposal: z.number().int().min(0) }),
   /** Start this copy over from the demo's first morning. Handled by the host, which owns the store. */
   reset: z.strictObject({ confirm: z.literal(true) }),
 } as const;
@@ -71,7 +72,7 @@ export const ENGINE_INPUTS = {
 export type Surface = "mcp" | "slack";
 const SURFACE_OPS: Partial<Record<EngineOp, Surface>> = { slack_record_call: "slack" };
 
-const WRITES = new Set<EngineOp>(["slack_record_call", "record_call", "record_outcome", "advance_time", "set_weight", "import_knowledge_base"]);
+const WRITES = new Set<EngineOp>(["slack_record_call", "record_call", "record_outcome", "advance_time", "set_weight", "import_knowledge_base", "accept_proposal"]);
 
 export type EngineOp = keyof typeof ENGINE_INPUTS;
 export const isEngineOp = (name: string): name is EngineOp => Object.hasOwn(ENGINE_INPUTS, name);
@@ -119,6 +120,8 @@ export async function runEngine(engine: Engine, actor: string, op: EngineOp, raw
       return { chain_intact: engine.memory.verify(), entries: engine.memory.list(args.kind) };
     case "set_weight":
       return engine.setWeight(args.connector, args.weight, actor, args.reason);
+    case "accept_proposal":
+      return engine.acceptProposal(args.proposal, actor);
     case "import_knowledge_base":
       return engine.importKnowledgeBase(args.files, actor, { synthetic: args.synthetic });
   }
