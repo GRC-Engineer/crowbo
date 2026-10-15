@@ -1,3 +1,4 @@
+import { EngineError } from "./errors";
 import type { ChatModel } from "./ai";
 import { type Answer, pickTopic } from "./answer";
 import type { Topic } from "./model";
@@ -38,7 +39,7 @@ async function checked<T>(model: ChatModel, system: string, user: string, accept
     if (typeof result !== "string") return result;
     reason = result;
   }
-  throw new Error(`${model.id} output rejected twice: ${reason}`);
+  throw new EngineError(`${model.id} output rejected twice: ${reason}`);
 }
 
 /** Pick the topic a question is about. With no model, keyword matching, and it says so. */
@@ -50,7 +51,7 @@ export async function routeQuestion(model: ChatModel | null, topics: Topic[], qu
     JSON.stringify({ question, topics: list }),
     (out) => {
       const id = out?.topic;
-      if (id === null) throw new Error(`No topic matches; ask about: ${topics.map((t) => t.question).join(" / ")}`);
+      if (id === null) throw new EngineError(`No topic matches; ask about: ${topics.map((t) => t.question).join(" / ")}`);
       const topic = topics.find((t) => t.id === id);
       return topic ? { topic, generated_by: model.id } : `"${id}" is not one of the topic ids`;
     });
@@ -73,7 +74,7 @@ export type Drafts = { channel: string; drafts: { to: string; text: string; cite
 /** Three follow-ups: the decider, the person delivering, the people affected. Drafts only; nothing can send. */
 export async function draftFollowups(model: ChatModel | null, topic: Topic, answer: Answer): Promise<Drafts> {
   const a = answer.answer;
-  if (!a.move) throw new Error(`No move to follow up on for ${answer.topic}: ${a.deferred?.reason ?? "nothing proposed"}`);
+  if (!a.move) throw new EngineError(`No move to follow up on for ${answer.topic}: ${a.deferred?.reason ?? "nothing proposed"}`);
   const recipients = [a.decides ?? "the system owner", a.delivers ?? "the control owner", topic.notify];
   if (!model) {
     const cite = (ns: number[]) => ns.map((n) => `[${n}]`).join("");

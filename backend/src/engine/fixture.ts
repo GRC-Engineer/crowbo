@@ -14,6 +14,19 @@ const ids = Array.from({ length: 40 }, (_, i) => `u${String(i + 1).padStart(2, "
 /** Nine holders used the billing app in the last 90 days; thirty-one did not. */
 const active = new Set(ids.slice(0, 9));
 const history = ["view_invoice", "export_report", "issue_refund"];
+/** When the second chapter of the demo becomes true: a week after the first answer. */
+const LATER = "2026-10-20T08:00:00Z";
+
+function billingSummary() {
+  return {
+    window_days: 90, days_with_data: 87, missing_days: ["2026-09-21", "2026-09-22", "2026-09-23"],
+    actors: ids.map((id, i) => ({
+      email: email(id),
+      last_action_at: active.has(id) ? "2026-10-0" + ((i % 9) + 1) + "T10:00:00Z" : i % 3 === 0 ? null : `2026-0${(i % 5) + 2}-14T09:00:00Z`,
+      actions: active.has(id) ? history : i % 3 === 0 ? [] : history.slice(0, (i % 3) + 1),
+    })),
+  };
+}
 
 export const NORTHWIND: CompanyFixture = {
   synthetic: true,
@@ -48,6 +61,7 @@ export const NORTHWIND: CompanyFixture = {
       requires: [{ subject: "role:billing-operator", predicate: "covers_unused_actions", op: "eq", value: true }],
       conditions: ["Test the Billing Operator role on one account first"],
       effort: { security_hours: { low: 4, high: 6 }, engineering_hours: { low: 2, high: 4 }, cash: { low: 0, high: 0 } },
+      expect: { subject: "group:billing-admins", predicate: "movable_unused", op: "eq", value: 0 },
       basis: "Invented estimate",
     },
     {
@@ -78,12 +92,25 @@ export const NORTHWIND: CompanyFixture = {
   ],
   capacity: { security_hours: 24, engineering_hours: 24, cash: 10_000, horizon_days: 90, drop_risk_tolerance_per_year: 5_000 },
   api: [
-    { path: "/api/v1/groups?q=billing-admins", versions: [{ from: "2025-01-01T00:00:00Z", body: [{ id: "00g-billing", lastMembershipUpdated: "2026-10-12T17:20:00Z", profile: { name: "billing-admins", app: "billing" } }] }] },
-    { path: "/api/v1/groups/00g-billing/users", versions: [{ from: "2025-01-01T00:00:00Z", body: ids.map((id) => ({ id: `00u-${id}`, status: "ACTIVE", profile: { login: email(id) } })) }] },
+    {
+      path: "/api/v1/groups?q=billing-admins",
+      versions: [
+        { from: "2025-01-01T00:00:00Z", body: [{ id: "00g-billing", lastMembershipUpdated: "2026-10-12T17:20:00Z", profile: { name: "billing-admins", app: "billing" } }] },
+        { from: LATER, body: [{ id: "00g-billing", lastMembershipUpdated: LATER, profile: { name: "billing-admins", app: "billing" } }] },
+      ],
+    },
+    {
+      path: "/api/v1/groups/00g-billing/users",
+      versions: [
+        { from: "2025-01-01T00:00:00Z", body: ids.map((id) => ({ id: `00u-${id}`, status: "ACTIVE", profile: { login: email(id) } })) },
+        // A week on, Alex has moved the unused holders out, keeping four break-glass accounts.
+        { from: LATER, body: [...ids.slice(0, 9), ...ids.slice(9, 13)].map((id) => ({ id: `00u-${id}`, status: "ACTIVE", profile: { login: email(id) } })) },
+      ],
+    },
     { path: "/api/v1/apps?q=billing", versions: [{ from: "2025-01-01T00:00:00Z", body: [{ id: "0oa-billing", name: "billing", lastUpdated: "2026-09-02T10:00:00Z", profile: { businessOwner: email("priya") } }] }] },
     {
       path: "/v1/audit/summary?window=90d",
-      versions: [{
+      versions: [{ from: LATER, body: { ...billingSummary(), generated_at: LATER } }, {
         from: "2026-10-13T02:00:00Z",
         body: {
           generated_at: "2026-10-13T02:00:00Z", window_days: 90, days_with_data: 87, missing_days: ["2026-09-21", "2026-09-22", "2026-09-23"],

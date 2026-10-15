@@ -9,6 +9,7 @@ import { demoOptions, startDemo } from "../../src/engine/demo";
 import { Engine, replaySchedule } from "../../src/engine/engine";
 import { bind, CLEF_FLASH, clefExtractor, type WorkersAi } from "../../src/engine/extract";
 import { NORTHWIND, NORTHWIND_CLEF_QUESTIONS } from "../../src/engine/fixture";
+import { runEngine } from "../../src/engine/port";
 import { registerEngineTools } from "../../src/engine/tools";
 
 const Q = "Who should still have billing admin?";
@@ -142,14 +143,14 @@ describe("04 decision memory", () => {
 
 describe("surface: MCP", () => {
   it("serves the engine tools, and drafts can never be sent", async () => {
-    const { engine, options } = await startDemo();
+    const { engine } = await startDemo();
     const server = new McpServer({ name: "test", version: "0" });
-    registerEngineTools(server, engine, options);
+    registerEngineTools(server, (op, args) => runEngine(engine, "tester", op, args));
     const [a, b] = InMemoryTransport.createLinkedPair();
     const client = new Client({ name: "test", version: "0" });
     await Promise.all([server.connect(a), client.connect(b)]);
     const names = (await client.listTools()).tools.map((t) => t.name).sort();
-    expect(names).toEqual(["engine_decide", "engine_draft_followups", "engine_graph", "engine_memory", "engine_next_moves", "engine_record_call", "engine_run_schedule", "engine_set_weight", "engine_status", "engine_weekly_brief"]);
+    expect(names).toEqual(["engine_advance_time", "engine_decide", "engine_draft_followups", "engine_graph", "engine_memory", "engine_next_moves", "engine_record_call", "engine_record_outcome", "engine_reset_demo", "engine_run_schedule", "engine_set_weight", "engine_status", "engine_weekly_brief", "engine_what_if"]);
     const drafts: any = await client.callTool({ name: "engine_draft_followups", arguments: { topic: "billing-admin" } });
     expect(drafts.structuredContent.sent).toBe(false);
     expect(names.some((n) => /send|post/.test(n))).toBe(false);
