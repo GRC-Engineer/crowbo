@@ -8,16 +8,16 @@ You will be working on **demo data built on a case a future customer raised**: 4
 
 You need the personal token we sent you. It gives you your own copy of the demo, so your choices are kept separately from everyone else's.
 
-**Claude app or claude.ai:** go to **Settings → Connectors → Add custom connector**. Enter the address below, then sign in with your token when asked.
+**Claude app or claude.ai:** go to **Settings → Connectors → Add custom connector**. Enter the address you were sent with your token, in the form below, then sign in with your token when asked.
 
 ```text
-https://crowbo-api-staging.grcengineeringpodcast.workers.dev/mcp
+https://<staging-worker>.workers.dev/mcp
 ```
 
 **Claude Code:** run this, replacing `$CROWBO_TOKEN` with your token.
 
 ```bash
-claude mcp add --transport http crowbo https://crowbo-api-staging.grcengineeringpodcast.workers.dev/mcp --header "Authorization: Bearer $CROWBO_TOKEN"
+claude mcp add --transport http crowbo https://<staging-worker>.workers.dev/mcp --header "Authorization: Bearer $CROWBO_TOKEN"
 ```
 
 ## Three things to try

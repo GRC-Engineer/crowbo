@@ -67,6 +67,12 @@ describe("Slack events: nothing is read before it is verified", () => {
     const unsigned = new Request("https://crowbo.example/slack/events", { method: "POST", body: JSON.stringify(mention()) });
     expect((await handleSlackEvent(unsigned, deps)).status).toBe(401);
     expect((await handleSlackEvent(await request(null, { raw: "x".repeat(70_000) }), deps)).status).toBe(413);
+    // No Content-Length: a streamed body is cut off at the cap, not read whole.
+    let pulled = 0;
+    const stream = new ReadableStream({ pull(c) { pulled++; c.enqueue(new Uint8Array(16_000)); } });
+    const chunked = new Request("https://crowbo.example/slack/events", { method: "POST", body: stream, duplex: "half" } as RequestInit);
+    expect((await handleSlackEvent(chunked, deps)).status).toBe(413);
+    expect(pulled).toBeLessThan(10);
     expect(posts).toEqual([]);
   });
 
