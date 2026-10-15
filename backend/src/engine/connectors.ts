@@ -17,7 +17,7 @@ const PREDICATE = /^[a-z][a-z0-9_]*$/;
  * One typed field as a line. API values are untrusted: newlines are flattened and malformed
  * subjects or predicates are dropped, so a value can never smuggle in a second line.
  */
-function line(subject: string, predicate: string, value: string | number): string[] {
+export function line(subject: string, predicate: string, value: string | number): string[] {
   const v = String(value).replace(/[\r\n]+/g, " ").trim();
   return NODE.test(subject) && PREDICATE.test(predicate) && v ? [`${subject} ${predicate} ${v}`] : [];
 }

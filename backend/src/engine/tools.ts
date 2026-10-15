@@ -42,6 +42,7 @@ const TOOLS: { name: string; op: EngineOp; writes: boolean; description: string 
   { name: "engine_graph", op: "graph", writes: false, description: "The context graph around a node (e.g. control:billing-admin-access, person:alex, app:billing), with the source revisions behind each edge." },
   { name: "engine_memory", op: "memory", writes: false, description: "Decision memory: reads, decisions, calls, outcomes, weight changes, tuning proposals and clock moves, hash chained." },
   { name: "engine_reset_demo", op: "reset", writes: true, description: "Start your copy of the demo over from its first morning: clears your calls, outcomes, weight changes and clock. Pass confirm: true." },
+  { name: "engine_import_knowledge_base", op: "import_knowledge_base", writes: true, description: "Import a synthetic knowledge-base export (policies, registers, the last audit report) as text files and get a first company profile: systems and owners, controls, people, stale entries, conflicts, and the first next moves on default weights. Markdown and text are read as prose. A CSV is typed only when you map it (shape triples for subject,field,value columns, or shape columns), and only for importable predicates; an unmapped CSV is prose. PDF and DOCX are listed as not read. Pass synthetic: true." },
   { name: "engine_set_weight", op: "set_weight", writes: true, description: "Change how much the company trusts a source (0 to 5). Kept with the reason, then the decision is recomputed. To explore without changing anything, use engine_what_if." },
 ];
 

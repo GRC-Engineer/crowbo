@@ -3,12 +3,13 @@ import { CONNECTORS } from "./connectors";
 import { Engine, type EngineOptions } from "./engine";
 import { CLEF, clefExtractor, scriptedExtractor, type WorkersAi } from "./extract";
 import { NORTHWIND, NORTHWIND_CLEF_QUESTIONS, NORTHWIND_MODEL_LABELS } from "./fixture";
+import { NORTHWIND_KB_MODEL_LABELS } from "./kb-fixture";
 
 /** The demo engine: real connectors over the fake APIs; Clef for prose when Workers AI is available. */
 export function demoOptions(ai?: WorkersAi, ingestModel = CLEF, answerer: ChatModel | null = null): EngineOptions {
   return {
     connectors: CONNECTORS,
-    proseExtractors: [ai ? clefExtractor(ai, NORTHWIND_CLEF_QUESTIONS, ingestModel) : scriptedExtractor(NORTHWIND_MODEL_LABELS)],
+    proseExtractors: [ai ? clefExtractor(ai, NORTHWIND_CLEF_QUESTIONS, ingestModel) : scriptedExtractor({ ...NORTHWIND_MODEL_LABELS, ...NORTHWIND_KB_MODEL_LABELS })],
     answerer,
   };
 }

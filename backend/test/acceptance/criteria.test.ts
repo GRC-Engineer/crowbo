@@ -18,6 +18,7 @@ import { CONNECTORS } from "../../src/engine/connectors";
 import { demoOptions, startDemo } from "../../src/engine/demo";
 import { Engine } from "../../src/engine/engine";
 import { NORTHWIND } from "../../src/engine/fixture";
+import { NORTHWIND_KB_EXPORT } from "../../src/engine/kb-fixture";
 import { isEngineOp, runEngine } from "../../src/engine/port";
 import { registerEngineTools } from "../../src/engine/tools";
 
@@ -42,9 +43,31 @@ const withSlack = (text: string) => {
 };
 
 describe("pilot criteria for mid-December: what a first paid pilot buys", () => {
-  it.fails("P1 a real knowledge-base export produces a first company profile and first next moves within a day", async () => {
-    const e = await demo();
-    expect(typeof (e as unknown as { importKnowledgeBase?: unknown }).importKnowledgeBase).toBe("function");
+  it("P1 a knowledge-base export produces a first company profile in one run (true on a synthetic export)", async () => {
+    const e = await Engine.start(structuredClone(NORTHWIND), { ...demoOptions(), connectors: [] });
+    const { profile, elapsed_ms } = await e.importKnowledgeBase(NORTHWIND_KB_EXPORT, "grc-lead", { synthetic: true });
+    expect(profile.systems).toEqual([{ id: "app:billing", owner: "person:priya" }, { id: "app:okta", owner: "person:dana" }]);
+    expect(profile.controls.find((c) => c.id === "control:billing-admin-access")?.assigned_to).toBe("person:alex");
+    expect(profile.stale.map((x) => x.record)).toContain("kb:registers/risk-register.csv");
+    expect(elapsed_ms).toBeLessThan(60_000);
+  });
+
+  it.fails("P1.1 PDF and DOCX files in the export are read: a PDF with known text yields a quoted fact", async () => {
+    const pdf = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/Parent 2 0 R/Contents 4 0 R>>endobj 4 0 obj<</Length 60>>stream\nBT /F1 12 Tf 72 712 Td (Owner of Billing: priya@northwind.example) Tj ET\nendstream endobj\ntrailer<</Root 1 0 R>>\n%%EOF";
+    const e = await Engine.start(structuredClone(NORTHWIND), { ...demoOptions(), connectors: [] });
+    const r = (await runEngine(e, "grc-lead", "import_knowledge_base", {
+      synthetic: true, files: [{ path: "registers/owners.pdf", content: btoa(pdf), encoding: "base64" }],
+    }).catch(() => null)) as { profile: { files: { format: string }[] } } | null;
+    expect(r?.profile.files[0].format).toBe("prose");
+    expect(e.facts.some((f) => f.source.record === "kb:registers/owners.pdf" && f.quote.includes("Owner of Billing"))).toBe(true);
+  });
+
+  it.fails("P1.2 an export produces first next moves from the profile's own defaults, with no pre-authored scenarios or actions", async () => {
+    const blank = { ...structuredClone(NORTHWIND), scenarios: [], actions: [], topics: [] };
+    const e = await Engine.start(blank, { ...demoOptions(), connectors: [] });
+    expect(e.nextMoves().next_moves).toEqual([]);
+    const { profile } = await e.importKnowledgeBase(NORTHWIND_KB_EXPORT, "grc-lead", { synthetic: true });
+    expect(profile.next_moves.length).toBeGreaterThan(0);
   });
 
   it.fails("P2 three real connectors read recorded responses from the real APIs and feed the weekly list", async () => {
