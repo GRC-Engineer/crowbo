@@ -86,3 +86,27 @@ export function liveApi(provider: string, target: Target, http: Http = fetch): F
   api.page = request;
   return api;
 }
+
+/**
+ * Before anything is read or written: the credentials must belong to Crowbo's sandbox. Linear and Jira
+ * name the token's own account, whose email must be at a sandbox domain; a Slack token must belong to
+ * SLACK_WORKSPACE. Okta (a dev org) and Google (its users' domains) are checked on the data itself.
+ */
+export async function assertSandboxAccount(provider: string, target: Target, env: Record<string, string | undefined>, domains: string[], http: Http = fetch): Promise<void> {
+  const call = async (path: string, init: RequestInit = {}) => {
+    const res = await http(`${target.origin}${path}`, { ...init, redirect: "error", headers: { ...target.headers, accept: "application/json", ...(init.body ? { "content-type": "application/json" } : {}) } });
+    if (!res.ok) throw new Error(`${provider}: ${path} answered ${res.status}`);
+    return (await res.json()) as Record<string, unknown>;
+  };
+  const atSandbox = (email: unknown) => typeof email === "string" && domains.map((d) => d.toLowerCase()).includes(email.split("@")[1]?.toLowerCase() ?? "");
+  let ok = true;
+  if (provider === "linear") ok = atSandbox(((await call("/graphql", { method: "POST", body: JSON.stringify({ query: "{ viewer { email } }" }) })).data as { viewer?: { email?: string } } | undefined)?.viewer?.email);
+  else if (provider === "jira") ok = atSandbox((await call("/rest/api/3/myself")).emailAddress);
+  else if (provider === "slack") {
+    const workspace = env.SLACK_WORKSPACE;
+    if (!workspace) throw new Error("Set SLACK_WORKSPACE (see docs/REHEARSAL.md)");
+    const url = (await call("/api/auth.test")).url;
+    ok = typeof url === "string" && new URL(url).host === `${workspace}.slack.com`;
+  }
+  if (!ok) throw new Error(`${provider}: these credentials are not for a Crowbo sandbox (SANDBOX_DOMAINS, SLACK_WORKSPACE); nothing read or written`);
+}

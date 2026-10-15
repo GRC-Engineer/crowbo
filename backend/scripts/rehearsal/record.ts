@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import "../../src/engine/connectors";
 import type { FetchJson } from "../../src/engine/model";
-import { liveApi, targetFromEnv } from "./live";
+import { assertSandboxAccount, liveApi, targetFromEnv } from "./live";
 import { connectorFor, PROVIDER_CONNECTOR, type Recording, recordedApi, recordingOf } from "./recording";
 import { ROSTER } from "./roster";
 import { findLeaks, SCRUBBED_DOMAIN, scrub } from "./scrub";
@@ -13,7 +13,8 @@ import { findLeaks, SCRUBBED_DOMAIN, scrub } from "./scrub";
  *
  *   SANDBOX_DOMAINS=crowbo.ai OKTA_ORG=dev-123.okta.com OKTA_TOKEN=... bun scripts/rehearsal/record.ts okta
  *
- * Nothing is written unless: every email in the raw responses is at a sandbox domain (so the token
+ * Nothing is read unless the credentials are the sandbox's (assertSandboxAccount), and nothing is
+ * written unless: every email in the raw responses is at a sandbox domain (so the token
  * cannot be a real company's), the scrubbed recording has no leaks, and it reads the same records.
  * Output names counts and paths only, never response content.
  */
@@ -44,7 +45,9 @@ if (import.meta.main) {
   try {
     const domains = (process.env.SANDBOX_DOMAINS ?? "").split(",").map((d) => d.trim()).filter(Boolean);
     if (!domains.length) throw new Error("Set SANDBOX_DOMAINS to the sandbox's email domains, comma-separated");
-    const { recording, records } = await recordProvider(provider, liveApi(provider, targetFromEnv(provider, process.env)), domains, new Date());
+    const target = targetFromEnv(provider, process.env);
+    await assertSandboxAccount(provider, target, process.env, domains);
+    const { recording, records } = await recordProvider(provider, liveApi(provider, target), domains, new Date());
     mkdirSync(OUT, { recursive: true });
     const file = join(OUT, `${provider}.json`);
     writeFileSync(file, `${JSON.stringify(recording, null, 2)}\n`);

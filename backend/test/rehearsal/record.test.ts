@@ -5,7 +5,7 @@ import { NORTHWIND_IDENTITY } from "../../src/engine/fixture-identity";
 import { NORTHWIND_TICKETS } from "../../src/engine/fixture-tickets";
 import type { CompanyFixture } from "../../src/engine/model";
 import { LINEAR_QUERIES } from "../../src/engine/tickets";
-import { liveApi, targetFromEnv } from "../../scripts/rehearsal/live";
+import { assertSandboxAccount, liveApi, targetFromEnv } from "../../scripts/rehearsal/live";
 import { recordProvider } from "../../scripts/rehearsal/record";
 import { recordedApi } from "../../scripts/rehearsal/recording";
 import { findLeaks } from "../../scripts/rehearsal/scrub";
@@ -33,6 +33,18 @@ describe("recording from a sandbox", () => {
     expect(() => targetFromEnv("okta", { OKTA_ORG: "acme.okta.com", OKTA_TOKEN: "t" })).toThrow(/developer or trial org/);
     expect(() => targetFromEnv("jira", { JIRA_SITE: "x.atlassian.net" })).toThrow(/Set JIRA_EMAIL, JIRA_API_TOKEN/);
     expect(targetFromEnv("okta", { OKTA_ORG: "dev-31337.okta.com", OKTA_TOKEN: "t" }).origin).toBe("https://dev-31337.okta.com");
+  });
+});
+
+describe("the sandbox account check", () => {
+  const answer = (body: unknown) => async () => Response.json(body);
+  it("Linear and Jira tokens must belong to an account at a sandbox domain; a Slack token to SLACK_WORKSPACE", async () => {
+    const t = { origin: "https://x.test", headers: {} };
+    await expect(assertSandboxAccount("linear", t, {}, ["crowbo.ai"], answer({ data: { viewer: { email: "admin@crowbo.ai" } } }))).resolves.toBeUndefined();
+    await expect(assertSandboxAccount("linear", t, {}, ["crowbo.ai"], answer({ data: { viewer: { email: "cto@real-company.test" } } }))).rejects.toThrow(/not for a Crowbo sandbox/);
+    await expect(assertSandboxAccount("jira", t, {}, ["crowbo.ai"], answer({ accountId: "x" }))).rejects.toThrow(/not for a Crowbo sandbox/);
+    await expect(assertSandboxAccount("slack", t, { SLACK_WORKSPACE: "crowbo-sandbox" }, [], answer({ ok: true, url: "https://crowbo-sandbox.slack.com/" }))).resolves.toBeUndefined();
+    await expect(assertSandboxAccount("slack", t, { SLACK_WORKSPACE: "crowbo-sandbox" }, [], answer({ ok: true, url: "https://acme.slack.com/" }))).rejects.toThrow(/not for a Crowbo sandbox/);
   });
 });
 

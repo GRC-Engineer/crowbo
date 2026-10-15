@@ -1,4 +1,4 @@
-import { line } from "./connectors";
+import { line } from "./line";
 import type { Connector, FetchJson, SourceRecord } from "./model";
 import { collect } from "./paging";
 
