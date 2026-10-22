@@ -85,7 +85,7 @@ The user asked for the public homepage to follow the investor deck's current cop
 
 The illustration follows the same slide: three Packet Runners carry oxide packets along charcoal routes into a "this quarter" panel listing fix, fund, build and drop. It is decorative, carries no figures and stops under reduced motion. Modular Crow, the feather network and the motion-study controls leave the homepage; their files stay in `decision-studio/landing/` as history. The deck's provider logos, partner names, quotes, market figures and pricing are not on the public page.
 
-The company definition in the [foundation](../docs/FOUNDATION.md) still reads "the decision engine for security"; the homepage now names the first audience, GRC teams.
+The [foundation](../docs/FOUNDATION.md) records the same company line, "the decision engine for GRC teams".
 
 ## Decision Studio application
 
