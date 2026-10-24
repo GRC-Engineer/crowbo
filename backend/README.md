@@ -15,7 +15,7 @@ The decision API: TypeScript on Cloudflare Workers. [ADR 0001](../docs/adr/0001-
 | Engine prototype | `src/engine/` | The [engine architecture](../docs/ENGINE.md) at micro scale: connectors, quoted facts, visible weights, context graph, deterministic next moves by risk removed, hash-chained decision memory. Synthetic company only; served by the local MCP server. |
 | Interfaces | `src/worker.ts`, `src/app/` | Bearer-token API (`POST /v1/operations/<name>`), MCP at `/mcp`, the Cron-driven sync, and one operation table shared with the CLI (`src/cli/`). |
 
-Each tenant is one SQLite Durable Object in the `eu` jurisdiction, and the services run inside it. Turbopuffer holds rebuildable search chunks only.
+Each tenant is one SQLite Durable Object, and the services run inside it. Turbopuffer holds rebuildable search chunks only.
 
 ## Run
 
@@ -39,7 +39,6 @@ bunx wrangler dev --env ""
 This needs a git-ignored `.dev.vars` with these entries:
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CROWBO_OPERATORS`, the operator map described below
-- `DO_JURISDICTION=none`, because local workerd cannot emulate jurisdictions
 - `ALLOW_SYNTHETIC_GATES=true`
 
 Model, search and Slack credentials are optional locally: without them, preparation stays pending, search is empty and reasoning refuses.

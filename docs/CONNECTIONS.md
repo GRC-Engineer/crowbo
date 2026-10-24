@@ -48,7 +48,7 @@ Slack's `chat:write` is the one deliberate write scope: it posts Crowbo's own re
 
 ## Where the secrets are
 
-- **Tokens, keys and pasted secrets** are stored in the tenant's own Durable Object, in the EU jurisdiction. Each is encrypted with AES-GCM under a key derived (HKDF) for that tenant from the key-encryption key, with the tenant, provider and kind bound into the ciphertext. One tenant's key cannot open another's material.
+- **Tokens, keys and pasted secrets** are stored in the tenant's own Durable Object. Each is encrypted with AES-GCM under a key derived (HKDF) for that tenant from the key-encryption key, with the tenant, provider and kind bound into the ciphertext. One tenant's key cannot open another's material.
 - **The key-encryption key and each provider app's client keys** are company-level, read-only in the Secrets Store: `CONNECTIONS_KEK` and `CONNECT_CLIENTS`. No Worker holds an account-level Cloudflare token.
 - **A rotated refresh token** is committed with its access token in one transaction before the access token is used. If the write fails, the read fails; the old refresh token is never retried.
 

@@ -13,7 +13,7 @@ Crowbo reads a customer's tools (identity, tickets, the compliance platform, cha
 - **Machine clients authenticate with keys, not shared secrets.** Okta service apps use private-key JWT with only the public key registered at Okta; the same pattern wherever a provider offers it. Rotation is a runbook with a named owner, because for Okta only a super admin can rotate once scopes are granted.
 - **Short-lived access tokens; rotating refresh tokens persisted atomically.** Atlassian's refresh tokens are single-use and rotate on every call: the rotated token is written to the Secrets Store before any other work continues, and a failed write is a hard error, never a retry with the old token. Where a provider supports sender-constrained tokens (DPoP or mutual TLS), use them; check per provider, do not assume.
 - **No Google domain-wide delegation.** It allows impersonation of any user including super admins and narrowing scopes does not narrow who. Google Workspace is read through an admin-consented OAuth app with Directory read scopes.
-- **Credentials are per tenant and live with the tenant.** Tokens are stored under the tenant's Durable Object in the EU jurisdiction, never in a store shared across customers. A revocation or a breach stays within one customer.
+- **Credentials are per tenant and live with the tenant.** Tokens are stored under the tenant's Durable Object, never in a store shared across customers. A revocation or a breach stays within one customer.
 - **Revocation fails closed.** When a token is revoked or expires, the next scheduled read fails, the listing is recorded partial, and every scenario that depends on it goes unresolved, as the engine already does for a partial read. The brief says which source has not been read and since when. A credential unused by any scheduled read for a stated window is reported.
 - **This is outbound authentication**: Crowbo reading the customer's tools. Inbound authentication, the customer's harness reading Crowbo over MCP, stays OAuth 2.1 with PKCE as in ADR 0001 and is a separate decision.
 
@@ -23,7 +23,7 @@ Per provider, as of this decision: Okta, OAuth for Okta service app with private
 
 - **API keys everywhere, for speed.** Rejected: it fails the four questions a security team asks, and it makes the onboarding promise ("we read what Vanta reads") false, since Vanta is itself installed by consent.
 - **Google domain-wide delegation, for completeness of read.** Rejected: Google's own guidance says to avoid it, and the impersonation scope is the whole domain.
-- **One shared credential store across tenants, for simplicity.** Rejected: a leak or a revocation would cross customers, and the EU residency commitment is per tenant.
+- **One shared credential store across tenants, for simplicity.** Rejected: a leak or a revocation would cross customers.
 
 ## Consequences
 
@@ -34,8 +34,12 @@ Per provider, as of this decision: Okta, OAuth for Okta service app with private
 
 ## Clarification, 15 October 2026
 
-The decision above said both "written to the Secrets Store" and "stored under the tenant's Durable Object"; the backend pointed out that a Worker cannot write per-tenant secrets at runtime without an account-level API token, which would be a high-privilege credential with no EU jurisdiction. Resolved as follows.
+The decision above said both "written to the Secrets Store" and "stored under the tenant's Durable Object"; the backend pointed out that a Worker cannot write per-tenant secrets at runtime without an account-level API token, which would be a high-privilege credential. Resolved as follows.
 
-- **Per-tenant token material lives in the tenant's EU Durable Object**, encrypted with AES-GCM under a per-tenant data key derived (HKDF) from one key-encryption key. The key-encryption key is held read-only in the Secrets Store with a key id for rotation; the additional authenticated data binds each ciphertext to tenant, provider and kind, so one tenant's key cannot decrypt another's material. A rotated refresh token is committed in the same Durable Object transaction before the new access token is used. The Secrets Store holds company-level material only: the key-encryption key and each provider app's client keys. No Worker holds an account-level Cloudflare API token.
+- **Per-tenant token material lives in the tenant's Durable Object**, encrypted with AES-GCM under a per-tenant data key derived (HKDF) from one key-encryption key. The key-encryption key is held read-only in the Secrets Store with a key id for rotation; the additional authenticated data binds each ciphertext to tenant, provider and kind, so one tenant's key cannot decrypt another's material. A rotated refresh token is committed in the same Durable Object transaction before the new access token is used. The Secrets Store holds company-level material only: the key-encryption key and each provider app's client keys. No Worker holds an account-level Cloudflare API token.
 - **Providers without a consent redirect.** Okta service apps: Crowbo generates a key pair per tenant, keeps the private key encrypted in that tenant's object, and the customer's admin registers the public key on the service app and grants the read scopes in their own console, where the grant is visible and revocable; the only pasted value is the client id, which is not a secret. Vanta client credentials: the admin creates an app with read scopes and pastes its client id and secret, which are encrypted per tenant with a rotation date and an age report; a second exception beside Drata unless a partner OAuth flow exists, to be checked.
 - Key-encryption key rotation is a runbook with a re-encrypt path keyed by key id; material under the previous key id must still decrypt during rotation.
+
+## Amendment, 23 October 2026
+
+Data placement is not pinned (see ADR 0001). The decision, the alternatives and the 15 October clarification were edited to match: each tenant's token material still lives in that tenant's own Durable Object, sealed under its derived key.

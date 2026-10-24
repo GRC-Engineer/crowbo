@@ -1,7 +1,7 @@
 import type { Envelope, SecretKind } from "./crypto";
 
 /**
- * Connections and their encrypted secrets, kept in the tenant's own Durable Object (EU jurisdiction),
+ * Connections and their encrypted secrets, kept in the tenant's own Durable Object,
  * never in a store shared across tenants. commit writes a connection record and any secrets in one
  * transaction, so a rotated refresh token is either stored with its access token or not at all.
  */

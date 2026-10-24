@@ -12,7 +12,7 @@ The backend is now TypeScript on Cloudflare Workers ([ADR 0001](adr/0001-typescr
 
 | Concern | Now |
 | --- | --- |
-| System of record | One SQLite Durable Object per tenant in the `eu` jurisdiction. Heads, revisions, assessments, reviews, feedback, sync state, standing facts, decision versions and the request ledger live there. The services run inside the object, so their integrity re-reads are local. |
+| System of record | One SQLite Durable Object per tenant. Heads, revisions, assessments, reviews, feedback, sync state, standing facts, decision versions and the request ledger live there. The services run inside the object, so their integrity re-reads are local. |
 | Search | Turbopuffer `-chunks` namespace only (BM25 plus native Voyage embeddings), rebuildable from records. |
 | Allowance ledger | The same reservation rules as the pilot, in the tenant object's SQLite. A reservation commits before the call; experiments keep immutable allocations. |
 | Interfaces | Bearer-token HTTP API (`POST /v1/operations/<name>`), streamable-HTTP MCP at `/mcp`, and the operator CLI (`backend/src/cli`). All three share one operation table. |

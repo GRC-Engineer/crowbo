@@ -31,6 +31,6 @@ You can also ask "What if Slack counted for less?". That recomputes the answer o
 ## What it touches
 
 - **Your data:** none. Crowbo reads only the demo company's sources.
-- **What is kept:** your questions are not stored. Calls you record, outcomes and weight changes are kept in your own copy, in Cloudflare's EU region. We remove your copy when your access ends.
+- **What is kept:** your questions are not stored. Calls you record, outcomes and weight changes are kept in your own copy. We remove your copy when your access ends.
 - **Sending:** nothing is sent anywhere. Follow-up messages are drafts only.
 - **Ending access:** tell us, and we revoke your token. The connector stops working on the next request.

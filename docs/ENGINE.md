@@ -118,7 +118,7 @@ The demo is a case a future customer raised: 40 people hold admin in the billing
 
 | Area | Production shape | Reuse from `backend/` |
 | --- | --- | --- |
-| Storage | One SQLite Durable Object per tenant in the EU (ADR 0001). Tables: revisions, facts, weights, scenarios, actions, edges (with contributor revisions), decisions (input-addressed) and memory (append-only, hash chained). | `storage/sql-store.ts`, `services/evidence.ts` (revisions, heads, grants) |
+| Storage | One SQLite Durable Object per tenant (ADR 0001). Tables: revisions, facts, weights, scenarios, actions, edges (with contributor revisions), decisions (input-addressed) and memory (append-only, hash chained). | `storage/sql-store.ts`, `services/evidence.ts` (revisions, heads, grants) |
 | 01 Ingest | Connectors per tool, each with its own sync cursor and schedule, via Durable Object alarms or Queues. Start with two or three per column, chosen with design partners. | `services/sync.ts`, `providers/slack.ts` |
 | 02 Classify | A model extractor that fills the predicates each scenario and action reads, for each registered subject. Qualified by `eval/score.ts`, which needs a recall threshold and an absolute misbinding ceiling added. | `domain/facts.ts` (quote binding), `standing/model.ts`, `eval/score.ts` |
 | 02 Weight | Editable weights, scenarios and estimates, with provenance on every number (observation, expert, reference data or model proposal). | `domain/decision-request.ts` (risk estimate shape) |
@@ -142,5 +142,5 @@ Each step is usable on its own, and each one is verified against reviewed cases 
 
 - **Weight semantics.** The prototype weights *sources*, meaning how much the company trusts each signal. Risk estimates sit on *scenarios*. Is that split right for buyers, and who sets the first values?
 - **Where estimates come from.** Frequency and loss ranges need a defensible basis: incident history, reference data, expert elicitation or model proposals. Which is first, and how is each labelled?
-- **Embedding residency.** Voyage runs in an unspecified global location. Resolve this before indexing any real tenant data (ADR 0001).
+- **Embedding location.** Turbopuffer lists the Voyage route as global. Know where embeddings run before indexing any real tenant data (ADR 0001).
 - **The evaluation set.** About 30 two-reviewer cases per question kind gate production. This is the critical path whatever else is built.

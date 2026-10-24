@@ -1,6 +1,6 @@
 // Cloudflare Workers configuration for the Crowbo decision API (separate from the crowbo.ai site).
-// Each tenant's system of record is one SQLite-backed Durable Object, created in the EU
-// jurisdiction by the Worker (src/worker.ts). Turbopuffer holds rebuildable search chunks only.
+// Each tenant's system of record is one SQLite-backed Durable Object, created by the Worker
+// (src/worker.ts). Turbopuffer holds rebuildable search chunks only.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "crowbo-api",
