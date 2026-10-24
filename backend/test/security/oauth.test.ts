@@ -42,7 +42,7 @@ function setup(withKv = true) {
     CROWBO_OPERATORS: operators(),
     CLOUDFLARE_ACCOUNT_ID: "0".repeat(32),
     ALLOW_SYNTHETIC_GATES: "true",
-    TENANT: { jurisdiction() { return this; }, idFromName: () => "id", get: () => ({ operate: async () => ({ ok: false, error: "unused" }) }) },
+    TENANT: { idFromName: () => "id", get: () => ({ operate: async () => ({ ok: false, error: "unused" }) }) },
     ...(withKv ? { OAUTH_KV: kv } : {}),
   };
   const ctx = { waitUntil() {}, passThroughOnException() {}, props: {} } as unknown as ExecutionContext;

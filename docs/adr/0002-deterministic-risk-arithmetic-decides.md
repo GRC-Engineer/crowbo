@@ -26,7 +26,7 @@ The product's promise is the next move *by risk removed*, with weights the compa
 ## Alternatives considered
 
 - **A model chooses at request time.** Rejected. It isn't reproducible, its quality can't be checked without the evaluation set, it reintroduces 20–90 s latency, and it hides the weights the product promises to show.
-- **A separate graph database.** Rejected for now. It adds a second consistency domain and a residency question, and needs its own copy of access state. Revisit after a measured traversal failure.
+- **A separate graph database.** Rejected for now. It adds a second consistency domain and a second place data lives, and needs its own copy of access state. Revisit after a measured traversal failure.
 - **Classify every record across many dimensions up front.** Rejected for now. Every dimension that feeds a decision needs reviewed labels, and stored labels go stale on every criteria change. Extract only the predicates the scenarios and actions read.
 
 ## Consequences

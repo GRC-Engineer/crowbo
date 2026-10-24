@@ -1,0 +1,2 @@
+ts	phase	decision	why	evidence	result
+2026-10-23T12:00:00Z	decision	data placement is not pinned: tenant Durable Objects are created without a jurisdiction, the local-only DO_JURISDICTION switch is removed, and Turbopuffer moves to aws-us-east-1; EU wording is removed from the docs, with ADRs 0001 and 0003 amended	the founder's direction on 23 October 2026	backend/src/worker.ts, backend/src/providers/turbopuffer.ts, docs; tests and checks pass; staging tenant objects and search indexes created before this are not migrated (synthetic data only)	done

@@ -23,7 +23,6 @@ describe("MCP scenario runner over HTTP", () => {
     const [item, request] = await configured(engine, makeItem());
     const env: any = {
       CLOUDFLARE_ACCOUNT_ID: engine.settings.cloudflare_account,
-      DO_JURISDICTION: "none",
       CROWBO_OPERATORS: JSON.stringify({
         [tokenHash(TOKEN)]: { tenant: "synthetic", reader: "operator", source_scopes: ["fixture:public"], query_processors: ["turbopuffer", "voyage", MODEL], budget_usd: "10.00" },
       }),

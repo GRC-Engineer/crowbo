@@ -28,6 +28,4 @@ export interface Env {
   OAUTH_KV?: KVNamespace;
   /** Injected by the OAuth provider into its default handler. */
   OAUTH_PROVIDER?: OAuthHelpers;
-  /** Local development only: "none" disables the EU jurisdiction, which workerd cannot emulate. */
-  DO_JURISDICTION?: string;
 }

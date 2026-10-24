@@ -19,9 +19,9 @@ Customer identity is trusted local configuration for this CLI. Production requir
 
 ## Native embeddings for the backend
 
-The selected database region is London, `aws-eu-west-2`. The text schema uses `voyage/voyage-4-large`, 1024 dimensions and full-text search. Turbopuffer embeds writes and queries. There is no separate Voyage client or key.
+The selected database region is N. Virginia, `aws-us-east-1`. The text schema uses `voyage/voyage-4-large`, 1024 dimensions and full-text search. Turbopuffer embeds writes and queries. There is no separate Voyage client or key.
 
-[Embedding documentation](https://turbopuffer.com/docs/embedding) and [regions](https://turbopuffer.com/docs/regions) define provider behaviour. London database storage does not imply London inference; the selected Voyage route is listed as Global.
+[Embedding documentation](https://turbopuffer.com/docs/embedding) and [regions](https://turbopuffer.com/docs/regions) define provider behaviour. Database location does not decide where inference runs; the selected Voyage route is listed as Global.
 
 The current overlapping chunks retain source offsets. Their size is an implementation choice to evaluate, not a demonstrated optimum.
 

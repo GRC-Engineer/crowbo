@@ -34,13 +34,9 @@ function withSecurityHeaders(response: Response): Response {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...SECURITY_HEADERS } });
 
-/**
- * One Durable Object per tenant, created in the EU jurisdiction. Fails closed: anything other
- * than the explicit local-only value "none" means EU. (Local workerd cannot emulate jurisdictions.)
- */
+/** One Durable Object per tenant, addressed by the tenant's name. */
 function tenant(env: Env, name: string) {
-  const namespace = env.DO_JURISDICTION === "none" ? env.TENANT : env.TENANT.jurisdiction("eu");
-  return namespace.get(namespace.idFromName(name));
+  return env.TENANT.get(env.TENANT.idFromName(name));
 }
 
 /** A plain secret or a Secrets Store binding, read in the Worker; null when unset. */

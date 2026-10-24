@@ -24,7 +24,7 @@ export const CHUNK_SCHEMA = {
   offset_end: "uint",
 } as const;
 
-export const REGION = "aws-eu-west-2";
+export const REGION = "aws-us-east-1";
 
 export class TurbopufferChunks implements ChunkIndex {
   private readonly namespace;

@@ -41,7 +41,7 @@ async function secret(value: string | SecretsStoreSecret | undefined): Promise<s
 export type CallerPayload = { settings: Settings; roles: string[] };
 
 /**
- * One tenant's system of record: SQLite inside a Durable Object pinned to the EU jurisdiction.
+ * One tenant's system of record: SQLite inside the tenant's own Durable Object.
  * Every operation runs next to its data, so the integrity re-reads the services perform are
  * local reads, and one object serialises each tenant's writes.
  */

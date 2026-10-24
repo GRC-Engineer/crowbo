@@ -167,7 +167,7 @@ One review calls one model over explicitly selected source versions. It checks c
 
 ## Processing and limits
 
-The database region is `aws-eu-west-2` (London). The native schema uses `voyage/voyage-4-large` at 1024 dimensions and BM25 text search. No separate Voyage key is required. Database location does not imply UK-only embedding processing; [turbopuffer lists this model's inference location as Global](https://turbopuffer.com/docs/embedding).
+The database region is `aws-us-east-1` (N. Virginia). The native schema uses `voyage/voyage-4-large` at 1024 dimensions and BM25 text search. No separate Voyage key is required. Database location does not decide where embeddings are computed; [turbopuffer lists this model's inference location as Global](https://turbopuffer.com/docs/embedding).
 
 Jev uses `typesafe/jev` through Cloudflare's account REST endpoint. The adapter sends the documented `cf-aig-collect-log: false`, `cf-aig-collect-log-payload: false` and `cf-aig-skip-cache: true` controls. [Cloudflare documents these logging controls](https://developers.cloudflare.com/ai-gateway/observability/logging/) and [lists Jev as zero-data-retention](https://developers.cloudflare.com/ai/models/typesafe/jev/). This run did not independently audit provider retention or change account-wide gateway settings.
 
